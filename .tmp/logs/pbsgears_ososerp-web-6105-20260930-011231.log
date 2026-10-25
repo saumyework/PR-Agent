@@ -1,0 +1,21 @@
+﻿
+PR #6105 'feat(UI): Convert role widget [FM-777]' | 32 files in scope, 1424 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-C done
+  <- S1-B done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Convert role widget [FM-777]
+https://github.com/pbsgears/ososerp-web/pull/6105
+Risk: Medium | 0 must-fix, 6 suggestions, 5 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FM\ososerp-web\pr6105.html
+Tokens: 12 input + 44,666 cache-write + 113,307 cache-read + 16,833 output over 5 calls

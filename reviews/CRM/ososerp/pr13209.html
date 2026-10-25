@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(CRM): Team refactor [CRM-0028] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(CRM): Team refactor [CRM-0028]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/13209">ososerp #13209</a>
+      <span>Chalaka Karunarathne</span>
+      <span class="ref">feature/crm/CM-3043-architecture-migration ← develop/crm/chalaka-team-refactor-new</span>
+      <span>2026-07-27</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">2</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">1</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary">
+      <p>Refactors CRM Team endpoints/service off the old <code>IUserTeamService</code>/<code>IPrivilegedUserService</code>/<code>ICompanyContextService</code> dependencies, moving the request-scoped concerns (user id, company id) into the handlers via <code>BaseHandler</code> and injecting entity repositories directly into <code>TeamService</code>. It also converts <code>TeamQueryHelper</code> static helpers into proper extension methods and inlines the endpoint delegates to match the pattern already used elsewhere (e.g. <code>VenueEndpoints.cs</code>).</p>
+      <p>The refactor drops audit-field stamping (<code>CreatedBy</code>/<code>CreatedDate</code>/<code>UpdatedBy</code>/<code>UpdatedDate</code>) on Team create/update and on the new user-team auto-assignment path, even though the relevant <code>userId</code> is still threaded through the call chain — it's just never applied. That's a silent data-integrity regression across every future Team write, which is why this lands at High risk despite being a fairly mechanical-looking refactor.</p>
+    </div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Services/TeamService.cs">src/Modules/Crm/Crm.Application/Services/TeamService.cs</code>
+      <p><strong>Team create/update no longer stamps audit fields.</strong> The private <code>CreateTeamAsync(Team team)</code> and <code>ModifyTeamAsync(Team team)</code> helpers used to set <code>CreatedBy</code>/<code>CreatedDate</code> and <code>UpdatedBy</code>/<code>UpdatedDate</code> respectively (confirmed on the base branch), but in this refactor those assignments were dropped entirely — the methods just call <code>repository.AddAsync</code>/<code>UpdateAsync</code> on the entity as-is. <code>CreateTeamFromRequestAsync</code> and <code>ModifyTeamFromRequestAsync</code> both still receive <code>userId</code> as a parameter and use it elsewhere (rollback on circular-hierarchy, cascading user-team logic), but never assign it to the entity anymore. Every new/updated <code>Team</code> row will now persist with an empty/default <code>CreatedBy</code>/<code>UpdatedBy</code> and default <code>DateTimeOffset</code> for the corresponding date fields.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Services/TeamService.cs">src/Modules/Crm/Crm.Application/Services/TeamService.cs</code>
+      <p><strong>Auto-assigned UserTeam rows lose audit fields and validation.</strong> The new private <code>BulkCreateUserTeamsAsync(IEnumerable&lt;UserTeam&gt; userTeams)</code> (used by <code>HandleUserTeamAssignmentAsync</code>/<code>HandleUserTeamReassignmentAsync</code> when a team gets a new manager chain) only sets <code>IsActive = true</code> before calling <code>userTeamRepository.AddAsync</code> — it no longer sets <code>CreatedBy</code>/<code>CreatedDate</code>, and skips the <code>ValidateUserTeamOnCreate</code>/<code>ValidateStorageUserTeam</code> checks that the sibling <code>UserTeamService.BulkCreateUserTeamsAsync(userTeams, userId)</code> still performs for every other caller in the module. The old code routed through <code>userTeamService.BulkCreateUserTeamsAsync(newUserTeams, userId)</code> and got both the stamping and the validation for free; this new in-class reimplementation gets neither.</p>
+    </div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/UseCases/Teams/Commands/Create/CreateTeamHandler.cs">Create/Delete/Update/GetTeamLookUp Handlers</code>
+      <p><strong>Company-id resolution duplicated across four handlers.</strong> <code>CreateTeamHandler</code>, <code>DeleteTeamHandler</code>, <code>UpdateTeamHandler</code>, and <code>GetTeamLookUpHandler</code> each independently do <code>await sender.Send(new CompanyByCodeQuery(CompanyCode), cancellationToken)</code> and then read <code>company.Company.Id</code>. It's the same line copy-pasted four times, and it's a wider divergence from how <code>ITeamService</code> used to own this concern (previously encapsulated behind <code>ICompanyContextService.GetCompanyIdAsync()</code> inside <code>TeamService</code> itself, not spread across every handler). Note <code>company.Company</code> can genuinely be <code>null</code> (the underlying <code>CompanyService.GetAsync(companyCode)</code> returns <code>null</code> when no match is found) — matching an existing (if risky) pattern already present in <code>WorkflowService</code>, so it's not a new class of bug, but worth consolidating rather than repeating four times.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Services/TeamService.cs">src/Modules/Crm/Crm.Application/Services/TeamService.cs</code>
+      <p><strong>TeamService now reimplements logic owned by sibling services.</strong> <code>IUserTeamService</code>/<code>IPrivilegedUserService</code>/<code>IUserInformationService</code> are still present and actively used elsewhere in the CRM module (e.g. <code>UserTeamService.cs</code> is untouched by this PR), but <code>TeamService</code> now bypasses them and talks directly to <code>IRepository&lt;UserTeam&gt;</code>/<code>IRepository&lt;PrivilegedUser&gt;</code>/<code>IRepository&lt;UserInformation&gt;</code>, duplicating <code>BulkCreateUserTeamsAsync</code>/<code>RemoveRangeUserTeamsAsync</code> in-class. Beyond the audit-field bug flagged above, this means the two implementations can silently drift — any future validation/business-rule change to <code>UserTeamService</code> won't apply to teams created through this path. Consider keeping cross-aggregate writes behind the existing services instead of duplicating them here.</p>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/UseCases/Teams/Queries/GetUserTeamHierarchicalResponse/GetUserTeamHierarchicalResponseHandler.cs">GetUserTeamHierarchicalResponseHandler.cs</code>
+      <p><strong>Inconsistent with its four sibling handlers in this same PR.</strong> <code>CreateTeamHandler</code>, <code>DeleteTeamHandler</code>, <code>UpdateTeamHandler</code>, and <code>GetTeamLookUpHandler</code> were all updated to extend <code>BaseHandler(httpContextAccessor)</code>, but this handler still takes <code>IHttpContextAccessor</code> directly and manually reads the <code>IS_TEAM_MANAGER_HEADER</code> header inline instead.</p>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Endpoints/TeamEndpoints.cs">TeamEndpoints.cs</code>
+      <p><strong>Endpoint style now matches the rest of the codebase.</strong> Inlining the route delegates instead of named private static methods brings this file in line with the convention already used in e.g. <code>VenueEndpoints.cs</code>.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Extensions/TeamExtensions.cs">TeamExtensions.cs</code>
+      <p><strong>Proper extension-method mapping.</strong> Converting <code>TeamQueryHelper</code>'s static <code>MapXxx</code> methods into <code>this</code>-parameter extension methods (<code>ToEntity()</code>, <code>ToListResponse()</code>, etc.) is a nice readability win and matches the DTO-mapping style shown in the team's own C# guide.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Services/TeamService.cs:206">TeamService.cs — GetTeamLookUpAsync</code>
+      <p><strong>Genuine multi-tenancy fix.</strong> <code>GetTeamLookUpAsync</code> now actually filters by <code>x.CompanyProfileId == resolvedCompanyId</code>; previously <code>companyId</code> was fetched but never used to scope the query.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Crm/Crm.Application/Services/ITeamService.cs">ITeamService.cs</code>
+      <p><strong>Tighter public surface.</strong> Dropping unused public members (<code>RetrieveAllTeams</code>, <code>BulkCreateTeamsAsync</code>, <code>ModifyRangeTeamsAsync</code>, <code>RemoveRangeTeamsAsync</code>, etc.) from the interface reduces what callers outside the service can reach into, now that they're correctly private implementation details.</p>
+    </div>
+  </section>
+
+  <footer>guides used: <code>C#_Code_Review.txt, Naming_Conventions.txt</code></footer>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

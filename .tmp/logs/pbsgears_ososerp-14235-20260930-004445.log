@@ -1,0 +1,51 @@
+﻿
+PR #14235 'feat(Configuration): Formula builder Implementation [12817]' | 298 files in scope, 18381 changed lines | 9 shard(s) | mode: first review
+Round 1: 14 independent passes
+  -> S1-A (sonnet)
+  -> S1-C (sonnet)
+  -> S2-A (sonnet)
+  -> S2-C (sonnet)
+  <- S2-C done
+  -> S3-A (sonnet)
+  <- S2-A done
+  -> S3-C (sonnet)
+  <- S1-A done
+  -> S4-A (sonnet)
+  <- S1-C done
+  -> S4-C (sonnet)
+  <- S3-A done
+  -> S5-A (sonnet)
+  <- S4-A done
+  -> S5-C (sonnet)
+  <- S3-C done
+  <- S5-A done
+  -> T1-A (sonnet)
+  -> T2-A (sonnet)
+  <- S4-C done
+  -> T3-A (sonnet)
+  <- S5-C done
+  <- T2-A done
+  -> T4-A (sonnet)
+  <- T1-A done
+  <- T3-A done
+  <- T4-A done
+Round 2: 5 gap pass(es)
+  -> S1-G (sonnet)
+  -> S2-G (sonnet)
+  -> S3-G (sonnet)
+  -> S4-G (sonnet)
+  <- S2-G done
+  -> S5-G (sonnet)
+  <- S1-G done
+  <- S4-G done
+  <- S5-G done
+  <- S3-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(Configuration): Formula builder Implementation [12817]
+https://github.com/pbsgears/ososerp/pull/14235
+Risk: High | 3 must-fix, 35 suggestions, 12 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OBPP\ososerp\pr14235.html
+Tokens: 44 input + 1,206,226 cache-write + 116,081 cache-read + 48,579 output over 20 calls

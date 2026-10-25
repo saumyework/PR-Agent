@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Fleet): Convert contact backend [FM-815]  — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Fleet): Convert contact backend [FM-815] </h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14449">ososerp #14449</a>
+      <span>PrabathMadhuranga</span>
+      <span class="ref">feature/fleet/version/0.12.0 ← develop/prabathosos/fleet/contact-be</span>
+      <span>2026-10-05</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">6</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">11</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">3</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR converts the Fleet Contact backend. It adds a ContactService, CQRS commands, queries and handlers, endpoints, DTOs and mapping extensions, plus localization keys in three resx files.</p>
+<p>Merge is blocked by multi-tenant isolation gaps. By-id operations, GetByCompany, the ignition lookup, and the code and ID-number uniqueness checks are not company-scoped. Update can move another tenant&#39;s contact into the caller&#39;s company. Update also skips the code and mobile uniqueness checks that Create performs. Create may use contact.Id before it is assigned, and null collections in the DTOs cause NullReferenceExceptions.</p>
+<p>The team should decide how archived contacts are listed and whether ID-number uniqueness is global or per company. The PR has an empty description and no tests.</p>
+<p class="empty-note">Method: 4 independent review calls over 1 shard(s), evidence machine-checked (1 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:143">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:143</code>
+  <p><strong>By-id operations not company-scoped.</strong> GetByIdAsync, UpdateAsync, DeleteAsync, ArchiveAsync and UnarchiveAsync load contacts by Id only, so a caller can read, modify or delete another tenant&#39;s contact. UpdateAsync then sets contact.CompanyId to the caller&#39;s company, which moves the contact across tenants. GetByCompany also accepts any companyId from the route without checking it against the caller&#39;s company. Filter every load by the caller&#39;s CompanyId. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:128</code>, <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:118</code>, <code>src/Modules/Fleet/Fleet.Application/Endpoints/ContactEndpoints.cs:116</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:241">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:241</code>
+  <p><strong>Ignition lookup not company-scoped.</strong> GetIgnitionLookupAsync filters only on Status != Removed and a non-empty IgnitionKeyCode. It has no CompanyId filter and takes no companyId. The handler does not resolve the company either, unlike the sibling lookups. The GetCodeLookupAsync and GetByCompanyAsync queries filter on CompanyId. Any caller can list the ignition key codes of every tenant&#39;s contacts, and archived contacts are included. I couldn&#39;t confirm whether Repository&lt;T&gt; applies a global company filter, because that code wasn&#39;t found. If it doesn&#39;t, this is a cross-tenant leak.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:82">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:82</code>
+  <p><strong>Create code check is cross-tenant.</strong> CreateAsync checks DriverCode existence across all companies, so another tenant&#39;s code forces regeneration and leaks that the code exists. GenerateCodeAsync and the fallback generator are also unscoped. UpdateAsync never calls EnsureCodeIsUniqueAsync or EnsureMobileNumberIsUniqueAsync, so Update can introduce duplicates that Create forbids. Scope the checks by company and add them to Update.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:569">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:569</code>
+  <p><strong>ID number uniqueness check is cross-tenant.</strong> EnsureIdNumberIsUniqueAsync has no CompanyId filter, so a contact in another company with the same ID number blocks creation and reveals its existence. Other uniqueness checks are company scoped.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:105">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:105</code>
+  <p><strong>Attachments and links use contact.Id before assignment.</strong> contact.Id is read before SaveChanges; if the Id is generated by the DB, ReferenceId will be Guid.Empty. Additionally SyncAttachmentsAsync/AddAsync with potentially null dto.Attachments (JSON null overrides the = [] initializer) throws NullReferenceException. Same null risk for ContactDriverTypes, ContactDriverCategories, ContactVehicleClasses, SourceIds in SyncLinksAsync (Contains on null).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:296">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:296</code>
+  <p><strong>Link sync drops unknown ids and is unscoped.</strong> Requested driver type/category/vehicle class ids that don&#39;t exist are silently ignored, and the lookups have no company/status filter (soft-deleted or other-tenant rows can be linked). SourceIds are not validated at all (no existence check), so a bad id causes an FK error (500). Existing removed links are also never reactivated; a new row is added instead.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:336">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:336</code>
+  <p><strong>Null collections and duplicate ids cause 500s.</strong> A JSON null overrides the <code>= []</code> initializers, causing NullReferenceException in the link sync and attachment sync. Duplicate attachment ids make ToDictionary throw. Unknown link ids are silently dropped and SourceIds are not validated. Validate and guard these inputs. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:296</code>, <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:358</code>, <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:356</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:93">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:93</code>
+  <p><strong>Check-then-insert races, no unique index.</strong> EnsureIdNumberIsUniqueAsync has no company filter, so tenants collide on national ID numbers (and leak existence). Create passes dto.Id (client-supplied, usually Empty) to uniqueness checks. Also no DB unique index is shown so check-then-insert races are possible. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:90</code>, <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:487</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:122">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:122</code>
+  <p><strong>Delete does not cascade child rows.</strong> Delete soft-removes contact and ContactSource but not driver types/categories/classes/attachments. Update&#39;s department-change check uses HasReferencesAsync. Unarchive/Archive don&#39;t check current status. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:141</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:47">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:47</code>
+  <p><strong>List hides archived contacts.</strong> GetAllAsync hardcodes Status == Active. ArchiveAsync sets Status.Inactive, so archived contacts vanish from the paged list. The list also offers no way to include them. The UnarchiveAsync endpoint therefore has no visible entry point in the list. Allow Status != Removed, or let the caller choose, with a status column or filter.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:47">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:47</code>
+  <p><strong>Unbounded queries load full entities.</strong> GetAllAsync filters only Active (archived contacts never listed, yet Archive exists), pulling images via GetListAsync. GenerateCodeAsync loads all contacts with prefix (global, not per company) into memory. GetCodeLookup/GetByCompany/GetIgnitionLookup load full entities unbounded; GetIgnitionLookup is not company-scoped (cross-tenant leak of ignition key codes). GetByCompanyAsync takes companyId from the route with no check against caller&#39;s company. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:487</code>, <code>src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:44</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:198">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:198</code>
+  <p><strong>Lookup access filter and type unvalidated.</strong> GetLookupAsync: userContact?.Department is not null relies on Include; non-fleet users with no contact see everyone. Lookup endpoint accepts any string for type without validation; no validators exist for lookup queries (team rule requires validators on every Query).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateCommand.cs:21">src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateCommand.cs:21</code>
+  <p><strong>Validators incomplete or missing.</strong> Only NotEmpty rules; no email format, max lengths, date cross-checks (expiry&gt;issue), contract type, attachment items validation, or null-collection checks. Same in UpdateCommand. Also Locale.IdRequired is reused for DepartmentId. Missing validators for GetAllQuery, GetByIdQuery, GetByCompanyQuery, lookup/code/ignition/uniqueCode queries (and GetById/ByCompany with empty Guid).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:158">src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:158</code>
+  <p><strong>Missing Dob stored as default date.</strong> Dob ?? default stores 0001-01-01 instead of rejecting/leaving null. Null string properties from JSON null flow into entity (e.g. dto.Email null). ToEntity and Update also let clients set IvmsDriverId? not mapped (fine) but Status unchanged.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/ContactEndpoints.cs:27">src/Modules/Fleet/Fleet.Application/Endpoints/ContactEndpoints.cs:27</code>
+  <p><strong>API contract issues in endpoints.</strong> Location uses nested result.Contact.Contact.Id and no leading slash and returns result.Contact (wrapper incl. IsCodeRegenerated). Delete/Archive/Unarchive return Ok(true) meaningless bodies (should be NoContent). PUT archive/unarchive verbs fine but update route has id in body. GET /lookup does not bind SourceIds. Route &#39;contactLookup&#39; as POST and &#39;uniqueCode&#39; are verb-ish/non-plural per convention. ContactDto.Dob non-nullable while request is nullable (default date 0001-01-01 saved when Dob omitted).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx:4839">src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx:4839</code>
+  <p><strong>Verify Arabic resx encoding.</strong> The new Arabic strings render as CP437-style garbage (e.g. ╪&#186;┘&#228;╪&#191;╪▒┘&#232;╪&#187;), suggesting the file was saved with wrong encoding; the existing entries show the same in this view, so may just be the display, but verify file encoding was not changed.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F17</span>
+  
+  <p><strong>Empty description and no tests.</strong> PR description is only template headings; no tests for new Contact logic (uniqueness, department-change guard, link sync). Large PR (1818 lines); no ticket details beyond title. Entity/EF config for Contact is not in this shard. Also at: <code>src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateHandler.cs:29</code>.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:44">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:44</code>
+  <p><strong>Line length and naming conventions.</strong> Method signature exceeds 120 characters. Commands named CreateCommand/UpdateCommand/GetAllQuery etc. don&#39;t follow [action][ModuleNamePlural]Command convention and collide by name with other modules&#39; types in the same assembly pattern. Locale.AlreadyUsed reused for code conflict instead of a specific message.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F19</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:60">src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:60</code>
+  <p><strong>Repeated .Value access and naming.</strong> Uses x.DriverTypeId.Value; safe due to filter but <code>ContactDriverCategorys</code> is a misspelling (pre-existing entity presumably). Also at: <code>src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:62</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F20</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Dtos/ContactCreateResultDto.cs:12">src/Modules/Fleet/Fleet.Application/Dtos/ContactCreateResultDto.cs:12</code>
+  <p><strong>Non-nullable property without initializer.</strong> Contact is non-nullable with no default; nullable warnings.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs</code>
+  <p><strong>Department-change guard.</strong> Update checks for references before the department can change.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/ContactService.cs">src/Modules/Fleet/Fleet.Application/Services/ContactService.cs</code>
+  <p><strong>Soft-delete handling.</strong> Removed rows are excluded from most reads and from link sync.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx">src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx</code>
+  <p><strong>Localization complete.</strong> New keys are added to all three resx files.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateHandler.cs">src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateHandler.cs</code>
+  <p><strong>Thin handlers.</strong> Handlers resolve the company from CompanyCode, throw NotFoundException when it is missing, and delegate to the service.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateCommand.cs">src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateCommand.cs</code>
+  <p><strong>Command validators.</strong> Validators exist for the commands, with conditional rules for IsOperator.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>f3473e8</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"f3473e8a0b236c65c984c7b617105eba6b1dbccf","reviewedOn":"2026-10-05","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"143","lens":"L3","title":"By-id operations not company-scoped","body":"GetByIdAsync, UpdateAsync, DeleteAsync, ArchiveAsync and UnarchiveAsync load contacts by Id only, so a caller can read, modify or delete another tenant\u0027s contact. UpdateAsync then sets contact.CompanyId to the caller\u0027s company, which moves the contact across tenants. GetByCompany also accepts any companyId from the route without checking it against the caller\u0027s company. Filter every load by the caller\u0027s CompanyId. Also at: `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:128`, `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:118`, `src/Modules/Fleet/Fleet.Application/Endpoints/ContactEndpoints.cs:116`.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"241","lens":"L3","title":"Ignition lookup not company-scoped","body":"GetIgnitionLookupAsync filters only on Status != Removed and a non-empty IgnitionKeyCode. It has no CompanyId filter and takes no companyId. The handler does not resolve the company either, unlike the sibling lookups. The GetCodeLookupAsync and GetByCompanyAsync queries filter on CompanyId. Any caller can list the ignition key codes of every tenant\u0027s contacts, and archived contacts are included. I couldn\u0027t confirm whether Repository\u003cT\u003e applies a global company filter, because that code wasn\u0027t found. If it doesn\u0027t, this is a cross-tenant leak.","firstSeen":"v1"},{"id":"F3","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"82","lens":"L3","title":"Create code check is cross-tenant","body":"CreateAsync checks DriverCode existence across all companies, so another tenant\u0027s code forces regeneration and leaks that the code exists. GenerateCodeAsync and the fallback generator are also unscoped. UpdateAsync never calls EnsureCodeIsUniqueAsync or EnsureMobileNumberIsUniqueAsync, so Update can introduce duplicates that Create forbids. Scope the checks by company and add them to Update.","firstSeen":"v1"},{"id":"F4","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"569","lens":"L3","title":"ID number uniqueness check is cross-tenant","body":"EnsureIdNumberIsUniqueAsync has no CompanyId filter, so a contact in another company with the same ID number blocks creation and reveals its existence. Other uniqueness checks are company scoped.","firstSeen":"v1"},{"id":"F5","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"105","lens":"L5","title":"Attachments and links use contact.Id before assignment","body":"contact.Id is read before SaveChanges; if the Id is generated by the DB, ReferenceId will be Guid.Empty. Additionally SyncAttachmentsAsync/AddAsync with potentially null dto.Attachments (JSON null overrides the = [] initializer) throws NullReferenceException. Same null risk for ContactDriverTypes, ContactDriverCategories, ContactVehicleClasses, SourceIds in SyncLinksAsync (Contains on null).","firstSeen":"v1"},{"id":"F6","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"296","lens":"L5","title":"Link sync drops unknown ids and is unscoped","body":"Requested driver type/category/vehicle class ids that don\u0027t exist are silently ignored, and the lookups have no company/status filter (soft-deleted or other-tenant rows can be linked). SourceIds are not validated at all (no existence check), so a bad id causes an FK error (500). Existing removed links are also never reactivated; a new row is added instead.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"336","lens":"L5","title":"Null collections and duplicate ids cause 500s","body":"A JSON null overrides the `= []` initializers, causing NullReferenceException in the link sync and attachment sync. Duplicate attachment ids make ToDictionary throw. Unknown link ids are silently dropped and SourceIds are not validated. Validate and guard these inputs. Also at: `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:296`, `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:358`, `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:356`.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"93","lens":"L2","title":"Check-then-insert races, no unique index","body":"EnsureIdNumberIsUniqueAsync has no company filter, so tenants collide on national ID numbers (and leak existence). Create passes dto.Id (client-supplied, usually Empty) to uniqueness checks. Also no DB unique index is shown so check-then-insert races are possible. Also at: `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:90`, `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:487`.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"122","lens":"L5","title":"Delete does not cascade child rows","body":"Delete soft-removes contact and ContactSource but not driver types/categories/classes/attachments. Update\u0027s department-change check uses HasReferencesAsync. Unarchive/Archive don\u0027t check current status. Also at: `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:141`.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"47","lens":"L5","title":"List hides archived contacts","body":"GetAllAsync hardcodes Status == Active. ArchiveAsync sets Status.Inactive, so archived contacts vanish from the paged list. The list also offers no way to include them. The UnarchiveAsync endpoint therefore has no visible entry point in the list. Allow Status != Removed, or let the caller choose, with a status column or filter.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"47","lens":"L6","title":"Unbounded queries load full entities","body":"GetAllAsync filters only Active (archived contacts never listed, yet Archive exists), pulling images via GetListAsync. GenerateCodeAsync loads all contacts with prefix (global, not per company) into memory. GetCodeLookup/GetByCompany/GetIgnitionLookup load full entities unbounded; GetIgnitionLookup is not company-scoped (cross-tenant leak of ignition key codes). GetByCompanyAsync takes companyId from the route with no check against caller\u0027s company. Also at: `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:487`, `src/Modules/Fleet/Fleet.Application/Services/ContactService.cs:44`.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"198","lens":"L1","title":"Lookup access filter and type unvalidated","body":"GetLookupAsync: userContact?.Department is not null relies on Include; non-fleet users with no contact see everyone. Lookup endpoint accepts any string for type without validation; no validators exist for lookup queries (team rule requires validators on every Query).","firstSeen":"v1"},{"id":"F13","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateCommand.cs","line":"21","lens":"L4","title":"Validators incomplete or missing","body":"Only NotEmpty rules; no email format, max lengths, date cross-checks (expiry\u003eissue), contract type, attachment items validation, or null-collection checks. Same in UpdateCommand. Also Locale.IdRequired is reused for DepartmentId. Missing validators for GetAllQuery, GetByIdQuery, GetByCompanyQuery, lookup/code/ignition/uniqueCode queries (and GetById/ByCompany with empty Guid).","firstSeen":"v1"},{"id":"F14","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs","line":"158","lens":"L1","title":"Missing Dob stored as default date","body":"Dob ?? default stores 0001-01-01 instead of rejecting/leaving null. Null string properties from JSON null flow into entity (e.g. dto.Email null). ToEntity and Update also let clients set IvmsDriverId? not mapped (fine) but Status unchanged.","firstSeen":"v1"},{"id":"F15","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/ContactEndpoints.cs","line":"27","lens":"L7","title":"API contract issues in endpoints","body":"Location uses nested result.Contact.Contact.Id and no leading slash and returns result.Contact (wrapper incl. IsCodeRegenerated). Delete/Archive/Unarchive return Ok(true) meaningless bodies (should be NoContent). PUT archive/unarchive verbs fine but update route has id in body. GET /lookup does not bind SourceIds. Route \u0027contactLookup\u0027 as POST and \u0027uniqueCode\u0027 are verb-ish/non-plural per convention. ContactDto.Dob non-nullable while request is nullable (default date 0001-01-01 saved when Dob omitted).","firstSeen":"v1"},{"id":"F16","severity":"suggestion","status":"open","file":"src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx","line":"4839","lens":"L10","title":"Verify Arabic resx encoding","body":"The new Arabic strings render as CP437-style garbage (e.g. ╪º┘ä╪¿╪▒┘è╪»), suggesting the file was saved with wrong encoding; the existing entries show the same in this view, so may just be the display, but verify file encoding was not changed.","firstSeen":"v1"},{"id":"F17","severity":"suggestion","status":"open","file":"","line":"","lens":"L11","title":"Empty description and no tests","body":"PR description is only template headings; no tests for new Contact logic (uniqueness, department-change guard, link sync). Large PR (1818 lines); no ticket details beyond title. Entity/EF config for Contact is not in this shard. Also at: `src/Modules/Fleet/Fleet.Application/UseCases/Contacts/Commands/Create/CreateHandler.cs:29`.","firstSeen":"v1"},{"id":"F18","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/ContactService.cs","line":"44","lens":"L10","title":"Line length and naming conventions","body":"Method signature exceeds 120 characters. Commands named CreateCommand/UpdateCommand/GetAllQuery etc. don\u0027t follow [action][ModuleNamePlural]Command convention and collide by name with other modules\u0027 types in the same assembly pattern. Locale.AlreadyUsed reused for code conflict instead of a specific message.","firstSeen":"v1"},{"id":"F19","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs","line":"60","lens":"L1","title":"Repeated .Value access and naming","body":"Uses x.DriverTypeId.Value; safe due to filter but `ContactDriverCategorys` is a misspelling (pre-existing entity presumably). Also at: `src/Modules/Fleet/Fleet.Application/Extensions/ContactExtensions.cs:62`.","firstSeen":"v1"},{"id":"F20","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Dtos/ContactCreateResultDto.cs","line":"12","lens":"L10","title":"Non-nullable property without initializer","body":"Contact is non-nullable with no default; nullable warnings.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

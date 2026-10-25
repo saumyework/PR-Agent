@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): SDM Request Management KPI Cards [OOTB-16307] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): SDM Request Management KPI Cards [OOTB-16307]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6599">ososerp-web #6599</a>
+      <span>Asanka1993</span>
+      <span class="ref">feature/ems-rms-sdm/version/0.13.0/sprint-12-plus ← develop/asanka/sdm/version/v13/sprint-13/OOTB-16307</span>
+      <span>2026-10-25</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip low">
+        <span class="dot"></span>
+        <span class="label">Risk: Low</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">0</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">5</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">4</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds KPI count cards to the SDM requests list page. The cards load counts from a new <code>GET sdmRequests/counts</code> call, and users can show or hide them, with the choice saved per user and company. It also rewrites the emails-to-notify chip behaviour and styling, which is unrelated to the KPI work.</p>
+<p>Nothing is a hard blocker. Fix these before merge: stale KPI counts on error, counts that don&#39;t refresh after a delete or edit, and the autocomplete-close commit that can add the wrong recipient. The PR description is empty, there are no tests, and the backend <code>/counts</code> endpoint is not in this PR.</p>
+<p>The team should decide whether the emails-to-notify changes move to their own PR, and should confirm the backend counts endpoint is deployed. They should also confirm it uses the same company, requester and soft-delete scoping as the list endpoint.</p>
+<p class="empty-note">Method: 4 independent review calls over 1 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <p class="empty-note">None.</p>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.html:30">libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.html:30</code>
+  <p><strong>PR hygiene: empty description, unrelated changes, no tests.</strong> The PR description is the unfilled template, so there is no stated intent to review against. The PR also rewrites the emails-to-notify chip behaviour and SCSS, which is unrelated to the KPI cards and should be a separate PR. There are no specs for the KPI component, the params/dedupe logic or the chip logic. The backend <code>GET sdmRequests/counts</code> endpoint is not in this PR, so the description should link the backend PR and the contract, and confirm the endpoint applies the same company, requester and soft-delete scoping as the list endpoint.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:183">libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:183</code>
+  <p><strong>KPI load failure leaves stale counts on screen.</strong> When <code>getKpiCounts</code> fails, <code>catchError</code> shows a toast and returns <code>EMPTY</code>. <code>kpiCounts</code> keeps the previous filter&#39;s numbers, so the cards no longer match the list. Set <code>kpiCounts</code> to <code>null</code> on error, for example by returning <code>of(null)</code>, so the cards show the dash placeholder.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:178">libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:178</code>
+  <p><strong>distinctUntilChanged stops counts refreshing after data changes.</strong> Counts are re-fetched only when the filter params change. <code>getAll</code> also fires after a delete or after returning from create/edit, and in those cases the filter string is identical. The list reloads but the KPI cards keep the old total, active and other counts. Consider refreshing on every <code>getAll</code> and de-duplicating only page-change reloads, or add an explicit refresh trigger.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.ts:134">libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.ts:134</code>
+  <p><strong>Autocomplete close auto-commits partially typed text.</strong> <code>commitPendingNotifyText</code> runs on every autocomplete <code>(closed)</code> event, including Escape and blur. <code>#recipientFromToken</code> accepts a partial string that matches exactly one user, so typing &quot;joh&quot; and clicking away adds that user without an explicit choice. With <code>matChipInputAddOnBlur</code> now false, typed text is committed only if the panel was open and then closed. The <code>#selectedFromList</code> flag, reset in a microtask, depends on the order of the <code>optionSelected</code> and <code>closed</code> events and could add a duplicate. Commit on close only for exact matches or valid emails, and add tests.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>PR hygiene.</strong> The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts:158">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts:158</code>
+  <p><strong>Raw localStorage used and write unguarded.</strong> The component injects <code>LocalStorageService</code> but reads and writes the global <code>localStorage</code> directly. The read is wrapped in try/catch, but <code>setItem</code> is not, so a quota or private-mode error will throw from the click handler. Use the injected service, or wrap the write in try/catch. Also, a stored array with only unknown ids is filtered to <code>[]</code>, which hides every card silently. Also at: <code>libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts:133</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html:24">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html:24</code>
+  <p><strong>Non-interactive menu header made focusable.</strong> The header div has <code>tabindex=&quot;0&quot;</code> and click/keydown handlers that only stop propagation. This adds a pointless tab stop inside the menu and is an accessibility smell. Drop the tabindex and the keydown handler, or use a proper non-focusable element.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html:72">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html:72</code>
+  <p><strong>Placeholder glyph is mojibake in source.</strong> The null-value placeholder is written as <code>Γ&#199;&#246;</code>, which is a mis-encoded em dash. The file may have been saved in the wrong encoding. Use a plain ASCII <code>-</code> or an escape (<code>—</code>), and check the file encoding.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.scss:1">libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.scss:1</code>
+  <p><strong>Heavy ::ng-deep and !important overrides.</strong> The new block overrides Material internals with <code>::ng-deep</code> and many <code>!important</code> rules. This is fragile across Material upgrades. The KPI SCSS also has a global <code>::ng-deep .mat-mdc-menu-panel.kpi-menu</code>. Prefer theme tokens or a panelClass in a global stylesheet.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts</code>
+  <p><strong>Scoped, validated card preferences.</strong> Card visibility is stored per user and company. Stored ids are checked against the known card list, so unknown ids are dropped.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts">libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts</code>
+  <p><strong>Safe KPI fetch pipeline.</strong> <code>switchMap</code> with <code>takeUntil(destroy$)</code> and <code>distinctUntilChanged</code> cancels in-flight requests, avoids duplicate count requests and leaks no subscriptions.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts">libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts</code>
+  <p><strong>Only filter params sent to counts.</strong> Paging and sort params are left out of the counts request, and <code>companyId</code> is added in the service like the sibling methods.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts</code>
+  <p><strong>Signals-based component.</strong> The cards use signals and <code>computed</code>, in line with current Angular practice.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html">libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html</code>
+  <p><strong>i18n keys added for both locales.</strong> New translation keys were added to both en-US and ar-OM.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>8ab9765</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"8ab976572be0167c8684078fbd59d94b88680587","reviewedOn":"2026-10-25","findings":[{"id":"F1","severity":"suggestion","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.html","line":"30","lens":"L11","title":"PR hygiene: empty description, unrelated changes, no tests","body":"The PR description is the unfilled template, so there is no stated intent to review against. The PR also rewrites the emails-to-notify chip behaviour and SCSS, which is unrelated to the KPI cards and should be a separate PR. There are no specs for the KPI component, the params/dedupe logic or the chip logic. The backend `GET sdmRequests/counts` endpoint is not in this PR, so the description should link the backend PR and the contract, and confirm the endpoint applies the same company, requester and soft-delete scoping as the list endpoint.","firstSeen":"v1"},{"id":"F2","severity":"suggestion","status":"open","file":"libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts","line":"183","lens":"L1","title":"KPI load failure leaves stale counts on screen","body":"When `getKpiCounts` fails, `catchError` shows a toast and returns `EMPTY`. `kpiCounts` keeps the previous filter\u0027s numbers, so the cards no longer match the list. Set `kpiCounts` to `null` on error, for example by returning `of(null)`, so the cards show the dash placeholder.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts","line":"178","lens":"L5","title":"distinctUntilChanged stops counts refreshing after data changes","body":"Counts are re-fetched only when the filter params change. `getAll` also fires after a delete or after returning from create/edit, and in those cases the filter string is identical. The list reloads but the KPI cards keep the old total, active and other counts. Consider refreshing on every `getAll` and de-duplicating only page-change reloads, or add an explicit refresh trigger.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.ts","line":"134","lens":"L4","title":"Autocomplete close auto-commits partially typed text","body":"`commitPendingNotifyText` runs on every autocomplete `(closed)` event, including Escape and blur. `#recipientFromToken` accepts a partial string that matches exactly one user, so typing \"joh\" and clicking away adds that user without an explicit choice. With `matChipInputAddOnBlur` now false, typed text is committed only if the panel was open and then closed. The `#selectedFromList` flag, reset in a microtask, depends on the order of the `optionSelected` and `closed` events and could add a duplicate. Commit on close only for exact matches or valid emails, and add tests.","firstSeen":"v1"},{"id":"F5","severity":"nit","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts","line":"158","lens":"L1","title":"Raw localStorage used and write unguarded","body":"The component injects `LocalStorageService` but reads and writes the global `localStorage` directly. The read is wrapped in try/catch, but `setItem` is not, so a quota or private-mode error will throw from the click handler. Use the injected service, or wrap the write in try/catch. Also, a stored array with only unknown ids is filtered to `[]`, which hides every card silently. Also at: `libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.ts:133`.","firstSeen":"v1"},{"id":"F6","severity":"nit","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html","line":"24","lens":"L10","title":"Non-interactive menu header made focusable","body":"The header div has `tabindex=\"0\"` and click/keydown handlers that only stop propagation. This adds a pointless tab stop inside the menu and is an accessibility smell. Drop the tabindex and the keydown handler, or use a proper non-focusable element.","firstSeen":"v1"},{"id":"F7","severity":"nit","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-kpi-cards/request-kpi-cards.component.html","line":"72","lens":"L10","title":"Placeholder glyph is mojibake in source","body":"The null-value placeholder is written as `ΓÇö`, which is a mis-encoded em dash. The file may have been saved in the wrong encoding. Use a plain ASCII `-` or an escape (`—`), and check the file encoding.","firstSeen":"v1"},{"id":"F8","severity":"nit","status":"open","file":"libs/features/sdm/src/lib/requests/components/request-emails-to-notify/request-emails-to-notify.component.scss","line":"1","lens":"L10","title":"Heavy ::ng-deep and !important overrides","body":"The new block overrides Material internals with `::ng-deep` and many `!important` rules. This is fragile across Material upgrades. The KPI SCSS also has a global `::ng-deep .mat-mdc-menu-panel.kpi-menu`. Prefer theme tokens or a panelClass in a global stylesheet.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"PR hygiene","body":"The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,4099 @@
+diff --git a/src/Toolbox/CommonServices/DocumentFields.cs b/src/Toolbox/CommonServices/DocumentFields.cs
+index 44c083d7a1e..073f40e3588 100644
+--- a/src/Toolbox/CommonServices/DocumentFields.cs
++++ b/src/Toolbox/CommonServices/DocumentFields.cs
+@@ -38084,10 +38084,10 @@ public Dictionary<int, object> GetData()
+                 {
+                     SequenceNo = edmCurrencyMasterSequenceNo++,
+                     Label = "Currency Code",
+-                    Type = "Dropdown",
+-                    Name = "IsoCurrencyId",
++                    Type = "Text (Single Line)",
++                    Name = "CurrencyCode",
+                     IsMandatory = true,
+-                    IsQuickSearch = false,
++                    IsQuickSearch = true,
+                     IsSystemProperty = true,
+                     IsDeleted = false,
+                     DocumentId = "EDM-CM"
+@@ -38096,10 +38096,10 @@ public Dictionary<int, object> GetData()
+                 {
+                     SequenceNo = edmCurrencyMasterSequenceNo++,
+                     Label = "Currency Name",
+-                    Type = "Dropdown",
+-                    Name = "IsoCurrencyId",
++                    Type = "Text (Single Line)",
++                    Name = "CurrencyName",
+                     IsMandatory = true,
+-                    IsQuickSearch = false,
++                    IsQuickSearch = true,
+                     IsSystemProperty = true,
+                     IsDeleted = false,
+                     DocumentId = "EDM-CM"
+@@ -38120,10 +38120,10 @@ public Dictionary<int, object> GetData()
+                 {
+                     SequenceNo = edmCurrencyMasterSequenceNo++,
+                     Label = "Symbol",
+-                    Type = "Dropdown",
+-                    Name = "IsoCurrencyId",
++                    Type = "Text (Single Line)",
++                    Name = "Symbol",
+                     IsMandatory = true,
+-                    IsQuickSearch = false,
++                    IsQuickSearch = true,
+                     IsSystemProperty = true,
+                     IsDeleted = false,
+                     DocumentId = "EDM-CM"
+diff --git a/src/Toolbox/CommonServices/RdmLookupValue.cs b/src/Toolbox/CommonServices/RdmLookupValue.cs
+index d1f6a29d423..a6672622510 100644
+--- a/src/Toolbox/CommonServices/RdmLookupValue.cs
++++ b/src/Toolbox/CommonServices/RdmLookupValue.cs
+@@ -11372,7 +11372,8 @@ public Dictionary<int, object> GetData()
+                 },
+             #endregion
+ 
+-            #region RD_FSC_ISO_CURRENCY
++            //RD_FSC_ISO_CURRENCY_SET_1
++            #region RD_FSC_ISO_CURRENCY_SET_1
+                 {
+                     429,
+                     new Models.EDM.RdmLookupValue
+@@ -11461,7 +11462,7 @@ public Dictionary<int, object> GetData()
+                         Id = 432,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Japanese Yen",
++                        LookupValue = "Yen",
+                         LookupCode = "392",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -11524,7 +11525,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "SAR",
+-                        Note = "∩╖╝",
++                        Note = "╪▒.╪│",
+                         SortOrder = 6,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -11605,7 +11606,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "CAD",
+-                        Note = "C$",
++                        Note = "CA$",
+                         SortOrder = 9,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -11632,7 +11633,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "CHF",
+-                        Note = "Fr",
++                        Note = "CHF",
+                         SortOrder = 10,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -11650,7 +11651,7 @@ public Dictionary<int, object> GetData()
+                         Id = 439,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Chinese Yuan Renminbi",
++                        LookupValue = "Yuan Renminbi",
+                         LookupCode = "156",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -11758,7 +11759,7 @@ public Dictionary<int, object> GetData()
+                         Id = 443,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Qatari Riyal",
++                        LookupValue = "Qatari Riyl",
+                         LookupCode = "634",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -11821,7 +11822,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "BHD",
+-                        Note = "BD",
++                        Note = ".╪».╪¿",
+                         SortOrder = 17,
+                         Index = 3,
+                         SharedScope = 0,
+@@ -11839,7 +11840,7 @@ public Dictionary<int, object> GetData()
+                         Id = 446,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Omani Rial",
++                        LookupValue = "Rial Omani",
+                         LookupCode = "512",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -11875,7 +11876,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "EGP",
+-                        Note = "┬ú",
++                        Note = "╪¼.┘à",
+                         SortOrder = 19,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -11920,7 +11921,7 @@ public Dictionary<int, object> GetData()
+                         Id = 449,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "South African Rand",
++                        LookupValue = "Rand",
+                         LookupCode = "710",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -11947,7 +11948,7 @@ public Dictionary<int, object> GetData()
+                         Id = 450,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Nigerian Naira",
++                        LookupValue = "Naira",
+                         LookupCode = "566",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12001,7 +12002,7 @@ public Dictionary<int, object> GetData()
+                         Id = 452,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Pakistani Rupee",
++                        LookupValue = "Pakistan Rupee",
+                         LookupCode = "586",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12028,7 +12029,7 @@ public Dictionary<int, object> GetData()
+                         Id = 453,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Bangladeshi Taka",
++                        LookupValue = "Taka",
+                         LookupCode = "050",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12055,7 +12056,7 @@ public Dictionary<int, object> GetData()
+                         Id = 454,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Sri Lankan Rupee",
++                        LookupValue = "Sri Lanka Rupee",
+                         LookupCode = "144",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12064,7 +12065,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "LKR",
+-                        Note = "Γé¿",
++                        Note = "Rs",
+                         SortOrder = 26,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -12082,7 +12083,7 @@ public Dictionary<int, object> GetData()
+                         Id = 455,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Indonesian Rupiah",
++                        LookupValue = "Rupiah",
+                         LookupCode = "360",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12093,7 +12094,7 @@ public Dictionary<int, object> GetData()
+                         ShortCode = "IDR",
+                         Note = "Rp",
+                         SortOrder = 27,
+-                        Index = 0,
++                        Index = 2,
+                         SharedScope = 0,
+                         LookupCodeType = "Done",
+                         Color = null,
+@@ -12109,7 +12110,7 @@ public Dictionary<int, object> GetData()
+                         Id = 456,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Thai Baht",
++                        LookupValue = "Baht",
+                         LookupCode = "764",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12163,7 +12164,7 @@ public Dictionary<int, object> GetData()
+                         Id = 458,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Vietnamese Dong",
++                        LookupValue = "Dong",
+                         LookupCode = "704",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12199,7 +12200,7 @@ public Dictionary<int, object> GetData()
+                         ValidTo = null,
+                         IsDefault = false,
+                         ShortCode = "MXN",
+-                        Note = "$",
++                        Note = "MX$",
+                         SortOrder = 31,
+                         Index = 2,
+                         SharedScope = 0,
+@@ -12379,7 +12380,7 @@ public Dictionary<int, object> GetData()
+                         Id = 466,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Hungarian Forint",
++                        LookupValue = "Forint",
+                         LookupCode = "348",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -12390,7 +12391,7 @@ public Dictionary<int, object> GetData()
+                         ShortCode = "HUF",
+                         Note = "Ft",
+                         SortOrder = 38,
+-                        Index = 0,
++                        Index = 2,
+                         SharedScope = 0,
+                         LookupCodeType = "Done",
+                         Color = null,
+@@ -12433,7 +12434,7 @@ public Dictionary<int, object> GetData()
+                         Id = 468,
+                         LookupTypeId = 48,
+                         LookupType = "RD_FSC_ISO_CURRENCY",
+-                        LookupValue = "Polish Zloty",
++                        LookupValue = "Zloty",
+                         LookupCode = "985",
+                         LookupLevelValue = "ISO_CURRENCY",
+                         Level = 1,
+@@ -14667,6 +14668,3385 @@ public Dictionary<int, object> GetData()
+                     }
+                 },
+             #endregion
++            
++            //RD_FSC_ISO_CURRENCY_SET_2
++            #region RD_FSC_ISO_CURRENCY_SET_2
++            {
++                    5001,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5001,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Afghani",
++                        LookupCode = "971",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "AFN",
++                        Note = "╪ï",
++                        SortOrder = 41,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5002,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5002,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lek",
++                        LookupCode = "008",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ALL",
++                        Note = "L",
++                        SortOrder = 42,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5003,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5003,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Armenian Dram",
++                        LookupCode = "051",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "AMD",
++                        Note = "╓Å",
++                        SortOrder = 43,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5004,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5004,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Kwanza",
++                        LookupCode = "973",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "AOA",
++                        Note = "AOA",
++                        SortOrder = 44,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5005,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5005,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Argentine Peso",
++                        LookupCode = "032",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ARS",
++                        Note = "ARS",
++                        SortOrder = 45,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5006,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5006,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Aruban Florin",
++                        LookupCode = "533",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "AWG",
++                        Note = "╞Æ",
++                        SortOrder = 46,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5007,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5007,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Azerbaijan Manat",
++                        LookupCode = "944",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "AZN",
++                        Note = "Γé╝",
++                        SortOrder = 47,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5008,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5008,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Convertible Mark",
++                        LookupCode = "977",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BAM",
++                        Note = "BAM",
++                        SortOrder = 48,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5009,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5009,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Barbados Dollar",
++                        LookupCode = "052",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BBD",
++                        Note = "BBD",
++                        SortOrder = 49,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5010,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5010,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Burundi Franc",
++                        LookupCode = "108",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BIF",
++                        Note = "BIF",
++                        SortOrder = 50,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5011,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5011,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Bermudian Dollar",
++                        LookupCode = "060",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BMD",
++                        Note = "BMD",
++                        SortOrder = 51,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5012,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5012,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Brunei Dollar",
++                        LookupCode = "096",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BND",
++                        Note = "BND",
++                        SortOrder = 52,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5013,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5013,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Boliviano",
++                        LookupCode = "068",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BOB",
++                        Note = "Bs",
++                        SortOrder = 53,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5014,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5014,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Mvdol",
++                        LookupCode = "984",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BOV",
++                        Note = "BOV",
++                        SortOrder = 54,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5015,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5015,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Bahamian Dollar",
++                        LookupCode = "044",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BSD",
++                        Note = "BSD",
++                        SortOrder = 55,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5016,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5016,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Ngultrum",
++                        LookupCode = "064",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BTN",
++                        Note = "BTN",
++                        SortOrder = 56,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5017,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5017,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Pula",
++                        LookupCode = "072",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BWP",
++                        Note = "P",
++                        SortOrder = 57,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5018,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5018,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Belarusian Ruble",
++                        LookupCode = "933",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BYN",
++                        Note = "BYN",
++                        SortOrder = 58,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5019,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5019,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Belize Dollar",
++                        LookupCode = "084",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "BZD",
++                        Note = "BZ$",
++                        SortOrder = 59,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5020,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5020,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Congolese Franc",
++                        LookupCode = "976",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CDF",
++                        Note = "CDF",
++                        SortOrder = 60,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5021,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5021,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "WIR Euro",
++                        LookupCode = "947",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CHE",
++                        Note = "CHE",
++                        SortOrder = 61,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5022,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5022,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "WIR Franc",
++                        LookupCode = "948",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CHW",
++                        Note = "CHW",
++                        SortOrder = 62,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5023,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5023,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Unidad de Fomento",
++                        LookupCode = "990",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CLF",
++                        Note = "CLF",
++                        SortOrder = 63,
++                        Index = 4,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5024,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5024,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Chilean Peso",
++                        LookupCode = "152",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CLP",
++                        Note = "CLP",
++                        SortOrder = 64,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5025,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5025,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Colombian Peso",
++                        LookupCode = "170",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "COP",
++                        Note = "COP",
++                        SortOrder = 65,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5026,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5026,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Unidad de Valor Real",
++                        LookupCode = "970",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "COU",
++                        Note = "COU",
++                        SortOrder = 66,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5027,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5027,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Costa Rican Colon",
++                        LookupCode = "188",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CRC",
++                        Note = "Γéí",
++                        SortOrder = 67,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5028,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5028,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Cuban Peso",
++                        LookupCode = "192",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CUP",
++                        Note = "CUP",
++                        SortOrder = 68,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5029,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5029,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Cabo Verde Escudo",
++                        LookupCode = "132",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "CVE",
++                        Note = "CVE",
++                        SortOrder = 69,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5030,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5030,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Djibouti Franc",
++                        LookupCode = "262",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "DJF",
++                        Note = "DJF",
++                        SortOrder = 70,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5031,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5031,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Dominican Peso",
++                        LookupCode = "214",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "DOP",
++                        Note = "RD$",
++                        SortOrder = 71,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5032,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5032,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Algerian Dinar",
++                        LookupCode = "012",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "DZD",
++                        Note = "╪».╪¼",
++                        SortOrder = 72,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5033,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5033,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Nakfa",
++                        LookupCode = "232",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ERN",
++                        Note = "ERN",
++                        SortOrder = 73,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5034,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5034,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Ethiopian Birr",
++                        LookupCode = "230",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ETB",
++                        Note = "Br",
++                        SortOrder = 74,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5035,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5035,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Fiji Dollar",
++                        LookupCode = "242",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "FJD",
++                        Note = "FJ$",
++                        SortOrder = 75,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5036,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5036,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Falkland Islands Pound",
++                        LookupCode = "238",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "FKP",
++                        Note = "FKP",
++                        SortOrder = 76,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5037,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5037,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lari",
++                        LookupCode = "981",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GEL",
++                        Note = "Γé╛",
++                        SortOrder = 77,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5038,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5038,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Ghana Cedi",
++                        LookupCode = "936",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GHS",
++                        Note = "Γé╡",
++                        SortOrder = 78,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5039,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5039,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Gibraltar Pound",
++                        LookupCode = "292",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GIP",
++                        Note = "GIP",
++                        SortOrder = 79,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5040,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5040,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Dalasi",
++                        LookupCode = "270",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GMD",
++                        Note = "GMD",
++                        SortOrder = 80,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5041,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5041,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Guinean Franc",
++                        LookupCode = "324",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GNF",
++                        Note = "GNF",
++                        SortOrder = 81,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5042,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5042,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Quetzal",
++                        LookupCode = "320",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GTQ",
++                        Note = "Q",
++                        SortOrder = 82,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5043,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5043,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Guyana Dollar",
++                        LookupCode = "328",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "GYD",
++                        Note = "GYD",
++                        SortOrder = 83,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5044,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5044,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lempira",
++                        LookupCode = "340",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "HNL",
++                        Note = "L",
++                        SortOrder = 84,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5045,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5045,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Gourde",
++                        LookupCode = "332",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "HTG",
++                        Note = "HTG",
++                        SortOrder = 85,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5046,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5046,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "New Israeli Sheqel",
++                        LookupCode = "376",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ILS",
++                        Note = "Γé¬",
++                        SortOrder = 86,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5047,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5047,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Iraqi Dinar",
++                        LookupCode = "368",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "IQD",
++                        Note = "╪╣.╪»",
++                        SortOrder = 87,
++                        Index = 3,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5048,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5048,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Iranian Rial",
++                        LookupCode = "364",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "IRR",
++                        Note = "∩╖╝",
++                        SortOrder = 88,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5049,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5049,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Iceland Krona",
++                        LookupCode = "352",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ISK",
++                        Note = "kr",
++                        SortOrder = 89,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5050,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5050,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Jamaican Dollar",
++                        LookupCode = "388",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "JMD",
++                        Note = "J$",
++                        SortOrder = 90,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5051,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5051,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Jordanian Dinar",
++                        LookupCode = "400",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "JOD",
++                        Note = "╪».╪º",
++                        SortOrder = 91,
++                        Index = 3,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5052,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5052,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Som",
++                        LookupCode = "417",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KGS",
++                        Note = "KGS",
++                        SortOrder = 92,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5053,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5053,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Riel",
++                        LookupCode = "116",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KHR",
++                        Note = "ßƒ¢",
++                        SortOrder = 93,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5054,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5054,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Comorian Franc",
++                        LookupCode = "174",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KMF",
++                        Note = "KMF",
++                        SortOrder = 94,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5055,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5055,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "North Korean Won",
++                        LookupCode = "408",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KPW",
++                        Note = "KPW",
++                        SortOrder = 95,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5056,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5056,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Won",
++                        LookupCode = "410",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KRW",
++                        Note = "Γé⌐",
++                        SortOrder = 96,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5057,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5057,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Cayman Islands Dollar",
++                        LookupCode = "136",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KYD",
++                        Note = "KYD",
++                        SortOrder = 97,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5058,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5058,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Tenge",
++                        LookupCode = "398",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "KZT",
++                        Note = "Γé╕",
++                        SortOrder = 98,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5059,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5059,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lao Kip",
++                        LookupCode = "418",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "LAK",
++                        Note = "Γé¡",
++                        SortOrder = 99,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5060,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5060,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lebanese Pound",
++                        LookupCode = "422",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "LBP",
++                        Note = "┘ä.┘ä",
++                        SortOrder = 100,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5061,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5061,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Liberian Dollar",
++                        LookupCode = "430",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "LRD",
++                        Note = "LRD",
++                        SortOrder = 101,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5062,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5062,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Loti",
++                        LookupCode = "426",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "LSL",
++                        Note = "LSL",
++                        SortOrder = 102,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5063,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5063,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Libyan Dinar",
++                        LookupCode = "434",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "LYD",
++                        Note = "┘ä.╪»",
++                        SortOrder = 103,
++                        Index = 3,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5064,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5064,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Moroccan Dirham",
++                        LookupCode = "504",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MAD",
++                        Note = "╪».┘à.",
++                        SortOrder = 104,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5065,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5065,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Moldovan Leu",
++                        LookupCode = "498",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MDL",
++                        Note = "MDL",
++                        SortOrder = 105,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5066,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5066,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Malagasy Ariary",
++                        LookupCode = "969",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MGA",
++                        Note = "MGA",
++                        SortOrder = 106,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5067,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5067,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Denar",
++                        LookupCode = "807",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MKD",
++                        Note = "╨┤╨╡╨╜",
++                        SortOrder = 107,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5068,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5068,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Kyat",
++                        LookupCode = "104",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MMK",
++                        Note = "MMK",
++                        SortOrder = 108,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5069,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5069,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Tugrik",
++                        LookupCode = "496",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MNT",
++                        Note = "Γé«",
++                        SortOrder = 109,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5070,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5070,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Pataca",
++                        LookupCode = "446",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MOP",
++                        Note = "MOP",
++                        SortOrder = 110,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5071,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5071,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Ouguiya",
++                        LookupCode = "929",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MRU",
++                        Note = "MRU",
++                        SortOrder = 111,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5072,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5072,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Mauritius Rupee",
++                        LookupCode = "480",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MUR",
++                        Note = "Γé¿",
++                        SortOrder = 112,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5073,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5073,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Rufiyaa",
++                        LookupCode = "462",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MVR",
++                        Note = "MVR",
++                        SortOrder = 113,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5074,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5074,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Malawi Kwacha",
++                        LookupCode = "454",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MWK",
++                        Note = "MK",
++                        SortOrder = 114,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5075,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5075,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Mexican Unidad de Inversion (UDI)",
++                        LookupCode = "979",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MXV",
++                        Note = "MXV",
++                        SortOrder = 115,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5076,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5076,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Mozambique Metical",
++                        LookupCode = "943",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "MZN",
++                        Note = "MT",
++                        SortOrder = 116,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5077,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5077,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Namibia Dollar",
++                        LookupCode = "516",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "NAD",
++                        Note = "N$",
++                        SortOrder = 117,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5078,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5078,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Cordoba Oro",
++                        LookupCode = "558",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "NIO",
++                        Note = "C$",
++                        SortOrder = 118,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5079,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5079,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Nepalese Rupee",
++                        LookupCode = "524",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "NPR",
++                        Note = "Rs",
++                        SortOrder = 119,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5080,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5080,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Balboa",
++                        LookupCode = "590",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "PAB",
++                        Note = "B/.",
++                        SortOrder = 120,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5081,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5081,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Sol",
++                        LookupCode = "604",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "PEN",
++                        Note = "S/",
++                        SortOrder = 121,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5082,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5082,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Kina",
++                        LookupCode = "598",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "PGK",
++                        Note = "K",
++                        SortOrder = 122,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5083,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5083,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Guarani",
++                        LookupCode = "600",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "PYG",
++                        Note = "Γé▓",
++                        SortOrder = 123,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5084,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5084,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Romanian Leu",
++                        LookupCode = "946",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "RON",
++                        Note = "lei",
++                        SortOrder = 124,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5085,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5085,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Serbian Dinar",
++                        LookupCode = "941",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "RSD",
++                        Note = "╨┤╨╕╨╜.",
++                        SortOrder = 125,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5086,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5086,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Rwanda Franc",
++                        LookupCode = "646",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "RWF",
++                        Note = "RWF",
++                        SortOrder = 126,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5087,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5087,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Solomon Islands Dollar",
++                        LookupCode = "090",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SBD",
++                        Note = "SI$",
++                        SortOrder = 127,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5088,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5088,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Seychelles Rupee",
++                        LookupCode = "690",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SCR",
++                        Note = "SCR",
++                        SortOrder = 128,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5089,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5089,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Sudanese Pound",
++                        LookupCode = "938",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SDG",
++                        Note = "╪¼.╪│",
++                        SortOrder = 129,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5090,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5090,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Saint Helena Pound",
++                        LookupCode = "654",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SHP",
++                        Note = "SHP",
++                        SortOrder = 130,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5091,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5091,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Leone",
++                        LookupCode = "925",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SLE",
++                        Note = "SLE",
++                        SortOrder = 131,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5092,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5092,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Somali Shilling",
++                        LookupCode = "706",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SOS",
++                        Note = "SOS",
++                        SortOrder = 132,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5093,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5093,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Surinam Dollar",
++                        LookupCode = "968",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SRD",
++                        Note = "SRD",
++                        SortOrder = 133,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5094,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5094,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "South Sudanese Pound",
++                        LookupCode = "728",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SSP",
++                        Note = "SSP",
++                        SortOrder = 134,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5095,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5095,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Dobra",
++                        LookupCode = "930",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "STN",
++                        Note = "STN",
++                        SortOrder = 135,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5096,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5096,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "El Salvador Colon",
++                        LookupCode = "222",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SVC",
++                        Note = "SVC",
++                        SortOrder = 136,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5097,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5097,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Syrian Pound",
++                        LookupCode = "760",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SYP",
++                        Note = "┘ä.╪│",
++                        SortOrder = 137,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5098,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5098,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Lilangeni",
++                        LookupCode = "748",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "SZL",
++                        Note = "SZL",
++                        SortOrder = 138,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5099,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5099,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Somoni",
++                        LookupCode = "972",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TJS",
++                        Note = "TJS",
++                        SortOrder = 139,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5100,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5100,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Turkmenistan New Manat",
++                        LookupCode = "934",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TMT",
++                        Note = "TMT",
++                        SortOrder = 140,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5101,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5101,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Tunisian Dinar",
++                        LookupCode = "788",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TND",
++                        Note = "╪».╪¬",
++                        SortOrder = 141,
++                        Index = 3,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5102,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5102,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "PaΓÇÖanga",
++                        LookupCode = "776",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TOP",
++                        Note = "T$",
++                        SortOrder = 142,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5103,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5103,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Trinidad and Tobago Dollar",
++                        LookupCode = "780",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TTD",
++                        Note = "TT$",
++                        SortOrder = 143,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5104,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5104,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "New Taiwan Dollar",
++                        LookupCode = "901",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TWD",
++                        Note = "NT$",
++                        SortOrder = 144,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5105,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5105,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Tanzanian Shilling",
++                        LookupCode = "834",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "TZS",
++                        Note = "TSh",
++                        SortOrder = 145,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5106,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5106,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Hryvnia",
++                        LookupCode = "980",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UAH",
++                        Note = "Γé┤",
++                        SortOrder = 146,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5107,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5107,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Uganda Shilling",
++                        LookupCode = "800",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UGX",
++                        Note = "USh",
++                        SortOrder = 147,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5108,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5108,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "US Dollar (Next day)",
++                        LookupCode = "997",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "USN",
++                        Note = "USN",
++                        SortOrder = 148,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5109,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5109,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Uruguay Peso en Unidades Indexadas (UI)",
++                        LookupCode = "940",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UYI",
++                        Note = "UYI",
++                        SortOrder = 149,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5110,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5110,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Peso Uruguayo",
++                        LookupCode = "858",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UYU",
++                        Note = "$U",
++                        SortOrder = 150,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5111,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5111,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Unidad Previsional",
++                        LookupCode = "927",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UYW",
++                        Note = "UYW",
++                        SortOrder = 151,
++                        Index = 4,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5112,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5112,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Uzbekistan Sum",
++                        LookupCode = "860",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "UZS",
++                        Note = "UZS",
++                        SortOrder = 152,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5113,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5113,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Bol├¡var Soberano",
++                        LookupCode = "926",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "VED",
++                        Note = "VED",
++                        SortOrder = 153,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5114,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5114,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Bol├¡var Soberano",
++                        LookupCode = "928",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "VES",
++                        Note = "Bs.",
++                        SortOrder = 154,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5115,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5115,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Vatu",
++                        LookupCode = "548",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "VUV",
++                        Note = "VT",
++                        SortOrder = 155,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5116,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5116,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Tala",
++                        LookupCode = "882",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "WST",
++                        Note = "WS$",
++                        SortOrder = 156,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5117,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5117,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Arab Accounting Dinar",
++                        LookupCode = "396",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XAD",
++                        Note = "XAD",
++                        SortOrder = 157,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5118,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5118,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "CFA Franc BEAC",
++                        LookupCode = "950",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XAF",
++                        Note = "FCFA",
++                        SortOrder = 158,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5119,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5119,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "East Caribbean Dollar",
++                        LookupCode = "951",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XCD",
++                        Note = "EC$",
++                        SortOrder = 159,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5120,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5120,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Caribbean Guilder",
++                        LookupCode = "532",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XCG",
++                        Note = "Cg.",
++                        SortOrder = 160,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5121,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5121,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "CFA Franc BCEAO",
++                        LookupCode = "952",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XOF",
++                        Note = "F CFA",
++                        SortOrder = 161,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5122,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5122,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "CFP Franc",
++                        LookupCode = "953",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "XPF",
++                        Note = "Γéú",
++                        SortOrder = 162,
++                        Index = 0,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5123,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5123,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Yemeni Rial",
++                        LookupCode = "886",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "YER",
++                        Note = "∩╖╝",
++                        SortOrder = 163,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5124,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5124,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Zambian Kwacha",
++                        LookupCode = "967",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ZMW",
++                        Note = "ZK",
++                        SortOrder = 164,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++                {
++                    5125,
++                    new Models.EDM.RdmLookupValue
++                    {
++                        Id = 5125,
++                        LookupTypeId = 48,
++                        LookupType = "RD_FSC_ISO_CURRENCY",
++                        LookupValue = "Zimbabwe Gold",
++                        LookupCode = "924",
++                        LookupLevelValue = "ISO_CURRENCY",
++                        Level = 1,
++                        ParentId = null,
++                        ValidFrom = DateOnly.FromDateTime(DateTime.Now),
++                        ValidTo = null,
++                        IsDefault = false,
++                        ShortCode = "ZWG",
++                        Note = "ZWG",
++                        SortOrder = 165,
++                        Index = 2,
++                        SharedScope = 0,
++                        LookupCodeType = "Done",
++                        Color = null,
++                        IsSystem = true,
++                        IsActive = true,
++                        IsDeleted = false
++                    }
++                },
++            #endregion
+         };
+ 
+         return rdmLookupValues;
+diff --git a/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs b/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs
+index 92752bf0104..8c12b475f1e 100644
+--- a/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs
++++ b/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs
+@@ -16370,11 +16370,196 @@ private static IEnumerable<SystemTranslation> GetEdmArOm()
+             };
+             #endregion
+ 
++            #region EDM ΓåÆ Currency Master ΓåÆ Placeholders
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.currency",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪º┘ä╪╣┘à┘ä╪⌐",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.autoFilled",
++                TranslationValue = "┘è┘Å┘à┘ä╪ú ╪¬┘ä┘é╪º╪ª┘è╪º┘ï ┘à┘å ╪º┘ä╪╣┘à┘ä╪⌐",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.shortCode",
++                TranslationValue = "╪ú╪»╪«┘ä ╪º┘ä╪▒┘à╪▓ ╪º┘ä┘à╪«╪¬╪╡╪▒",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.decimalPrecision",
++                TranslationValue = "╪ú╪»╪«┘ä ╪º┘ä╪»┘é╪⌐ ╪º┘ä╪╣╪┤╪▒┘è╪⌐",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.symbolSpacing",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪º┘ä┘à╪│╪º┘ü╪⌐ ╪¿╪¼╪º┘å╪¿ ╪º┘ä╪▒┘à╪▓",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.thousandSeparator",
++                TranslationValue = "╪º╪«╪¬╪▒ ┘ü╪º╪╡┘ä ╪º┘ä╪ó┘ä╪º┘ü",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.decimalSeparator",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪º┘ä┘ü╪º╪╡┘ä ╪º┘ä╪╣╪┤╪▒┘è",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.negativeFormat",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪¬┘å╪│┘è┘é ╪º┘ä┘é┘è┘à ╪º┘ä╪│╪º┘ä╪¿╪⌐",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.roundingMethod",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪╖╪▒┘è┘é╪⌐ ╪º┘ä╪¬┘é╪▒┘è╪¿",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.roundingPrecision",
++                TranslationValue = "╪ú╪»╪«┘ä ╪»┘é╪⌐ ╪º┘ä╪¬┘é╪▒┘è╪¿",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.countryOfIssue",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪¿┘ä╪» ╪º┘ä╪Ñ╪╡╪»╪º╪▒",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.peggedTo",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪º┘ä╪╣┘à┘ä╪⌐ ╪º┘ä┘à╪▒╪¿┘ê╪╖╪⌐",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.peggedRate",
++                TranslationValue = "╪ú╪»╪«┘ä ┘à╪╣╪»┘ä ╪º┘ä╪▒╪¿╪╖",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.selectOption",
++                TranslationValue = "╪º╪«╪¬╪▒ ╪«┘è╪º╪▒╪º┘ï",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            #endregion
++
+             #region EDM ΓåÆ Currency Master ΓåÆ Action Buttons
+             yield return new SystemTranslation
+             {
+-                KeyName = "translate.edm.currencyMaster.commonButtons.actionbutton.add",
+-                TranslationValue = "╪Ñ┘å╪┤╪º╪í ╪╣┘à┘ä╪⌐",
++                KeyName = "translate.edm.currencyMaster.commonButtons.actionbutton.addCurrency",
++                TranslationValue = "╪Ñ╪╢╪º┘ü╪⌐ ╪╣┘à┘ä╪⌐",
+                 CultureName = "ar-OM",
+                 ModuleCode = "EDM",
+                 DocumentTypeCode = "EDM-CM",
+@@ -16518,6 +16703,19 @@ private static IEnumerable<SystemTranslation> GetEdmArOm()
+                 CommonKeyExist = false
+             };
+             yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.validation.peggedToSameCurrency",
++                TranslationValue = "┘ä╪º ┘è┘à┘â┘å ╪▒╪¿╪╖ ╪º┘ä╪╣┘à┘ä╪⌐ ╪¿┘å┘ü╪│┘ç╪º. ┘è╪▒╪¼┘ë ╪º╪«╪¬┘è╪º╪▒ ╪╣┘à┘ä╪⌐ ┘à╪«╪¬┘ä┘ü╪⌐.",
++                CultureName = "ar-OM",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.Validation,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
+             {
+                 KeyName = "translate.edm.currencyMaster.validation.effectiveFromRequired",
+                 TranslationValue = "╪¬╪º╪▒┘è╪« ╪º┘ä╪│╪▒┘è╪º┘å ┘à┘å ┘à╪╖┘ä┘ê╪¿",
+diff --git a/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs b/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs
+index d5f21a59b52..a7f718f0c50 100644
+--- a/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs
++++ b/src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs
+@@ -16396,11 +16396,196 @@ private static IEnumerable<SystemTranslation> GetEdmEnUs()
+             };
+             #endregion
+ 
++            #region EDM ΓåÆ Currency Master ΓåÆ Placeholders
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.currency",
++                TranslationValue = "Select Currency",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.autoFilled",
++                TranslationValue = "Auto-filled from currency",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.shortCode",
++                TranslationValue = "Enter Short Code",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.decimalPrecision",
++                TranslationValue = "Enter Decimal Precision",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.symbolSpacing",
++                TranslationValue = "Select Symbol Spacing",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.thousandSeparator",
++                TranslationValue = "Select Thousand Separator",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.decimalSeparator",
++                TranslationValue = "Select Decimal Separator",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.negativeFormat",
++                TranslationValue = "Select Negative Format",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.roundingMethod",
++                TranslationValue = "Select Rounding Method",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.roundingPrecision",
++                TranslationValue = "Enter Rounding Precision",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.countryOfIssue",
++                TranslationValue = "Select Country of Issue",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.peggedTo",
++                TranslationValue = "Select Pegged Currency",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.peggedRate",
++                TranslationValue = "Enter Pegged Rate",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.placeholders.selectOption",
++                TranslationValue = "Select Option",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.PlaceHolder,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            #endregion
++
+             #region EDM ΓåÆ Currency Master ΓåÆ Action Buttons
+             yield return new SystemTranslation
+             {
+-                KeyName = "translate.edm.currencyMaster.commonButtons.actionbutton.add",
+-                TranslationValue = "Create Currency",
++                KeyName = "translate.edm.currencyMaster.commonButtons.actionbutton.addCurrency",
++                TranslationValue = "Add Currency",
+                 CultureName = "en-US",
+                 ModuleCode = "EDM",
+                 DocumentTypeCode = "EDM-CM",
+@@ -16544,6 +16729,19 @@ private static IEnumerable<SystemTranslation> GetEdmEnUs()
+                 CommonKeyExist = false
+             };
+             yield return new SystemTranslation
++            {
++                KeyName = "translate.edm.currencyMaster.validation.peggedToSameCurrency",
++                TranslationValue = "A currency cannot be pegged to itself. Select a different currency.",
++                CultureName = "en-US",
++                ModuleCode = "EDM",
++                DocumentTypeCode = "EDM-CM",
++                SystemTranslationElementType = SystemTranslationElementType.Validation,
++                IsCommon = false,
++                CommonKey = "",
++                IsOriginal = true,
++                CommonKeyExist = false
++            };
++            yield return new SystemTranslation
+             {
+                 KeyName = "translate.edm.currencyMaster.validation.effectiveFromRequired",
+                 TranslationValue = "Effective From is required",

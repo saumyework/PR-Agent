@@ -1,0 +1,7 @@
+C# Coding Conventions & Best Practice
+
+
+
+https://github.com/hassanhabib/The-Standard
+https://github.com/hassanhabib/CSharpCodingStandard
+https://github.com/hassanhabib/The-Standard-Team/blob/main/4%20Practices/4%20Practices.md

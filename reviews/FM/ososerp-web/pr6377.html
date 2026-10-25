@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): Convert Masters [FM-699] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): Convert Masters [FM-699]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6377">ososerp-web #6377</a>
+      <span>PrabathMadhuranga</span>
+      <span class="ref">feature/fleet/version/0.13.0 ← develop/prabathosos/fleet/fe-convert-masters</span>
+      <span>2026-10-13</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">7</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">5</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">6</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds five new fleet masters to the UI: department, job title, operator type, vehicle source and inspection checklist. Each has services, resolvers, lazy-loaded routes, list and detail pages and column configs. It also adds TableType, menu ID and document type constants, and repoints some shared lookup endpoints.</p>
+<p>Two things block merge. First, the <code>TableType</code> enum renumbers the existing <code>FleetOperatorUnavailability</code> from 412 to 417, which can break saved column selections and backend alignment. Second, the vehicle-source page can wipe a source&#39;s stored permissions if the permission-module lookup fails or hasn&#39;t returned when the user saves.</p>
+<p>The team should confirm the backend routes for the changed lookups (<code>vehicleSources</code>, <code>fleetDepartments</code>, <code>sources/lookUpByDepartment</code>). They should also decide whether to split this ~4.8k-line PR. The description is the unfilled template, and no tests are visible.</p>
+<p class="empty-note">Method: 9 independent review calls over 3 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="libs/core/enums/src/lib/enums/table-type.ts:419">libs/core/enums/src/lib/enums/table-type.ts:419</code>
+  <p><strong>Existing TableType value renumbered.</strong> New members were inserted at 412-416, so the existing <code>FleetOperatorUnavailability</code> moved from 412 to 417. <code>TableType</code> is sent to or stored by the user-columns API and must match the backend enum. Renumbering breaks saved column selections for Operator Unavailability. Keep 412 for it, give the new members 413-417, and confirm the values match the backend enum.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:51">libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:51</code>
+  <p><strong>Failed permission lookup wipes permissions on save.</strong> If getPermissionModules() errors it is swallowed with <code>of([])</code>. The details component builds permission rows only from the module list (<code>#buildPermissionRows</code>), and <code>#toVehicleSource</code> maps only those rows into <code>sourcePermissions</code>. With an empty list, an existing fleet source&#39;s stored permissions are sent as <code>[]</code> and may be deleted by the backend. The same happens if the user saves before the lookup returns. Fix: surface the error, block save until modules load, or keep existing permissions that have no matching module row.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts:146">libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts:146</code>
+  <p><strong>Lookup endpoints changed inconsistently and duplicated.</strong> <code>getSources</code> now calls <code>vehicleSources/lookUp</code>, but <code>getSourcesByDepartment</code> still calls <code>sources/lookUpByDepartment</code>. <code>getDepartments</code> now calls <code>fleetDepartments</code>, making it identical to <code>getFleetDepartments</code> and changing behaviour for existing callers (contacts, rides, vehicles). The vehicles-module <code>fleet-lookup.service.ts</code> also changed <code>/sources</code> to <code>/vehicleSources</code>. <code>catchError</code> returns <code>of([])</code>, so a stale route would silently give empty dropdowns. Verify the backend routes, align them, remove the duplicate methods and consolidate the duplicated <code>FleetLookupService</code>. Also at: <code>libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts:58</code>, <code>libs/features/fleet/src/lib/vehicles/services/fleet-lookup.service.ts:72</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  
+  <p><strong>PR hygiene: empty description, large, no tests.</strong> The PR description is the unfilled template, so there is no stated intent or backend dependency. The PR is about 4.8k changed lines across 97 files and bundles five masters, so consider splitting it per master. No specs are visible for the new services, resolvers or checklist form logic. Fill in the description and add tests.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/vehicle-source/components/vehicle-source-details/vehicle-source-details.component.ts:104">libs/features/fleet/src/lib/master/vehicle-source/components/vehicle-source-details/vehicle-source-details.component.ts:104</code>
+  <p><strong>Late permission modules reset whole form.</strong> The single effect depends on <code>permissionModules()</code>. When the lookup resolves after the user has started typing, <code>#syncForm</code> runs again, patches the form from <code>selected</code>, and calls <code>markAsPristine()</code>. Typed values are lost and the dirty state is reset. Split the permission-row build into its own effect, as the inspection checklist component does for question types. Also at: <code>libs/features/fleet/src/lib/master/vehicle-source/components/vehicle-source-details/vehicle-source-details.component.ts:107</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:304">libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:304</code>
+  <p><strong>Missing required, integer and maxLength validators.</strong> Clearing the <code>attachmentCount</code> input yields <code>null</code>, which passes <code>min</code>/<code>max</code> and is sent to the backend. There is also no integer check. Name and code fields in the department, job-title, operator-type, vehicle-source and checklist forms rely only on the HTML <code>maxlength</code> attribute. Add <code>Validators.required</code>, an integer check and <code>Validators.maxLength</code> matching the backend limits. Also at: <code>libs/features/fleet/src/lib/master/department/components/department-details/department-details.component.ts:120</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:337">libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:337</code>
+  <p><strong>Fragile choice-type detection and missing array validation.</strong> Choice-type detection matches normalised <code>code</code>/<code>name</code> strings against a hard-coded list. A rename or localisation silently hides the choices UI, so prefer a flag from the lookup or stable codes. No validation requires at least one section, or at least one choice for a choice-type question. The lookups swallow errors with <code>of([])</code>, so a failed load gives empty dropdowns with no message. Also at: <code>libs/features/fleet/src/lib/master/inspection-checklist/constants/inspection-checklist.constants.ts:19</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.html:114">libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.html:114</code>
+  <p><strong>Missing error messages for trimmed and min.</strong> Section, question and choice name controls get <code>trimmedValidator</code> in the component, but the template only handles <code>required</code>. A name with leading or trailing spaces makes the form invalid and disables save, and the user sees no error. Same for the <code>min</code> error on attachmentCount, where only <code>max</code> is shown. The checklist name and the other master forms do show the <code>trimmed</code> error.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>PR hygiene.</strong> The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="libs/core/fleet/src/index.ts:104">libs/core/fleet/src/index.ts:104</code>
+  <p><strong>INITIAL_* naming differs from siblings.</strong> Existing exports use camelCase factory/values (initialVehicle, initialCheckpoint, initialFuelCard, initialContact). The new ones use UPPER_SNAKE (INITIAL_DEPARTMENT etc.). These are mutable-shaped objects, not true constants, and the arrays inside (sections: [], sourcePermissions: []) are shared by reference, so a consumer that mutates them would corrupt the shared initial value. Prefer camelCase and copy or factory usage for consistency.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="libs/core/fleet/src/lib/fleet/constants/fleet-master.constants.ts:51">libs/core/fleet/src/lib/fleet/constants/fleet-master.constants.ts:51</code>
+  <p><strong>Constant object keys are PascalCase.</strong> Team naming says constants use UPPER_SNAKE_CASE. The keys MinAttachments, MaxAttachments and MaxColumns follow the existing CENTRAL_CODE_TYPE style, not the stated rule.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:59">libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:59</code>
+  <p><strong>Confirmation compares against stale snapshot.</strong> <code>this.data.entity</code> is the resolver snapshot. If save is called with navigateToList=false, or the entity is updated in place, the confirmation is asked again or skipped incorrectly. Compare against the current persisted entity (<code>selectedEntity()</code>) if the base class updates it.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:360">libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts:360</code>
+  <p><strong>Section status always reset to Active.</strong> Existing sections&#39; status is overwritten with Active, so any non-active existing sections would be reactivated on save.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:57">libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts:57</code>
+  <p><strong>save override relies on base internals.</strong> The override depends on <code>dialog</code> and <code>destroy$</code> of the base class, which could not be verified (MasterDetailBasePageComponent not found in the repo context). Verify these are protected/public and that super.save is safe to call asynchronously after the dialog closes.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts">libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts</code>
+  <p><strong>Consistent service pattern.</strong> New services implement MasterListV1Service and extend FleetBaseService with typed params. Query param names are centralised in FLEET_QUERY_PARAM.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts">libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts</code>
+  <p><strong>Modern component structure.</strong> Consistent OnPush standalone components with signal inputs and takeUntilDestroyed teardown.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/department/components/department-details/department-details.component.ts">libs/features/fleet/src/lib/master/department/components/department-details/department-details.component.ts</code>
+  <p><strong>Guarded lazy routes.</strong> Routes are lazy-loaded with AuthGuard, accessGuard and DirtyCheckGuard.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts">libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts</code>
+  <p><strong>Fleet-source confirmation.</strong> Confirms before saving a source as the fleet source and still validates the form first.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/core/enums/src/lib/enums/table-type.ts">libs/core/enums/src/lib/enums/table-type.ts</code>
+  <p><strong>Consistent registration.</strong> Menu IDs, document type codes and TABLE_COLUMN_FILES mappings are added consistently for all five masters.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/core/fleet/src/lib/fleet/constants/fleet-master.constants.ts">libs/core/fleet/src/lib/fleet/constants/fleet-master.constants.ts</code>
+  <p><strong>Resolvers handle new and failures.</strong> Resolvers handle the &#39;new&#39; id and redirect to the list on load failure.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>5752356</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"5752356736038bc0e50332fb46e2ce9e0e0899ab","reviewedOn":"2026-10-13","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"libs/core/enums/src/lib/enums/table-type.ts","line":"419","lens":"L8","title":"Existing TableType value renumbered","body":"New members were inserted at 412-416, so the existing `FleetOperatorUnavailability` moved from 412 to 417. `TableType` is sent to or stored by the user-columns API and must match the backend enum. Renumbering breaks saved column selections for Operator Unavailability. Keep 412 for it, give the new members 413-417, and confirm the values match the backend enum.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts","line":"51","lens":"L5","title":"Failed permission lookup wipes permissions on save","body":"If getPermissionModules() errors it is swallowed with `of([])`. The details component builds permission rows only from the module list (`#buildPermissionRows`), and `#toVehicleSource` maps only those rows into `sourcePermissions`. With an empty list, an existing fleet source\u0027s stored permissions are sent as `[]` and may be deleted by the backend. The same happens if the user saves before the lookup returns. Fix: surface the error, block save until modules load, or keep existing permissions that have no matching module row.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts","line":"146","lens":"L8","title":"Lookup endpoints changed inconsistently and duplicated","body":"`getSources` now calls `vehicleSources/lookUp`, but `getSourcesByDepartment` still calls `sources/lookUpByDepartment`. `getDepartments` now calls `fleetDepartments`, making it identical to `getFleetDepartments` and changing behaviour for existing callers (contacts, rides, vehicles). The vehicles-module `fleet-lookup.service.ts` also changed `/sources` to `/vehicleSources`. `catchError` returns `of([])`, so a stale route would silently give empty dropdowns. Verify the backend routes, align them, remove the duplicate methods and consolidate the duplicated `FleetLookupService`. Also at: `libs/core/fleet/src/lib/fleet/services/fleet-lookup.service.ts:58`, `libs/features/fleet/src/lib/vehicles/services/fleet-lookup.service.ts:72`.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"","line":"","lens":"L11","title":"PR hygiene: empty description, large, no tests","body":"The PR description is the unfilled template, so there is no stated intent or backend dependency. The PR is about 4.8k changed lines across 97 files and bundles five masters, so consider splitting it per master. No specs are visible for the new services, resolvers or checklist form logic. Fill in the description and add tests.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/master/vehicle-source/components/vehicle-source-details/vehicle-source-details.component.ts","line":"104","lens":"L6","title":"Late permission modules reset whole form","body":"The single effect depends on `permissionModules()`. When the lookup resolves after the user has started typing, `#syncForm` runs again, patches the form from `selected`, and calls `markAsPristine()`. Typed values are lost and the dirty state is reset. Split the permission-row build into its own effect, as the inspection checklist component does for question types. Also at: `libs/features/fleet/src/lib/master/vehicle-source/components/vehicle-source-details/vehicle-source-details.component.ts:107`.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts","line":"304","lens":"L4","title":"Missing required, integer and maxLength validators","body":"Clearing the `attachmentCount` input yields `null`, which passes `min`/`max` and is sent to the backend. There is also no integer check. Name and code fields in the department, job-title, operator-type, vehicle-source and checklist forms rely only on the HTML `maxlength` attribute. Add `Validators.required`, an integer check and `Validators.maxLength` matching the backend limits. Also at: `libs/features/fleet/src/lib/master/department/components/department-details/department-details.component.ts:120`.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts","line":"337","lens":"L4","title":"Fragile choice-type detection and missing array validation","body":"Choice-type detection matches normalised `code`/`name` strings against a hard-coded list. A rename or localisation silently hides the choices UI, so prefer a flag from the lookup or stable codes. No validation requires at least one section, or at least one choice for a choice-type question. The lookups swallow errors with `of([])`, so a failed load gives empty dropdowns with no message. Also at: `libs/features/fleet/src/lib/master/inspection-checklist/constants/inspection-checklist.constants.ts:19`.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.html","line":"114","lens":"L4","title":"Missing error messages for trimmed and min","body":"Section, question and choice name controls get `trimmedValidator` in the component, but the template only handles `required`. A name with leading or trailing spaces makes the form invalid and disables save, and the user sees no error. Same for the `min` error on attachmentCount, where only `max` is shown. The checklist name and the other master forms do show the `trimmed` error.","firstSeen":"v1"},{"id":"F9","severity":"nit","status":"open","file":"libs/core/fleet/src/index.ts","line":"104","lens":"L10","title":"INITIAL_* naming differs from siblings","body":"Existing exports use camelCase factory/values (initialVehicle, initialCheckpoint, initialFuelCard, initialContact). The new ones use UPPER_SNAKE (INITIAL_DEPARTMENT etc.). These are mutable-shaped objects, not true constants, and the arrays inside (sections: [], sourcePermissions: []) are shared by reference, so a consumer that mutates them would corrupt the shared initial value. Prefer camelCase and copy or factory usage for consistency.","firstSeen":"v1"},{"id":"F10","severity":"nit","status":"open","file":"libs/core/fleet/src/lib/fleet/constants/fleet-master.constants.ts","line":"51","lens":"L10","title":"Constant object keys are PascalCase","body":"Team naming says constants use UPPER_SNAKE_CASE. The keys MinAttachments, MaxAttachments and MaxColumns follow the existing CENTRAL_CODE_TYPE style, not the stated rule.","firstSeen":"v1"},{"id":"F11","severity":"nit","status":"open","file":"libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts","line":"59","lens":"L1","title":"Confirmation compares against stale snapshot","body":"`this.data.entity` is the resolver snapshot. If save is called with navigateToList=false, or the entity is updated in place, the confirmation is asked again or skipped incorrectly. Compare against the current persisted entity (`selectedEntity()`) if the base class updates it.","firstSeen":"v1"},{"id":"F12","severity":"nit","status":"open","file":"libs/features/fleet/src/lib/master/inspection-checklist/components/inspection-checklist-details/inspection-checklist-details.component.ts","line":"360","lens":"L2","title":"Section status always reset to Active","body":"Existing sections\u0027 status is overwritten with Active, so any non-active existing sections would be reactivated on save.","firstSeen":"v1"},{"id":"F13","severity":"nit","status":"open","file":"libs/features/fleet/src/lib/master/vehicle-source/containers/vehicle-source-detail-page/vehicle-source-detail-page.component.ts","line":"57","lens":"L10","title":"save override relies on base internals","body":"The override depends on `dialog` and `destroy$` of the base class, which could not be verified (MasterDetailBasePageComponent not found in the repo context). Verify these are protected/public and that super.save is safe to call asynchronously after the dialog closes.","firstSeen":"v1"},{"id":"F14","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"PR hygiene","body":"The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

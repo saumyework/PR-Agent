@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Fleet): Convert Role management [FM-775] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Fleet): Convert Role management [FM-775]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14262">pbsgears/ososerp #14262</a>
+      <span>PrabathMadhuranga</span>
+      <span class="ref">feature/fleet/version/0.12.0 ← develop/prabathosos/fleet/convert/role-management</span>
+      <span>2026-09-28</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">4</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">12</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">7</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>Adds Fleet <strong>Widget</strong> CRUD (list, get, lookup, create, update, soft delete) with a new <code>Widget.Name</code> field and random <code>WG-</code> codes, plus <strong>role-widget assignment</strong> endpoints (assign, sync-update, unassign, get by role). The PR description is the unfilled template.</p>
+<p><strong>Risk: High.</strong> Two defects stop this from working at all. The Arabic resx is malformed XML, which breaks the build (F1), and <code>Widget.Name</code> has no migration, so every widget query fails at runtime (F2). Beyond those, role and widget ids are never verified (F3), and the sync update can commit removals and then fail on the inserts, silently dropping a role's widgets (F4). The layering and soft-delete handling are otherwise clean and follow the Fleet siblings.</p>
+<p>Review process: three independent passes (file order, reverse order, request flow), merged and verified against the head commit, then one gap pass, which came back empty. All 36 files were reviewed; there were no generated files to skip.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx:4427">src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx:4427</code>
+  <p><strong>Arabic resx is malformed XML.</strong> The new <code>WidgetIdsRequired</code> entry has no closing <code>&lt;/data&gt;</code>, so the following <code>ItemFinanceCategoryTypeRequired</code> element opens inside it. The file is no longer valid XML, so resource generation for <code>BuildingBlocks.Locale</code> fails the build (or, at best, Arabic resources fail to load). The en-US and neutral files are correct. Add <code>&lt;/data&gt;</code> after line 4428.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Domain/Models/Widget.cs:19">src/Modules/Fleet/Fleet.Domain/Models/Widget.cs:19</code>
+  <p><strong>New column, no migration.</strong> <code>[Required] public string Name</code> is added to <code>Widget</code>, but there is no migration and no <code>*ModelSnapshot.cs</code> change for either PostgreSQL or SqlServer. At head, the latest Fleet migrations are <code>..._ConfigureVehicleFuelEconomyColumnNames</code>, and <code>FleetPostgresDbContextModelSnapshot</code> (line 6487) has no <code>Name</code> on <code>Widgets</code>. Every widget query (list, get, lookup, <code>NameExistsAsync</code>, the role-widget include) and every insert will fail with "column Name does not exist". Add a migration for both providers, with a default or backfill for existing (e.g. legacy-migrated) widget rows, since the column is non-null.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:43">src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:43</code>
+  <p><strong>Unverified role and widget ids.</strong> <code>AssignAsync</code>, and <code>SyncAsync</code> through it, insert a <code>RoleWidgets</code> row for whatever GUIDs the client sends. Neither the service nor the validators load the <code>Role</code> or the <code>Widget</code>s. An unknown <code>widgetId</code> fails on the FK at <code>SaveChanges</code> and surfaces as a 500 instead of a validation message. A deleted role (<code>Role.IsDeleted</code>) or a <code>Status.Removed</code> widget is accepted silently, then hidden by <code>GetByRoleIdAsync</code>, leaving orphan rows. Add service-backed <code>MustAsync</code> rules (sibling pattern): the role exists and isn't deleted, and every widget exists and is <code>Active</code>. Also, the RoleWidgets <code>UpdateCommandValidator</code> (<code>RoleWidgets/Commands/Update/UpdateCommand.cs:22</code>) and <code>UnassignCommandValidator</code> lack the <code>RuleForEach(...).NotEmpty()</code> that Assign has, so <code>Guid.Empty</code> ids get through.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:87">src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:87</code>
+  <p><strong>Non-atomic sync loses data.</strong> <code>SyncAsync</code> calls <code>UnassignAsync</code>, which commits its own <code>SaveChangesAsync</code>, and only then calls <code>AssignAsync</code>, which saves again. If the insert fails (e.g. an invalid widget id, see F3), the removals are already committed. The request returns 500 and the role has fewer widgets than before. The same role's rows are also read up to three times. <code>AddAsync</code>/<code>DeleteAsync</code> on the list only stage changes, so compute both sets from the single load, stage both, and call <code>SaveChangesAsync</code> once (or use a transaction, per the C# guide's "Database Transaction Handling").</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/WidgetExtensions.cs:37">src/Modules/Fleet/Fleet.Application/Extensions/WidgetExtensions.cs:37</code>
+  <p><strong>Update drops URL.</strong> <code>WidgetRequestDto</code> is shared by Create and Update and carries <code>URL</code>, and Create requires it. But <code>ApplyTo</code> copies only <code>Name</code> and <code>Description</code>, so a PUT with a new URL returns 200 and keeps the old one. The Widget <code>UpdateCommandValidator</code> also has no URL rule. Either apply and validate URL on update, or remove it from the update contract.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Create/CreateCommand.cs:23">src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Create/CreateCommand.cs:23</code>
+  <p><strong>Unvalidated URL and lengths.</strong> <code>URL</code> only has <code>NotEmpty</code>, but it is stored and later loaded by the dashboard client. Any string is accepted, including <code>javascript:</code> schemes or arbitrary external hosts. Restrict it to absolute http(s) or an allowed relative route. <code>Name</code>, <code>Description</code> and <code>URL</code> also have no <code>MaximumLength</code>. Apply the same rules in the Widget <code>UpdateCommand.cs</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:53">src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:53</code>
+  <p><strong>Trim mismatch in duplicate check.</strong> <code>NameExistsAsync</code> compares <code>name.Trim().ToLower()</code> with the stored <code>x.Name.ToLower()</code>, but <code>ToEntity</code>/<code>ApplyTo</code> save <code>dto.Name</code> untrimmed. After saving <code>"Fuel "</code>, a later <code>"Fuel"</code> is not detected as a duplicate. Trim the name on save. (<code>ToLower()</code> on the column also prevents index use.)</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:45">src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:45</code>
+  <p><strong>Races without unique indexes.</strong> Uniqueness of <code>(RoleId, WidgetId)</code> (the <code>AssignAsync</code> in-memory dedupe), <code>WidgetCode</code> (the <code>GenerateUniqueCodeAsync</code> loop) and widget <code>Name</code> (<code>NameExistsAsync</code>) is enforced only by read-then-write checks. The snapshot has only a plain <code>HasIndex("WidgetId")</code> on <code>RoleWidgets</code>, so a double-click or concurrent requests can insert duplicates. Add unique (status-filtered where needed) indexes in the migration F2 already requires.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:107">src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:107</code>
+  <p><strong>Ad-hoc code generation.</strong> Widget codes are random <code>WG-######</code> values, with an <code>AnyAsync</code> round-trip per attempt. Sibling <code>VehicleService</code> generates codes through the <code>DocumentCodeSetup</code> sequential-code mechanism (<code>GetSequentialCodeSetupAsync</code>). The PR's approach can't be configured the way other document codes can, and without an index (F8) it can still collide under concurrency. Reuse the code-setup mechanism, or justify the deviation.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:84">src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:84</code>
+  <p><strong>Delete doesn't cascade.</strong> <code>DeleteAsync</code> only sets <code>Widget.Status = Removed</code>. <code>RoleWidgets</code> rows and <code>UserDashboardWidget</code> rows (which also reference <code>WidgetId</code>) remain. <code>AssignAsync</code>/<code>SyncAsync</code> still count them as assigned, and any reader that doesn't join <code>Widget.Status</code> still shows the widget. Either cascade the soft delete, as sibling <code>DocumentCodeSetupService.DeleteAsync</code> does for its children, or block deletion while the widget is assigned.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:81">src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:81</code>
+  <p><strong>Inconsistent delete model.</strong> <code>RoleWidgets</code> has a <code>Status</code>, and Assign sets it to <code>Active</code>, but <code>UnassignAsync</code> physically deletes rows and no query ever filters on <code>RoleWidgets.Status</code>. The module convention (and this PR's own <code>WidgetService</code>) is soft delete via <code>Status.Removed</code>. Pick one model: soft-delete and filter on it, or stop writing an unused column.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:27">src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs:27</code>
+  <p><strong>Role name derived from assignments.</strong> <code>RoleName</code> comes only from the joined <code>RoleWidgets</code> rows. A valid role with no widgets yet (the normal starting state) returns <code>RoleName = ""</code>, and a non-existent or deleted <code>roleId</code> returns 200 with an empty payload instead of 404. Load the role directly and throw <code>NotFoundException</code> when it is missing or <code>IsDeleted</code>. <code>GetByRoleIdQuery</code> also has no validator for an empty <code>RoleId</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:21">src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:21</code>
+  <p><strong>Cross-company role access.</strong> <code>Role</code> is company-scoped (<code>CompanyRole</code>, <code>IsGlobalRole</code>), but any caller can read or rewrite the widget set of any <code>roleId</code>. Nothing checks that the role belongs to the caller's company, and the group adds no permission requirement beyond activity logging. Confirm this is guarded upstream, or scope the role lookup (see F3/F12) to the caller's company.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:23">src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:23</code>
+  <p><strong>RPC-style routes.</strong> C# guide 5.1.1 says the HTTP verb carries the action ("no need to include the action name in the route segment"), and 5.1.2 says non-PK lookups use <code>/propertyName/{value}</code>, as sibling <code>documentCodeSetups/companyId/{companyId:guid}</code> does. This file uses <code>/assignWidgets</code>, <code>/updateAssignedRoleWidgets</code>, <code>/unassignWidget</code> (query-string ids) and <code>/byRole?roleId=</code>. Suggested: POST <code>/</code>, PUT <code>/</code>, DELETE <code>/roleId/{roleId:guid}/widgetId/{widgetId:guid}</code>, GET <code>/roleId/{roleId:guid}</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:27">src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs:27</code>
+  <p><strong>Meaningless responses.</strong> Assign always returns <code>201 Created</code> with body <code>true</code>, even when nothing was created, and its <code>Location</code> is a query URL. Update returns <code>Ok(true)</code> unconditionally (line 34). Unassign returns <code>200</code> with <code>false</code> when the link doesn't exist (line 45), where 404 would be right. Widget Delete (<code>WidgetEndpoints.cs:41</code>) also always returns <code>Ok(true)</code>. Return the resulting <code>RoleWidgetsDto</code> or 204, and 404 for missing links.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="(PR description)">(PR description)</code>
+  <p><strong>PR hygiene.</strong> The What/Why sections and the Confluence link are still template placeholders, and every checklist box is unticked. About 970 lines of new logic (sync diffing, code generation, uniqueness checks) ship with no unit tests. The title says "Convert Role management", but the change is Widget CRUD plus role-widget assignment.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F17</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Update/UpdateCommand.cs:22">src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Update/UpdateCommand.cs:22</code>
+  <p><strong>Rule and message disagree.</strong> <code>WidgetIds</code> is checked with <code>NotNull()</code>, so an empty list is allowed and clears every assignment. But the message is <code>WidgetIdsRequired</code> ("At least one widget is required."). Either use <code>NotEmpty()</code> or use a message that matches the rule.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Update/UpdateCommand.cs:25">src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Update/UpdateCommand.cs:25</code>
+  <p><strong>Wrong error property.</strong> The uniqueness rule is declared on <code>RuleFor(x =&gt; x.Widget)</code>, so the error's <code>PropertyName</code> is <code>Widget</code>, while Create reports it on <code>Widget.Name</code>. A client that maps errors to fields won't highlight the name input. Use <code>RuleFor(x =&gt; x.Widget.Name).MustAsync(async (cmd, name, ct) =&gt; ...)</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F19</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Domain/Models/Widget.cs:25">src/Modules/Fleet/Fleet.Domain/Models/Widget.cs:25</code>
+  <p><strong>Unused joins on the list.</strong> <code>GetAllAsync</code> passes <code>Widget.GetIncludes()</code>, which joins <code>CreatedByName</code> and <code>UpdatedByName</code>, but <code>MapToDto</code> exposes neither. Drop the includes, or map the fields if the list needs them.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F20</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Dtos/RoleWidgetsDto.cs:25">src/Modules/Fleet/Fleet.Application/Dtos/RoleWidgetsDto.cs:25</code>
+  <p><strong>Ambiguous Id.</strong> <code>Id = x.WidgetId</code> sits next to <code>RoleWidgetId = x.Id</code>, which is easy for consumers to mix up. Name it <code>WidgetId</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F21</span>
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:1430">src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:1430</code>
+  <p><strong>Duplicate locale key.</strong> <code>Locale.RoleRequired</code> (line 102) already exists with the same meaning ("Role is required."). Reuse it instead of adding <code>WidgetRoleIdRequired</code> to three resx files.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F22</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:95">src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs:95</code>
+  <p><strong>Name doesn't match filter.</strong> <code>GetActiveOrThrowAsync</code> filters <code>Status != Removed</code>, so it returns Inactive widgets, while the lookup uses <code>Status == Active</code>. <code>GetByRoleIdAsync</code> likewise shows Inactive widgets. Rename it (e.g. <code>GetExistingOrThrowAsync</code>) or align the filters.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F23</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Assign/AssignCommand.cs:11">src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Assign/AssignCommand.cs:11</code>
+  <p><strong>Namespace/type clash.</strong> Inside <code>Fleet.Application.UseCases.RoleWidgets.*</code>, the identifier <code>RoleWidgets</code> resolves to the namespace, not <code>Fleet.Domain.Models.RoleWidgets</code>, so any future reference to the entity from these handlers needs full qualification. Consider a folder name like <code>RoleWidgetAssignments</code>.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  <p><strong>Thin handlers, services behind interfaces.</strong> Endpoints and handlers only delegate to <code>[ScopedService]</code> primary-constructor services, with <code>MapToDto</code>/<code>ToEntity</code>/<code>ApplyTo</code> extensions and a <code>GetIncludes()</code> pattern matching the DocumentCodeSetup siblings.</p>
+</div>
+<div class="finding-card">
+  <p><strong>Consistent soft delete for widgets.</strong> Widget reads and writes all exclude <code>Status.Removed</code> through one <code>GetActiveOrThrowAsync</code> helper that throws <code>NotFoundException</code>, which is stricter than some older Fleet get-by-id services.</p>
+</div>
+<div class="finding-card">
+  <p><strong>Server-side lookup projection.</strong> <code>GetActiveLookupAsync</code> projects to <code>WidgetLookupDto</code> with ordering in the query, instead of loading full entities.</p>
+</div>
+<div class="finding-card">
+  <p><strong>Idempotent assign.</strong> <code>AssignAsync</code> de-duplicates the input, skips already-assigned widgets and batches the insert with one <code>SaveChanges</code>.</p>
+</div>
+<div class="finding-card">
+  <p><strong>Localized validation.</strong> Every new message goes through <code>Locale</code> constants with neutral, en-US and ar-OM entries (apart from the F1 XML defect).</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Code_Review.txt, Naming_Conventions.txt</code> · reviewed commit <code>f52b0be</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"f52b0beac40fdcc321c77d5f8665b2ac5a92ddb3","reviewedOn":"2026-09-28","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"src/BuildingBlocks/BuildingBlocks.Locale/Resources/Locale/Localizer.ar-OM.resx","line":"4427","lens":"L10","title":"Arabic resx is malformed XML.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Domain/Models/Widget.cs","line":"19","lens":"L12","title":"Widget.Name added with no migration.","firstSeen":"v1"},{"id":"F3","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs","line":"43","lens":"L1","title":"Role and widget ids never checked for existence or status.","firstSeen":"v1"},{"id":"F4","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs","line":"87","lens":"L5","title":"SyncAsync is non-atomic and can lose assignments.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Extensions/WidgetExtensions.cs","line":"37","lens":"L2","title":"Widget update silently ignores URL.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Create/CreateCommand.cs","line":"23","lens":"L4","title":"No URL format or length validation.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs","line":"53","lens":"L4","title":"Name uniqueness trims input but stores untrimmed.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs","line":"45","lens":"L12","title":"No unique indexes behind check-then-insert logic.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs","line":"107","lens":"L10","title":"Random widget code instead of the module code setup.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs","line":"84","lens":"L5","title":"Deleting a widget leaves its assignments.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs","line":"81","lens":"L5","title":"RoleWidgets hard-deleted though it has Status.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/RoleWidgetsService.cs","line":"27","lens":"L1","title":"GetByRoleId: empty RoleName, 200 for unknown roles.","firstSeen":"v1"},{"id":"F13","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs","line":"21","lens":"L3","title":"No company scoping on role-widget endpoints.","firstSeen":"v1"},{"id":"F14","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs","line":"23","lens":"L10","title":"Routes embed action names (guide 5.1).","firstSeen":"v1"},{"id":"F15","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/RoleWidgetsEndpoints.cs","line":"27","lens":"L7","title":"Constant bodies and misleading status codes.","firstSeen":"v1"},{"id":"F16","severity":"suggestion","status":"open","file":"(PR description)","line":"-","lens":"L11","title":"Template description, no tests, title mismatch.","firstSeen":"v1"},{"id":"F17","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Update/UpdateCommand.cs","line":"22","lens":"L4","title":"Validator message contradicts its rule.","firstSeen":"v1"},{"id":"F18","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Widgets/Commands/Update/UpdateCommand.cs","line":"25","lens":"L4","title":"Duplicate-name error reported on \"Widget\", not \"Widget.Name\".","firstSeen":"v1"},{"id":"F19","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Domain/Models/Widget.cs","line":"25","lens":"L6","title":"GetIncludes joins unused user navigations.","firstSeen":"v1"},{"id":"F20","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Dtos/RoleWidgetsDto.cs","line":"25","lens":"L10","title":"RoleWidgetItemDto.Id holds the WidgetId.","firstSeen":"v1"},{"id":"F21","severity":"nit","status":"open","file":"src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs","line":"1430","lens":"L10","title":"WidgetRoleIdRequired duplicates RoleRequired.","firstSeen":"v1"},{"id":"F22","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/WidgetService.cs","line":"95","lens":"L10","title":"GetActiveOrThrowAsync also returns Inactive widgets.","firstSeen":"v1"},{"id":"F23","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/RoleWidgets/Commands/Assign/AssignCommand.cs","line":"11","lens":"L10","title":"Namespace RoleWidgets shadows the entity type.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

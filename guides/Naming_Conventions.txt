@@ -1,0 +1,103 @@
+Here are the standard naming conventions we are using in the project.
+
+1. Interface/Class
+2. Files
+3. Class
+4. Selectors
+5. Functions
+6. Routes
+7. Variables
+8. Constants
+Naming cases:
+
+Case Name
+
+Example
+
+PascalCase
+
+UserDetails
+
+camelCase
+
+userDetails
+
+kebab-case
+
+user-details
+
+SNAKE_CASE
+
+MAX_ITEMS_PER_PAGE
+
+1. Interface/Class
+Interface / Class names should be in PascalCase and their properties should be in camelCase.
+
+
+
+export interface UserDetails {
+  id: number;
+  firstName: string;
+}
+2. Files
+Files should be named using kebab-case, indicating their purpose and context.
+
+
+
+app.module.ts
+user-profile.component.ts
+data.service.ts
+custom-validator.directive.ts
+3. Class
+Class names should be in PascalCase and end with the word of their type.
+
+
+
+ActivePipe, UserProfileService, HeaderComponent, DataService, HighlightDirective
+4. Selectors
+The selectors for the components should be in kebab-case, for the directives camelCase.
+
+
+
+Components - app-user
+Directives - appHighlight
+5. Functions
+Functions and function parameters names should be in camelCase.
+
+
+
+getAllUsersByRole(roleId: string) {
+  return this.userService.getAllUsersByRole(roleId);
+}
+and use these common verb prefix for the service calls.
+
+
+
+// GET Request
+getAllUsers()
+// POST Request
+addUser()
+// PUT Request
+updateUser()
+// DELETE Request
+deleteUser()
+6. Routes
+Route paths should be in kebab-case.
+
+
+
+{
+  path: 'user-details'
+}
+7. Variables
+Use camelCase for variable and property names.
+
+
+
+private apiUrl = `${this.baseUrl}/api`;
+8. Constants
+Constants names should be in UPPER_SNAKE_CASE
+
+
+
+MAX_ITEMS_PER_PAGE = 50;

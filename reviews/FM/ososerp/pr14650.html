@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Fleet): Convert masters [FM-699] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Fleet): Convert masters [FM-699]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14650">ososerp #14650</a>
+      <span>PrabathMadhuranga</span>
+      <span class="ref">feature/fleet/version/0.13.0 ← develop/prabathosos/fleet/be-convert-masters</span>
+      <span>2026-10-13</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">0</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">17</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">4</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">6</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR converts the Fleet masters (Department, JobTitle, OperatorType, VehicleSource, InspectionCheckList) to the new module. It adds endpoints, commands, queries, validators, services, DTOs, mapping extensions and localization keys, plus source-visibility scoping for departments and sources.</p>
+<p>Nothing is a certain crash, but several issues should be fixed before merge. The company lookup trusts a caller-supplied CompanyId, a possible cross-tenant leak. Source visibility fails open when config is missing. Source delete has no in-use check or cascade. Create validators trust a client-supplied Id in uniqueness checks. Sync logic silently turns unmatched ids into new rows. The PR is also very large (about 5000 lines, 159 files) and should have been split. It has an empty description and no visible tests.</p>
+<p>The team should decide whether the company lookup is meant to be cross-company, and whether the fail-open source visibility is the intended legacy behaviour.</p>
+<p class="empty-note">Method: 9 independent review calls over 3 shard(s), evidence machine-checked (1 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <p class="empty-note">None.</p>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetCompanyLookup/GetDepartmentCompanyLookupQueryHandler.cs:19">src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetCompanyLookup/GetDepartmentCompanyLookupQueryHandler.cs:19</code>
+  <p><strong>Company lookup trusts caller-supplied CompanyId.</strong> <code>GetDepartmentCompanyLookupQueryHandler</code> passes the request&#39;s <code>CompanyId</code> straight to the service with no tenant check. Sibling department handlers resolve the company from <code>CompanyCode</code>. Any authenticated user can list another tenant&#39;s departments by sending that company&#39;s id. Resolve the company from the caller, or add an explicit authorization check if cross-company access is intended.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Departments/Commands/Create/CreateDepartmentCommandValidator.cs:36">src/Modules/Fleet/Fleet.Application/UseCases/Departments/Commands/Create/CreateDepartmentCommandValidator.cs:36</code>
+  <p><strong>Create uniqueness check trusts client Id.</strong> The create validators call <code>IsNameUniqueAsync(dto.Id, dto.Name)</code>, and the id is presumably used to exclude the record&#39;s own row. On create the id comes from the request body. A caller who sends the Id of an existing record can create a duplicate name, because that record is excluded from the check. A caller can also pass an Id that collides with an existing row. The create validators should pass <code>Guid.Empty</code>, or the create DTO should not accept an Id. The same pattern is in CreateJobTitleCommandValidator, CreateOperatorTypeCommandValidator, CreateVehicleSourceCommandValidator and CreateInspectionCheckListCommandValidator.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:62">src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:62</code>
+  <p><strong>Source visibility fails open on missing config.</strong> Several branches grant unrestricted access when data is missing. GetRestrictedSourceIdsAsync returns null (unrestricted) when moduleKey is blank. It also returns null when the user is a fleet-source user without a fleet source id. IsAllSourcePermissionAsync returns true when the permission module or the permission row is missing. GetDepartmentListScopeAsync returns Unrestricted when the user has no source and no contact. A caller that omits or mistypes moduleKey, or a missing permission row, silently exposes all sources and departments. Confirm this is the intended legacy behaviour. If not, deny by default. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:54</code>, <code>src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:144</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/VehicleSources/Commands/Delete/DeleteVehicleSourceCommandValidator.cs:19">src/Modules/Fleet/Fleet.Application/UseCases/VehicleSources/Commands/Delete/DeleteVehicleSourceCommandValidator.cs:19</code>
+  <p><strong>Source delete lacks in-use check and cascade.</strong> Delete validators for Department (IsInUseAsync), JobTitle, OperatorType and InspectionCheckList (IsUsedByActiveInspectionAsync) all block deleting rows that are still referenced. The VehicleSource delete only checks existence. The Source entity has SourceVehicles, ContactSources, SourceCompanies, SourceUsers and DepartmentSources. Deleting a source that vehicles or contacts still reference could orphan data or hit an FK error. Add an in-use rule consistent with the siblings, or confirm the service cascades or handles this. Also at: <code>src/Modules/Fleet/Fleet.Application/UseCases/VehicleSources/Commands/Delete/DeleteVehicleSourceCommandValidator.cs:20</code>, <code>src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:158</code>, <code>src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:154</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:76">src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:76</code>
+  <p><strong>Department source lookup not company-scoped.</strong> GetByDepartmentLookupAsync filters by departmentId only. A department id from another company returns that department&#39;s sources. DepartmentService scopes every other lookup by companyId.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:126">src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:126</code>
+  <p><strong>Create and Update differ releasing fleet source.</strong> UpdateAsync passes shouldRemovePermissions: true when another source becomes the fleet source. CreateAsync passes false. The previous fleet source then keeps its active SourcePermission rows after losing IsFleetSource. Make the two paths consistent. Also, a fleet source with an empty SourcePermissions list is treated as unrestricted by SourceVisibilityService.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:214">src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:214</code>
+  <p><strong>Unmatched ids in sync become new rows.</strong> Incoming permissions, sections, questions and choices whose Id is non-empty but not found among the active children are treated as new rows. This hides stale or foreign ids instead of returning NotFound or validation errors. Locations: VehicleSourceService.SyncPermissionsAsync, and InspectionCheckListService.SyncSections, SyncQuestions and SyncChoices. Duplicate incoming ids are also not rejected, so the same child can be applied twice. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:169</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:126">src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:126</code>
+  <p><strong>Checklist soft delete does not cascade fully.</strong> DeleteAsync marks only the sections as Removed. Questions and choices stay Active. SyncSections has the same gap: a removed section keeps its Active questions, and SyncQuestions leaves a removed question&#39;s choices Active. Any query that reads FormQuestion directly will still see them. Also, DeleteAsync does not itself check IsUsedByActiveInspectionAsync. Confirm the handler does.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs:129">src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs:129</code>
+  <p><strong>Code generation is racy.</strong> GetUniqueCodeAsync reads existing codes and picks the next free one without updating codeSetup.SerialNo and without a lock or unique index. Two concurrent creates can get the same code. The fallback random code in GenerateFallbackCodeAsync, and VehicleSourceService.GenerateUniqueCodeAsync, use the same check-then-insert pattern. Add a unique index on Code, or retry on conflict.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs:210">src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs:210</code>
+  <p><strong>Tracked loads omit child includes.</strong> For tracked loads (UpdateAsync, DeleteAsync) includes is null, so DepartmentSources (and likewise Source children in VehicleSourceService.GetEntityAsync) are not loaded. If ApplyTo syncs those collections, it will see an empty list. That would duplicate existing links and fail to remove old ones. Verify what ApplyTo does. InspectionCheckListService loads the detail includes for tracked loads.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/InspectionCheckLists/Commands/InspectionCheckListSectionValidator.cs:24">src/Modules/Fleet/Fleet.Application/UseCases/InspectionCheckLists/Commands/InspectionCheckListSectionValidator.cs:24</code>
+  <p><strong>Referenced ids not checked for existence.</strong> <code>FormQuestionTypeId</code> is only checked with NotEmpty, so a random GUID passes validation. It then either fails with an FK violation (500) or stores a bad reference. There is no check that the question type exists. There are also no checks for name lengths or for choices on question types that need them. The same applies to <code>SourcePermissionModuleId</code> in the Create and Update VehicleSource validators.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/DepartmentExtensions.cs:42">src/Modules/Fleet/Fleet.Application/Extensions/DepartmentExtensions.cs:42</code>
+  <p><strong>Request DTO fields dereferenced without null guard.</strong> ToEntity/ApplyTo call .Trim() on dto.Name and DepartmentShortCode. A JSON null overrides the = string.Empty initializer, so a null throws NullReferenceException (500) if the validators do not guarantee non-null. The same pattern appears in the JobTitle, OperatorType, VehicleSource and InspectionCheckList extensions (Name, Category, section, question and choice names).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Dtos/DepartmentScopeDto.cs:12">src/Modules/Fleet/Fleet.Application/Dtos/DepartmentScopeDto.cs:12</code>
+  <p><strong>Unrestricted scope uses null lists.</strong> DepartmentScopeDto declares non-nullable List&lt;Guid&gt; parameters but Unrestricted passes (null, null). Callers that use SourceIds/DepartmentIds without a null check will throw NullReferenceException. Use nullable types or an explicit flag.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/DepartmentEndpoints.cs:44">src/Modules/Fleet/Fleet.Application/Endpoints/DepartmentEndpoints.cs:44</code>
+  <p><strong>Delete returns Ok(bool); Location is relative.</strong> All five master endpoint files (DepartmentEndpoints, JobTitleEndpoints, OperatorTypeEndpoints, VehicleSourceEndpoints, InspectionCheckListEndpoints) return <code>Results.Ok(result.Success)</code> on DELETE. NoContent, or Ok only if sibling modules already do this, would be a better fit. The Created Location values such as <code>fleetDepartments/{id}</code> have no leading slash or module/base prefix, so the Location header is a relative URL that may not resolve to the real route.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetLookup/GetDepartmentLookupQuery.cs:12">src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetLookup/GetDepartmentLookupQuery.cs:12</code>
+  <p><strong>Several queries have no validator.</strong> The team rule says every Query needs an <code>AbstractValidator</code>. These queries have none. GetDepartmentsQuery, GetDepartmentLookupQuery (ModuleKey is free text), GetDepartmentUniqueCodeQuery, GetInspectionCheckListsQuery, GetInspectionCheckListLookupQuery (Category), GetFormQuestionTypeLookupQuery, GetJobTitlesQuery, GetJobTitleLookupQuery, GetOperatorTypesQuery, GetOperatorTypeLookupQuery, GetVehicleSourcesQuery, GetVehicleSourceLookupQuery (ModuleKey), GetVehicleSourceUserLookupQuery and GetSourcePermissionModuleLookupQuery. If QueryValidationBehavior requires a registered validator, these will fail at runtime.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Domain/Models/Source.cs:36">src/Modules/Fleet/Fleet.Domain/Models/Source.cs:36</code>
+  <p><strong>Paged list eagerly loads permissions.</strong> VehicleSourceService.GetAllAsync passes Source.GetIncludes() to repository.ListAsync, the paged list. That include loads SourcePermissions plus SourcePermissionModule for every row on the page. If the list DTO or columns don&#39;t need permissions, use a light include set for the list and keep the permission include for GetByIdAsync/GetEntityAsync. Source.GetIncludes() is also used in GetEntityAsync when disableTracking is true. If the list does need them, this is fine. Severity is low because the list is small and only for admins.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F17</span>
+  
+  <p><strong>PR too large, no description or tests.</strong> The PR changes about 5089 lines in 159 files and should be split into smaller PRs. The description holds only template headings. It adds new business logic (in-use checks, source scoping, checklist sync) with no visible tests.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:42">src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:42</code>
+  <p><strong>Usage check inconsistent for removed inspections.</strong> GetByIdAsync computes isUsed from any inspection, including Removed ones. IsUsedByActiveInspectionAsync only counts Active inspections. The UI flag can say &#39;used&#39; while the delete guard allows deletion.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F19</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/InspectionCheckListEndpoints.cs:68">src/Modules/Fleet/Fleet.Application/Endpoints/InspectionCheckListEndpoints.cs:68</code>
+  <p><strong>Category lookup route takes a string id.</strong> The route is /lookUp/category/{id}, but the id is a category string, not an id. This is misleading and conflicts with the convention of naming the property in the route.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F20</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/JobTitleEndpoints.cs:67">src/Modules/Fleet/Fleet.Application/Endpoints/JobTitleEndpoints.cs:67</code>
+  <p><strong>Stray blank line before closing brace.</strong> A trailing blank line sits before the closing brace. The same appears in OperatorTypeEndpoints.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F21</span>
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:2070">src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:2070</code>
+  <p><strong>Formatting-only changes.</strong> <code>#endregion</code> in Constants.cs was re-indented, and FormSection.cs has only whitespace changes. Revert both to avoid churn. Also at: <code>src/Modules/Fleet/Fleet.Domain/Models/FormSection.cs</code>.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/DepartmentEndpoints.cs">src/Modules/Fleet/Fleet.Application/Endpoints/DepartmentEndpoints.cs</code>
+  <p><strong>Consistent endpoints and routes.</strong> Endpoint structure is uniform and routes are centralized in FleetRoutes as camelCase plurals.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs">src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs</code>
+  <p><strong>Tenant-scoped department queries.</strong> Department queries are scoped by companyId and exclude Removed rows.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/Departments/Commands/Create/CreateDepartmentCommandValidator.cs">src/Modules/Fleet/Fleet.Application/UseCases/Departments/Commands/Create/CreateDepartmentCommandValidator.cs</code>
+  <p><strong>Thorough validators.</strong> Every command has a FluentValidation validator with localized messages and Status range checks.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs">src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs</code>
+  <p><strong>Clean service design.</strong> Services use explicit NotFoundException and a single SaveChanges per operation, and separate tracked from untracked reads.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs">src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs</code>
+  <p><strong>Localization complete.</strong> Keys were added to all three resx files and match the constants.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/DepartmentExtensions.cs">src/Modules/Fleet/Fleet.Application/Extensions/DepartmentExtensions.cs</code>
+  <p><strong>DTOs separated from entities.</strong> Request and response DTOs are separate, and entities are not exposed directly.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>7db344c</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"7db344cbf6b837a1091594322ba16bf93a202700","reviewedOn":"2026-10-13","findings":[{"id":"F1","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetCompanyLookup/GetDepartmentCompanyLookupQueryHandler.cs","line":"19","lens":"L3","title":"Company lookup trusts caller-supplied CompanyId","body":"`GetDepartmentCompanyLookupQueryHandler` passes the request\u0027s `CompanyId` straight to the service with no tenant check. Sibling department handlers resolve the company from `CompanyCode`. Any authenticated user can list another tenant\u0027s departments by sending that company\u0027s id. Resolve the company from the caller, or add an explicit authorization check if cross-company access is intended.","firstSeen":"v1"},{"id":"F2","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Departments/Commands/Create/CreateDepartmentCommandValidator.cs","line":"36","lens":"L2","title":"Create uniqueness check trusts client Id","body":"The create validators call `IsNameUniqueAsync(dto.Id, dto.Name)`, and the id is presumably used to exclude the record\u0027s own row. On create the id comes from the request body. A caller who sends the Id of an existing record can create a duplicate name, because that record is excluded from the check. A caller can also pass an Id that collides with an existing row. The create validators should pass `Guid.Empty`, or the create DTO should not accept an Id. The same pattern is in CreateJobTitleCommandValidator, CreateOperatorTypeCommandValidator, CreateVehicleSourceCommandValidator and CreateInspectionCheckListCommandValidator.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs","line":"62","lens":"L3","title":"Source visibility fails open on missing config","body":"Several branches grant unrestricted access when data is missing. GetRestrictedSourceIdsAsync returns null (unrestricted) when moduleKey is blank. It also returns null when the user is a fleet-source user without a fleet source id. IsAllSourcePermissionAsync returns true when the permission module or the permission row is missing. GetDepartmentListScopeAsync returns Unrestricted when the user has no source and no contact. A caller that omits or mistypes moduleKey, or a missing permission row, silently exposes all sources and departments. Confirm this is the intended legacy behaviour. If not, deny by default. Also at: `src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:54`, `src/Modules/Fleet/Fleet.Application/Services/SourceVisibilityService.cs:144`.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/VehicleSources/Commands/Delete/DeleteVehicleSourceCommandValidator.cs","line":"19","lens":"L2","title":"Source delete lacks in-use check and cascade","body":"Delete validators for Department (IsInUseAsync), JobTitle, OperatorType and InspectionCheckList (IsUsedByActiveInspectionAsync) all block deleting rows that are still referenced. The VehicleSource delete only checks existence. The Source entity has SourceVehicles, ContactSources, SourceCompanies, SourceUsers and DepartmentSources. Deleting a source that vehicles or contacts still reference could orphan data or hit an FK error. Add an in-use rule consistent with the siblings, or confirm the service cascades or handles this. Also at: `src/Modules/Fleet/Fleet.Application/UseCases/VehicleSources/Commands/Delete/DeleteVehicleSourceCommandValidator.cs:20`, `src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:158`, `src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs:154`.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs","line":"76","lens":"L3","title":"Department source lookup not company-scoped","body":"GetByDepartmentLookupAsync filters by departmentId only. A department id from another company returns that department\u0027s sources. DepartmentService scopes every other lookup by companyId.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs","line":"126","lens":"L2","title":"Create and Update differ releasing fleet source","body":"UpdateAsync passes shouldRemovePermissions: true when another source becomes the fleet source. CreateAsync passes false. The previous fleet source then keeps its active SourcePermission rows after losing IsFleetSource. Make the two paths consistent. Also, a fleet source with an empty SourcePermissions list is treated as unrestricted by SourceVisibilityService.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/VehicleSourceService.cs","line":"214","lens":"L5","title":"Unmatched ids in sync become new rows","body":"Incoming permissions, sections, questions and choices whose Id is non-empty but not found among the active children are treated as new rows. This hides stale or foreign ids instead of returning NotFound or validation errors. Locations: VehicleSourceService.SyncPermissionsAsync, and InspectionCheckListService.SyncSections, SyncQuestions and SyncChoices. Duplicate incoming ids are also not rejected, so the same child can be applied twice. Also at: `src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs:169`.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs","line":"126","lens":"L5","title":"Checklist soft delete does not cascade fully","body":"DeleteAsync marks only the sections as Removed. Questions and choices stay Active. SyncSections has the same gap: a removed section keeps its Active questions, and SyncQuestions leaves a removed question\u0027s choices Active. Any query that reads FormQuestion directly will still see them. Also, DeleteAsync does not itself check IsUsedByActiveInspectionAsync. Confirm the handler does.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs","line":"129","lens":"L5","title":"Code generation is racy","body":"GetUniqueCodeAsync reads existing codes and picks the next free one without updating codeSetup.SerialNo and without a lock or unique index. Two concurrent creates can get the same code. The fallback random code in GenerateFallbackCodeAsync, and VehicleSourceService.GenerateUniqueCodeAsync, use the same check-then-insert pattern. Add a unique index on Code, or retry on conflict.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/DepartmentService.cs","line":"210","lens":"L5","title":"Tracked loads omit child includes","body":"For tracked loads (UpdateAsync, DeleteAsync) includes is null, so DepartmentSources (and likewise Source children in VehicleSourceService.GetEntityAsync) are not loaded. If ApplyTo syncs those collections, it will see an empty list. That would duplicate existing links and fail to remove old ones. Verify what ApplyTo does. InspectionCheckListService loads the detail includes for tracked loads.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/InspectionCheckLists/Commands/InspectionCheckListSectionValidator.cs","line":"24","lens":"L4","title":"Referenced ids not checked for existence","body":"`FormQuestionTypeId` is only checked with NotEmpty, so a random GUID passes validation. It then either fails with an FK violation (500) or stores a bad reference. There is no check that the question type exists. There are also no checks for name lengths or for choices on question types that need them. The same applies to `SourcePermissionModuleId` in the Create and Update VehicleSource validators.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Extensions/DepartmentExtensions.cs","line":"42","lens":"L1","title":"Request DTO fields dereferenced without null guard","body":"ToEntity/ApplyTo call .Trim() on dto.Name and DepartmentShortCode. A JSON null overrides the = string.Empty initializer, so a null throws NullReferenceException (500) if the validators do not guarantee non-null. The same pattern appears in the JobTitle, OperatorType, VehicleSource and InspectionCheckList extensions (Name, Category, section, question and choice names).","firstSeen":"v1"},{"id":"F13","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Dtos/DepartmentScopeDto.cs","line":"12","lens":"L1","title":"Unrestricted scope uses null lists","body":"DepartmentScopeDto declares non-nullable List\u003cGuid\u003e parameters but Unrestricted passes (null, null). Callers that use SourceIds/DepartmentIds without a null check will throw NullReferenceException. Use nullable types or an explicit flag.","firstSeen":"v1"},{"id":"F14","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/DepartmentEndpoints.cs","line":"44","lens":"L7","title":"Delete returns Ok(bool); Location is relative","body":"All five master endpoint files (DepartmentEndpoints, JobTitleEndpoints, OperatorTypeEndpoints, VehicleSourceEndpoints, InspectionCheckListEndpoints) return `Results.Ok(result.Success)` on DELETE. NoContent, or Ok only if sibling modules already do this, would be a better fit. The Created Location values such as `fleetDepartments/{id}` have no leading slash or module/base prefix, so the Location header is a relative URL that may not resolve to the real route.","firstSeen":"v1"},{"id":"F15","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/Departments/Queries/GetLookup/GetDepartmentLookupQuery.cs","line":"12","lens":"L4","title":"Several queries have no validator","body":"The team rule says every Query needs an `AbstractValidator`. These queries have none. GetDepartmentsQuery, GetDepartmentLookupQuery (ModuleKey is free text), GetDepartmentUniqueCodeQuery, GetInspectionCheckListsQuery, GetInspectionCheckListLookupQuery (Category), GetFormQuestionTypeLookupQuery, GetJobTitlesQuery, GetJobTitleLookupQuery, GetOperatorTypesQuery, GetOperatorTypeLookupQuery, GetVehicleSourcesQuery, GetVehicleSourceLookupQuery (ModuleKey), GetVehicleSourceUserLookupQuery and GetSourcePermissionModuleLookupQuery. If QueryValidationBehavior requires a registered validator, these will fail at runtime.","firstSeen":"v1"},{"id":"F16","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Domain/Models/Source.cs","line":"36","lens":"L6","title":"Paged list eagerly loads permissions","body":"VehicleSourceService.GetAllAsync passes Source.GetIncludes() to repository.ListAsync, the paged list. That include loads SourcePermissions plus SourcePermissionModule for every row on the page. If the list DTO or columns don\u0027t need permissions, use a light include set for the list and keep the permission include for GetByIdAsync/GetEntityAsync. Source.GetIncludes() is also used in GetEntityAsync when disableTracking is true. If the list does need them, this is fine. Severity is low because the list is small and only for admins.","firstSeen":"v1"},{"id":"F17","severity":"suggestion","status":"open","file":"","line":"","lens":"L11","title":"PR too large, no description or tests","body":"The PR changes about 5089 lines in 159 files and should be split into smaller PRs. The description holds only template headings. It adds new business logic (in-use checks, source scoping, checklist sync) with no visible tests.","firstSeen":"v1"},{"id":"F18","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/InspectionCheckListService.cs","line":"42","lens":"L5","title":"Usage check inconsistent for removed inspections","body":"GetByIdAsync computes isUsed from any inspection, including Removed ones. IsUsedByActiveInspectionAsync only counts Active inspections. The UI flag can say \u0027used\u0027 while the delete guard allows deletion.","firstSeen":"v1"},{"id":"F19","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/InspectionCheckListEndpoints.cs","line":"68","lens":"L7","title":"Category lookup route takes a string id","body":"The route is /lookUp/category/{id}, but the id is a category string, not an id. This is misleading and conflicts with the convention of naming the property in the route.","firstSeen":"v1"},{"id":"F20","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/JobTitleEndpoints.cs","line":"67","lens":"L10","title":"Stray blank line before closing brace","body":"A trailing blank line sits before the closing brace. The same appears in OperatorTypeEndpoints.","firstSeen":"v1"},{"id":"F21","severity":"nit","status":"open","file":"src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs","line":"2070","lens":"L10","title":"Formatting-only changes","body":"`#endregion` in Constants.cs was re-indented, and FormSection.cs has only whitespace changes. Revert both to avoid churn. Also at: `src/Modules/Fleet/Fleet.Domain/Models/FormSection.cs`.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

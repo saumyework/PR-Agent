@@ -1,0 +1,23 @@
+﻿PR #6105 OPEN head=9bcdb1f | files: 32 total, 32 reviewable, 0 generated | reviewable changed lines: 1424 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6105 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6105 'feat(UI): Convert role widget [FM-777]' | 32 files in scope, 1424 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Convert role widget [FM-777]
+https://github.com/pbsgears/ososerp-web/pull/6105
+Risk: Medium | 2 must-fix, 10 suggestions, 1 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FM\ososerp-web\pr6105-v2.html (v2)
+Tokens: 12 input + 74,390 cache-write + 199,220 cache-read + 12,733 output over 5 calls

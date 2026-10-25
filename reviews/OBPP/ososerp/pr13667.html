@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Configuration): Improve query engine [OBPP-12419] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Configuration): Improve query engine [OBPP-12419]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/13667">ososerp #13667</a>
+      <span>kesharaosos</span>
+      <span class="ref">feature/platform/version/0.12.0 ← feature/expression-engine</span>
+      <span>2026-09-04</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">1</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">3</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">2</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary">
+      <p>This is a large architectural extraction: the condition/expression evaluation engine (condition builder, dynamic query fetch, parameter resolution) is pulled out of <code>Configuration.Application</code> into a new standalone <code>Kernel.Application</code>/<code>Kernel.Infrastructure</code> module, and gains a real arithmetic layer (<code>+ - * / % ^</code>) plus a strategy-per-operator design (<code>IConditionOperatorStrategy</code>) shared between the in-memory delegate evaluator and the EF Core query translator. The old <code>ConditionEvaluatorService</code> (410 lines) and its scattered helper classes are deleted wholesale and replaced by the new engine, and dozens of Configuration handlers get one-line namespace-only updates to point at the new types. Test coverage is substantial — ten new integration test files covering the arithmetic operators, AST serialization/limits, dialect factory, and the dynamic query builder.</p>
+      <p>The new code is a genuine quality improvement over what it replaces: it fixes a sync-over-async anti-pattern in system-variable resolution (blocking <code>.GetAwaiter().GetResult()</code> is gone), fixes a request-cache race where the same factory could run twice concurrently, and keeps the existing AST depth/node limits and regex-timeout ReDoS guard intact. The main issue worth blocking on is that the shared value-comparison helpers (equality, ordering, between, and now arithmetic) parse numbers and dates with the ambient thread culture rather than <code>CultureInfo.InvariantCulture</code>, in an app that already switches per-request culture between English and Arabic — meaning a condition/automation rule's true/false outcome can depend on which language header the request carried.</p>
+    </div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs</code>
+      <p><strong>Culture-dependent numeric/date evaluation.</strong> <code>AreEqual</code>, <code>CompareNumeric</code>, <code>EvaluateBetween</code>, <code>ToDouble</code> (and <code>EFCoreExpressionBuilder.ConvertSingle</code>'s <code>DateTime.Parse</code>/<code>Convert.ChangeType</code>) all call <code>decimal.TryParse</code>/<code>double.TryParse</code>/<code>DateTime.TryParse</code>/<code>Convert.ToDouble</code> without <code>CultureInfo.InvariantCulture</code>. The app's own middleware pipeline (documented in the C# guide's <code>DependencyInjection</code> sample) sets <code>RequestLocalizationOptions</code> with English and Arabic as supported cultures and a per-request culture provider, which sets <code>CultureInfo.CurrentCulture</code> for the thread handling the request. That means the same stored condition (e.g. an automation trigger like <code>amount &gt; 1000</code> or a computed <code>price * quantity</code>) can parse and compare differently — or throw where it previously succeeded — purely based on the request's <code>Accept-Language</code>/culture header, since decimal separators and date formats differ across cultures. This is new surface area too: the arithmetic operators (<code>Add</code>/<code>Subtract</code>/<code>Multiply</code>/<code>Divide</code>/<code>Modulo</code>/<code>Power</code>) are being introduced in this PR and route every operand through the same unqualified <code>Convert.ToDouble</code>. Fix by parsing with <code>CultureInfo.InvariantCulture</code> everywhere numeric/date strings are round-tripped in this file and in <code>EFCoreExpressionBuilder.ConvertSingle</code>.</p>
+    </div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/Diagnostics/GetExpressionReferencesQuery.cs">src/Modules/Kernel/Kernel.Application/UseCases/Diagnostics/GetExpressionReferencesQuery.cs</code>
+      <p><strong>Missing validator, unlike its three siblings.</strong> <code>EvaluateExpressionQuery</code>, <code>ParseExpressionQuery</code>, and <code>BatchEvaluateExpressionQuery</code> in the same folder all declare a <code>AbstractValidator&lt;T&gt;</code> with at minimum <code>RuleFor(x =&gt; x.Expression).NotNull()</code>, wired through the module's <code>QueryValidationBehavior</code>. <code>GetExpressionReferencesQuery</code> has no validator at all, so a request body with a missing/null <code>expression</code> field skips straight to <code>parameterResolverEngine.ResolveReferencesAsync(query.Expression, ...)</code> → <code>expression.CollectReferences(...)</code>, which will throw an unhandled exception (500) instead of the clean 400 its siblings return for the same bad input. Add the matching <code>NotNull()</code> validator for consistency.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:301,318">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:301,318</code>
+      <p><strong>Division/modulo by zero silently returns 0.0.</strong> <code>DivideStrategy.Evaluate</code> and <code>ModuloStrategy.Evaluate</code> both return <code>0.0</code> when the right operand is zero, which is indistinguishable from a condition that legitimately evaluates to zero (e.g. <code>a / b &gt; 0</code> silently becomes <code>false</code> instead of surfacing that the rule is undefined for that row). The EF Core side makes the same choice via <code>Expression.Condition(... Expression.Default(propertyType) ...)</code>, so at least the two backends are consistent with each other — but worth confirming this is the intended semantics for automation/approval rules rather than a value that should short-circuit to a diagnostic instead.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/DelegateExpressionEvaluator.cs">src/Modules/Kernel/Kernel.Application/Evaluation/DelegateExpressionEvaluator.cs</code>
+      <p><strong>Cache config read once per instance, not truly global.</strong> <code>maxCacheSize</code>/<code>maxAstDepth</code>/<code>maxAstNodes</code> are instance readonly fields resolved from <code>IConfiguration</code> at construction time (this class is <code>[ScopedService]</code>, so re-read every request), while the <code>cache</code> and <code>memberPropertyCache</code> dictionaries backing them are <code>static</code> and shared process-wide. That's harmless functionally since config values don't change per-request, but it's a slightly confusing mix of scoped-read/static-storage worth a comment, or hoisting the config reads to a singleton options object, if a future change makes these values request-dependent.</p>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Jobs/Program.cs:55,58">src/Jobs/Program.cs:55,58</code>
+      <p><strong>Usings out of alphabetical order.</strong> <code>using Kernel.Infrastructure;</code> and <code>using Kernel.Infrastructure.Services.QueryEngine;</code> are inserted ahead of the <code>Shared.*</code> block they're alphabetically after, breaking the existing sorted-usings convention in this file.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs</code>
+      <p><strong>Doc comment on an <code>internal</code> class.</strong> The detailed XML doc explaining the raw-SQL "Dynamic Model" path's independent operator mapping is genuinely useful, but it's on an <code>internal static class</code> so it won't surface in IntelliSense for consumers outside this assembly — consider moving the "also update the raw-SQL dialect switches" warning onto <code>IConditionOperatorStrategy</code> itself (public-facing to the module) or a README, since that's the actual actionable warning for whoever adds the next operator.</p>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/ParameterResolution/ParameterResolverEngineExtensions.cs">src/Modules/Kernel/Kernel.Application/ParameterResolution/ParameterResolverEngineExtensions.cs</code>
+      <p><strong>Sync-over-async anti-pattern removed.</strong> The deleted <code>ConditionEvaluatorService</code> resolved <code>$</code>-references inside the compiled evaluation lambda via <code>engine.ResolveParameterAsync(...).AsTask().GetAwaiter().GetResult()</code> — exactly the blocking pattern this codebase's own C# guide calls out as deadlock-prone. The new <code>ResolveReferencesAsync</code> collects all references up front and awaits them properly before compilation/evaluation runs, and the doc comment explains why it's sequential rather than <code>Task.WhenAll</code> (shared non-thread-safe EF Core <code>DbContext</code> across resolvers) — a real fix with the reasoning left in place for the next reader.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/ParameterResolution/PerRequestCache.cs">src/Modules/Kernel/Kernel.Application/ParameterResolution/PerRequestCache.cs</code>
+      <p><strong>Request-cache race condition fixed.</strong> The old version's <code>TryGetValue</code>-then-<code>Items[key] = value</code> pattern let two concurrent lookups for the same key both run <code>factory()</code>. The rewrite uses <code>ConcurrentDictionary.GetOrAdd</code> with <code>Lazy&lt;Task&lt;object?&gt;&gt;</code> under <code>ExecutionAndPublication</code> mode, guaranteeing the factory runs exactly once per key even under concurrent access.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs</code>
+      <p><strong>Clean strategy-per-operator design.</strong> Folding "how an operator evaluates in-memory" and "how it translates to an EF Core expression" into one <code>IConditionOperatorStrategy</code> implementation per operator (instead of two parallel switch statements) makes the compiler enforce both code paths exist for any new operator, and the doc comment honestly flags the one place this guarantee doesn't reach (the raw-SQL dialect path), backed by a coverage test (<code>ConditionOperatorKindCoverageTests</code>) that fails at test time instead of first-use-in-prod.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/Diagnostics/BatchEvaluateExpressionQuery.cs">src/Modules/Kernel/Kernel.Application/UseCases/Diagnostics/BatchEvaluateExpressionQuery.cs</code>
+      <p><strong>DoS-conscious API design.</strong> The batch-evaluate endpoint caps <code>Contexts</code> at 100 via FluentValidation, per-expression AST depth/node limits are enforced before compilation (<code>EnsureWithinLimits</code>), and the regex <code>matches</code> operator runs under a 100ms timeout — all defensive measures against a client-supplied expression tree or pattern being used to exhaust server resources, carried through consistently from the code this PR replaces.</p>
+    </div>
+  </section>
+
+  <footer>guides used: <code>guides/C#_Code_Review.txt, guides/Naming_Conventions.txt</code></footer>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Configuration): Formula builder Implementation [12817] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Configuration): Formula builder Implementation [12817]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14235">ososerp #14235</a>
+      <span>madushanosos</span>
+      <span class="ref">feature/platform/version/0.12.0 ← develop/madushanosos/feat/OBPP-12818-platform-kernal-formular</span>
+      <span>2026-09-30</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">3</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">35</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">12</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">6</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR is already merged, so any fixes need a follow-up PR. It adds a formula builder: a formula engine (type checker, compiler, function catalogue), versioned formulas, effective-dated derived-field bindings and a field-process resolve endpoint. It also passes the document type into the dynamic save pipeline and adds localization and tests. At about 18k lines across 298 files with an empty description, it should have been split.</p>
+<p>The main blocker is in binding writes. <code>FieldBindingService.CreateAsync</code> closes the current binding outside the transaction, and global bindings (null <code>DocumentTypeId</code>) have no uniqueness on PostgreSQL. Other integrity problems: a dependency cycle is persisted before it is detected, the compilation cache is never invalidated on publish, and closed bindings can be edited. Null JSON, unknown document types, and client-supplied record ids reach the services unchecked, which can give 500s or cross-tenant reads.</p>
+<p>The team should confirm that the resolve endpoint and the query engine are tenant-scoped and covered by global authorization. It should also decide whether closed bindings should be immutable, and add the missing query validators.</p>
+<p class="empty-note">Method: 19 independent review calls over 9 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs:58">src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs:58</code>
+  <p><strong>Binding closed outside the transaction.</strong> <code>CloseCurrentBindingAsync</code> updates the current binding&#39;s end date before the transaction begins. If the insert or <code>RefreshInputsAsync</code> fails, the tracked change can still be saved by a later <code>SaveChangesAsync</code>, or left inconsistent. Two concurrent creates can also both see the same open binding and insert two open rows, so <code>SingleOrDefault</code> later throws. Move the close inside the transaction and enforce uniqueness.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Configuration/Configuration.Infrastructure/Data/Configurations/DerivedFieldBindingConfiguration.cs:20">src/Modules/Configuration/Configuration.Infrastructure/Data/Configurations/DerivedFieldBindingConfiguration.cs:20</code>
+  <p><strong>Unique index misses global bindings on PostgreSQL.</strong> The unique index includes the nullable <code>DocumentTypeId</code>. PostgreSQL treats NULLs as distinct, so two global bindings for the same field and <code>EffectiveFrom</code> are allowed, while SQL Server rejects them. The service&#39;s check-then-insert guard is therefore racy. Add a filtered index or <code>NULLS NOT DISTINCT</code> for the null case.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaCompilationCache.cs:39">src/Modules/Kernel/Kernel.Application/Services/FormulaCompilationCache.cs:39</code>
+  <p><strong>Compilation cache never invalidated.</strong> The cache is keyed by (<code>FormulaId</code>, <code>VersionNumber</code>) and grows without bound. <code>Remove</code> exists, but <code>PublishDraft</code> and <code>UpdateDraft</code> in <code>FormulaService</code> never call it. A draft version compiled and then edited would serve a stale compiled result. Call <code>Remove</code> on draft update and publish, and consider bounding the cache.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs:91">src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs:91</code>
+  <p><strong>Inputs saved before cycle check.</strong> <code>RefreshInputsAsync</code> saves <code>TriggerFields</code>/<code>DependsOn</code> and only then checks for a circular dependency, so a cycle is persisted before the exception is thrown unless the caller wraps a transaction. <code>RefreshInputsForFormulaAsync</code> also saves per field, with several queries each. Check for cycles before saving, and batch the saves.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs:137">src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs:137</code>
+  <p><strong>Client-supplied record ids loaded unchecked.</strong> Parent ids come from client-supplied values and are fetched with <code>queryEngine.GetByIdAsync</code>. The loaded values feed a formula whose result is returned to the caller, which may expose records the caller shouldn&#39;t see. Verify that the query engine is tenant and authorization scoped. Also check soft delete on <code>GetModelAsync</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:200">src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:200</code>
+  <p><strong>Record fetched by request id unchecked.</strong> <code>GetByIdAsync</code> uses the request&#39;s <code>RecordId</code>. A missing record silently yields empty values, and removed records are not excluded, unlike <code>RelatedRecordLoader</code>. Validate that the record belongs to the model and is not removed. Merge the duplicated <code>if (savedRecord is not null)</code> blocks.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs:100">src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs:100</code>
+  <p><strong>Resolve group lacks logging and explicit auth.</strong> The field-process group is mapped without <code>WithActivityLogging</code> and has no explicit authorization. It reads values by model name and record id. Confirm the global authorization behavior covers it, or add the same conventions as the sibling group.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:39">src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:39</code>
+  <p><strong>Model looked up by name only.</strong> The model is found by <code>ToLower()</code> name with no scoping. If names are not unique or are per tenant, the wrong model may be picked. <code>ResolveAsync</code> also returns empty when the model is missing, hiding bad input. Scope the lookup and return a not-found error.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:219">src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs:219</code>
+  <p><strong>Null request values not guarded.</strong> Iterating <code>request.Values</code> throws a <code>NullReferenceException</code> on a JSON null, while <code>ChangedFields</code> is guarded with <code>?? []</code>. Guard it the same way or validate the request.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.Requests.cs:24">src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.Requests.cs:24</code>
+  <p><strong>Null collections in request DTOs.</strong> <code>Arguments</code> (<code>SaveFieldBindingRequest</code>) and <code>Parameters</code> (<code>CreateFormulaRequest</code>) have no default, and dictionary values in <code>ResolveFieldsRequest</code> can be null. A JSON null flows through and can cause a <code>NullReferenceException</code> (500). Default them to empty, or add validator null checks. <code>ResolveFieldsRequest</code> already does <code>?? []</code> in places.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/CreateBinding/CreateFieldBindingCommand.cs:30">src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/CreateBinding/CreateFieldBindingCommand.cs:30</code>
+  <p><strong>Binding validator gaps for arguments.</strong> <code>RuleForEach</code> on <code>Arguments</code> skips a null collection, and a null element would throw. Nothing validates per-source required fields (<code>FieldId</code> for Field, <code>ChildRelationshipId</code> for ChildAggregate, <code>ChildFieldId</code> unless Count), so these surface as domain exceptions. The same applies to <code>UpdateFieldBindingCommand</code>. Add null and cross-field rules.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/Formulas/Commands/Create/CreateFormulaCommand.cs:47">src/Modules/Kernel/Kernel.Application/UseCases/Formulas/Commands/Create/CreateFormulaCommand.cs:47</code>
+  <p><strong>Null parameters and elements unguarded.</strong> <code>Parameters</code> can be null via JSON, and a null element makes <code>ChildRules</code> throw a <code>NullReferenceException</code> on <code>Name</code>, giving a 500. Add null checks to the validator.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FieldBindingValidator.cs:285">src/Modules/Kernel/Kernel.Application/Services/FieldBindingValidator.cs:285</code>
+  <p><strong>Aggregate FilterJson and enums unvalidated.</strong> <code>FilterJson</code> is passed straight to <code>FormulaArgument.OfChildAggregate</code> with no check for valid JSON, size, or fields on the child model. A bad filter only fails at record save, which can block every save for the model. <code>Source</code> and <code>AggregateFunction</code> are also not checked with <code>Enum.IsDefined</code>. Validate these on create and update.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs:93">src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs:93</code>
+  <p><strong>Closed bindings can be edited or deleted.</strong> <code>UpdateAsync</code> and delete work on any binding by id, including closed ones with <code>EffectiveTo</code> set. This rewrites history that Create protects with backdating checks. Reject changes to closed bindings.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:142">src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:142</code>
+  <p><strong>StartNextDraft may hit null version.</strong> <code>formula.Versions.MaxBy</code> returns null when there are no versions, so <code>latestVersion.ExpressionJson</code> throws a <code>NullReferenceException</code> (500). Guard it and return a domain error.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:84">src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:84</code>
+  <p><strong>Formula code uniqueness is check-then-insert.</strong> <code>Code</code> uniqueness is checked with <code>AnyAsync</code> and then inserted, so concurrent creates can duplicate it. Ensure a unique index exists and map the violation to a conflict.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F17</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:44">src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs:44</code>
+  <p><strong>List query loads all versions.</strong> The paged list includes every version with <code>ExpressionJson</code> just to build summaries, then re-wraps the in-memory results as a queryable, so sorting by summary columns is unsupported. Project only the needed columns in the query.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/DerivedFieldService.cs:66">src/Modules/Kernel/Kernel.Application/Services/DerivedFieldService.cs:66</code>
+  <p><strong>Derived field null trigger and write atomicity.</strong> <code>ToDto</code> uses <code>fieldValue.Trigger!.Value</code>, but <code>GetDerivedFieldsAsync</code> filters only on <code>ValueSourceType</code>, so a row with a null <code>Trigger</code> throws. <code>RemoveDerivation</code> also does several writes across repositories without a transaction. Filter on <code>Trigger</code> and wrap the writes in a transaction.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F19</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/ComputedFieldDependencyGraph.cs:34">src/Modules/Kernel/Kernel.Application/FieldProcess/ComputedFieldDependencyGraph.cs:34</code>
+  <p><strong>Cycles silently ordered arbitrarily.</strong> When no source has all dependencies resolved, the code silently picks <code>remaining[0]</code> instead of reporting a cycle. The ordering is also quadratic with repeated <code>SplitNames</code> allocations. Throw a cycle error.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F20</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/Sources/ExpressionValueSourceResolver.cs:41">src/Modules/Kernel/Kernel.Application/FieldProcess/Sources/ExpressionValueSourceResolver.cs:41</code>
+  <p><strong>Binding history loaded and cached per scope.</strong> All bindings including history are loaded and filtered in memory, which grows unbounded. The fallback in <code>GetBindingAndFormulaAsync</code> runs one query per field, and the prepared-field cache is never cleared within a scope. Filter by effective dates in the query and batch the fallback.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F21</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs:31">src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs:31</code>
+  <p><strong>Loader cache stale and N+1 loads.</strong> <code>parentRows</code> and <code>childRows</code> live for the whole scope, so re-resolving after related rows change uses stale data. Parent lookups are sequential per relationship. Also <code>IsRemoved</code> builds a dictionary per row. Invalidate the cache and batch the parent loads.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F22</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaCallLoader.cs:19">src/Modules/Kernel/Kernel.Application/Services/FormulaCallLoader.cs:19</code>
+  <p><strong>Called formulas loaded one by one.</strong> Each called formula code triggers its own query, and the cache key uses the exact <code>DateTimeOffset</code>, so it rarely hits. Nested calls cause N+1 queries per record save. Batch the loads and normalize the as-of key.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F23</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs:153">src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs:153</code>
+  <p><strong>Mojibake in cycle path separator.</strong> The separator is corrupted text (<code>Γ&#229;&#198;</code>), so the cycle path shown to users is garbled. <code>DerivedFieldInputServiceTests</code> asserts the same corrupted string. Use ASCII <code>-&gt;</code> in both places, via a shared constant.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F24</span>
+  <code class="path-chip" data-path="src/Modules/Configuration/Configuration.Application/Pipeline/SaveDocumentTypeContext.cs:48">src/Modules/Configuration/Configuration.Application/Pipeline/SaveDocumentTypeContext.cs:48</code>
+  <p><strong>Unknown document type header ignored.</strong> If the document-type header doesn&#39;t match any document type, the code returns null and the save proceeds, silently skipping document-type-scoped bindings. The cancellation token is also not passed to <code>RetrieveDocumentTypeAsync</code>. Reject unknown codes with a validation error and pass the token.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F25</span>
+  <code class="path-chip" data-path="src/Modules/Configuration/Configuration.Infrastructure/Data/Converters/FormulaArgumentsJsonConverter.cs:55">src/Modules/Configuration/Configuration.Infrastructure/Data/Converters/FormulaArgumentsJsonConverter.cs:55</code>
+  <p><strong>Missing ids default to Guid.Empty.</strong> A missing <code>FieldId</code> or <code>ChildRelationshipId</code> becomes <code>Guid.Empty</code> and a missing aggregate function becomes <code>Sum</code>, so corrupt stored data turns into wrong semantics. Throw on missing required properties.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F26</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Formulas/TypeChecking/Rules/ArrayLiteralTypeRule.cs:21">src/Modules/Kernel/Kernel.Application/Formulas/TypeChecking/Rules/ArrayLiteralTypeRule.cs:21</code>
+  <p><strong>Type rule dereferences null Elements.</strong> <code>node.Elements</code> is used without a null check, unlike the compiler&#39;s <code>?? []</code>. The same happens in <code>RuleTypeRule.ExpectElements</code>. JSON with <code>&quot;elements&quot;: null</code> causes a <code>NullReferenceException</code> (500) instead of a validation error.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F27</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Formulas/Compilation/RelatedRecordRuntime.cs:60">src/Modules/Kernel/Kernel.Application/Formulas/Compilation/RelatedRecordRuntime.cs:60</code>
+  <p><strong>Aggregate overflow and null field escape.</strong> SUM/AVG overflow throws a raw <code>OverflowException</code> instead of a coded <code>FormulaEvaluationException</code>, which scalar functions do. The <code>field</code> delegate is also used with a null-forgiving operator for non-COUNT aggregates. Wrap the computation and rethrow as <code>NumericOverflow</code>, and guard the field.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F28</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Formulas/Evaluation/FormulaScope.cs:79">src/Modules/Kernel/Kernel.Application/Formulas/Evaluation/FormulaScope.cs:79</code>
+  <p><strong>Shared row scopes mutated.</strong> <code>InheritCalledFormulas</code> mutates cached child row scopes, overwriting <code>CallDepth</code>. If a row scope is reused at different call depths, the depth limit becomes inconsistent. Create a per-call copy instead.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F29</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Formulas/Functions/Numeric/ExtremeFunction.cs:28">src/Modules/Kernel/Kernel.Application/Formulas/Functions/Numeric/ExtremeFunction.cs:28</code>
+  <p><strong>MIN/MAX throws on mixed types.</strong> <code>Compare</code> throws a <code>TypeMismatch</code> for mismatched types, and Date versus DateTime is not normalized. This relies entirely on the type checker. Normalize with <code>ToDate</code> or guard at runtime.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F30</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Pipeline/Fields/DynamicValueNormalizer.cs:46">src/Modules/Kernel/Kernel.Application/Pipeline/Fields/DynamicValueNormalizer.cs:46</code>
+  <p><strong>Timezone lost when parsing dates.</strong> <code>DateTime.TryParse</code> with <code>DateTimeStyles.None</code> converts offsets to server local time, so ISO strings with <code>Z</code> are shifted. Use <code>RoundtripKind</code> or <code>AdjustToUniversal</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F31</span>
+  <code class="path-chip" data-path="src/Modules/Modules.Domain/Models/FormulaVersion.cs:73">src/Modules/Modules.Domain/Models/FormulaVersion.cs:73</code>
+  <p><strong>Publish effective date not validated.</strong> The past-date rule for <code>EffectiveFrom</code> exists only as a domain exception, with no FluentValidation rule in <code>PublishFormulaDraftCommand</code>. A same-day earlier time is silently clamped to <code>publishedAt</code>, hiding caller errors. Validate in the command and reject instead of clamping.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F32</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Queries/ResolveFields/ResolveFieldsQuery.cs:13">src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Queries/ResolveFields/ResolveFieldsQuery.cs:13</code>
+  <p><strong>Read queries have no validators.</strong> <code>ResolveFieldsQuery</code>, <code>GetFieldBindingsQuery</code>, <code>GetDerivedFieldsQuery</code>, <code>GetDerivedFieldSettingQuery</code>, <code>GetFormulaByIdQuery</code>, <code>GetFormulasQuery</code> and <code>GetFormulaFunctionsQuery</code> have no validator, against the team rule. A null request or empty ids in <code>ResolveFieldsQuery</code> will likely give a 500. Add validators.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F33</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs:79">src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs:79</code>
+  <p><strong>Location header points to missing route.</strong> POST bindings returns a <code>Location</code> of <code>/derived-fields/bindings/{id}</code>, but no GET by id exists. Add the route or return the entity. The delete endpoints also return <code>Ok(id)</code>, which is a meaningless body. Prefer <code>NoContent</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F34</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Endpoints/FormulaEndpoints.cs:25">src/Modules/Kernel/Kernel.Application/Endpoints/FormulaEndpoints.cs:25</code>
+  <p><strong>Functions group lacks activity logging.</strong> The formula-functions group is mapped without <code>WithActivityLogging</code>, unlike the formulas group. It is likely fine for a read-only catalog, but it is inconsistent.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F35</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Integration/Configuration/Formulas/FormulaApiTests.cs:122">src/Web.API.Tests.Integration/Configuration/Formulas/FormulaApiTests.cs:122</code>
+  <p><strong>Brittle hard-coded function count.</strong> Asserting exactly 23 functions fails whenever a function is added or removed. Assert against the registry count or specific codes. The <code>UtcNow.AddMinutes(1)</code> resolution at line 87 also depends on clock and timestamp precision and may be flaky.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F36</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Integration/Configuration/Formulas/FormulaCallApiTests.cs:77">src/Web.API.Tests.Integration/Configuration/Formulas/FormulaCallApiTests.cs:77</code>
+  <p><strong>Weak circular-publish assertion.</strong> The test accepts Conflict or BadRequest and matches the word &quot;itself&quot; in the body, so it breaks on message or localization changes. Assert one status and an error code.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F37</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Configuration/Formulas/FormulaServiceTests.cs:364">src/Web.API.Tests.Unit/Configuration/Formulas/FormulaServiceTests.cs:364</code>
+  <p><strong>Real-clock date tests.</strong> The test uses <code>DateTimeOffset.UtcNow.Date.AddMonths(1)</code> against the service&#39;s real clock, which can be flaky near midnight. Inject a clock or use fixed dates.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F38</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs:22">src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs:22</code>
+  <p><strong>JsonDocument never disposed.</strong> The <code>DateInputs</code> property parses a <code>JsonDocument</code> and clones the root element, but never disposes the original, leaking a pooled buffer on every access. Parse inside a <code>using</code> block.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F39</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Dtos/FieldResolutionRequestDto.cs:17">src/Modules/Kernel/Kernel.Application/Dtos/FieldResolutionRequestDto.cs:17</code>
+  <p><strong>Null defaults on non-nullable references.</strong> <code>Related = null</code> and <code>ResolveFields = null</code> are declared as non-nullable. Add <code>?</code>. The same applies to <code>FieldValueSourceContextDto.Related</code>, <code>FieldTypesById</code>, and <code>FormulaFunctionTypeDto.Capability</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F40</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/FieldProcess/FieldResolutionErrors.cs:37">src/Modules/Kernel/Kernel.Application/FieldProcess/FieldResolutionErrors.cs:37</code>
+  <p><strong>Hardcoded English exception message.</strong> The <code>InternalServerException</code> message is hardcoded English, while other errors use Locale keys. Use a localized key.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F41</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaService.Validations.cs:74">src/Modules/Kernel/Kernel.Application/Services/FormulaService.Validations.cs:74</code>
+  <p><strong>Mis-indented foreach.</strong> The <code>foreach</code> block is over-indented relative to its braces.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F42</span>
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/MakeDerived/MakeDerivedFieldCommand.cs:28">src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/MakeDerived/MakeDerivedFieldCommand.cs:28</code>
+  <p><strong>Use IsInEnum for trigger.</strong> The custom <code>Must</code> with <code>Enum.IsDefined</code> is equivalent to <code>IsInEnum</code>, which sibling validators use.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F43</span>
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:724">src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:724</code>
+  <p><strong>Unrelated whitespace change.</strong> A whitespace-only change inside the <code>EventGuest</code> constants is unrelated to the feature. Revert it.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F44</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Integration/Configuration/Formulas/DerivedFieldApiTests.cs:140">src/Web.API.Tests.Integration/Configuration/Formulas/DerivedFieldApiTests.cs:140</code>
+  <p><strong>Large round-trip test poor isolation.</strong> The update-conflict step sits inside a big order-dependent round-trip test, so a failure gives poor isolation. Split it into separate tests.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F45</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Integration/Configuration/Formulas/ComputedFieldErrorTests.cs:106">src/Web.API.Tests.Integration/Configuration/Formulas/ComputedFieldErrorTests.cs:106</code>
+  <p><strong>Cleanup skips if init fails.</strong> <code>DisposeAsync</code> relies on state set in <code>InitializeAsync</code>. If init fails partway, cleanup silently skips and leaves orphan tables. Guard for partial init.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F46</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Configuration/FieldProcess/FormulaCompilationCacheTests.cs:70">src/Web.API.Tests.Unit/Configuration/FieldProcess/FormulaCompilationCacheTests.cs:70</code>
+  <p><strong>Thread.Sleep in concurrency test.</strong> Sleep-based timing only probabilistically exercises the race. Use a barrier or <code>ManualResetEventSlim</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F47</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Configuration/DerivedFields/FieldBindingValidatorTests.cs:408">src/Web.API.Tests.Unit/Configuration/DerivedFields/FieldBindingValidatorTests.cs:408</code>
+  <p><strong>Null default and interleaved helpers.</strong> <code>string expressionJson = null</code> on a non-nullable parameter gives a nullable warning. Helpers and static fields are also interleaved between tests. Tidy up.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F48</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Configuration/FieldProcess/RelatedRecordLoaderTests.cs:183">src/Web.API.Tests.Unit/Configuration/FieldProcess/RelatedRecordLoaderTests.cs:183</code>
+  <p><strong>Magic number for removed status.</strong> The test uses <code>Status 2</code> instead of <code>(int)Status.Removed</code> and asserts only <code>children[0]</code>. Use the enum and assert which rows were kept.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F49</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Kernel/Formulas/FunctionCatalogTests.cs:161">src/Web.API.Tests.Unit/Kernel/Formulas/FunctionCatalogTests.cs:161</code>
+  <p><strong>Theory branches on string.</strong> The theory picks its expression by ternary on a <code>function</code> string, so it is really two tests. Split it or pass the node via <code>TheoryData</code>. Also, both <code>InlineData</code> rows in <code>FormulaTypeCheckerTests</code> line 102 pass the same <code>errorCode</code>, so make it a constant.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F50</span>
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs:47">src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs:47</code>
+  <p><strong>Runtime double-to-decimal conversion.</strong> The test converts a <code>double</code> to <code>decimal</code> with a runtime branch, which is fragile. Pass a string and parse it, or split the tests.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Formulas/Compilation/RelatedRecordRuntime.cs">src/Modules/Kernel/Kernel.Application/Formulas/Compilation/RelatedRecordRuntime.cs</code>
+  <p><strong>Layered formula engine with limits.</strong> Node compilers and type rules are cleanly separated, with duplicate-registration checks. Compile-time depth and node-count limits and a runtime call-depth limit protect against runaway formulas.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaCompilationCache.cs">src/Modules/Kernel/Kernel.Application/Services/FormulaCompilationCache.cs</code>
+  <p><strong>Lazy cache avoids caching failures.</strong> The compilation cache uses <code>Lazy</code> and removes entries on failure, so exceptions are not cached and concurrent compiles share work.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FieldBindingValidator.cs">src/Modules/Kernel/Kernel.Application/Services/FieldBindingValidator.cs</code>
+  <p><strong>Thorough binding validation.</strong> The validator checks model ownership of fields, relationships and document types, plus types and relationship direction.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs">src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs</code>
+  <p><strong>Publish is validated and transactional.</strong> Publish validates compile, field references, calls and types before commit, and wraps the publish and input refresh in a transaction.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs">src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs</code>
+  <p><strong>Thin endpoints with constants.</strong> Endpoints use route constants and delegate to MediatR, with a consistent command/handler/validator structure.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Web.API.Tests.Unit/Kernel/Formulas/FunctionCatalogTests.cs">src/Web.API.Tests.Unit/Kernel/Formulas/FunctionCatalogTests.cs</code>
+  <p><strong>Strong formula test coverage.</strong> Tests cover validators, trigger policies, dependency graphs, cycles, concurrent compile and catalogue parity. They assert error kind and code, not just that an exception is thrown.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>6f4d6db</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"6f4d6dbd024e7d4ac82f287b661ba0f348afdb06","reviewedOn":"2026-09-30","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs","line":"58","lens":"L5","title":"Binding closed outside the transaction","body":"`CloseCurrentBindingAsync` updates the current binding\u0027s end date before the transaction begins. If the insert or `RefreshInputsAsync` fails, the tracked change can still be saved by a later `SaveChangesAsync`, or left inconsistent. Two concurrent creates can also both see the same open binding and insert two open rows, so `SingleOrDefault` later throws. Move the close inside the transaction and enforce uniqueness.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"src/Modules/Configuration/Configuration.Infrastructure/Data/Configurations/DerivedFieldBindingConfiguration.cs","line":"20","lens":"L5","title":"Unique index misses global bindings on PostgreSQL","body":"The unique index includes the nullable `DocumentTypeId`. PostgreSQL treats NULLs as distinct, so two global bindings for the same field and `EffectiveFrom` are allowed, while SQL Server rejects them. The service\u0027s check-then-insert guard is therefore racy. Add a filtered index or `NULLS NOT DISTINCT` for the null case.","firstSeen":"v1"},{"id":"F3","severity":"must-fix","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaCompilationCache.cs","line":"39","lens":"L5","title":"Compilation cache never invalidated","body":"The cache is keyed by (`FormulaId`, `VersionNumber`) and grows without bound. `Remove` exists, but `PublishDraft` and `UpdateDraft` in `FormulaService` never call it. A draft version compiled and then edited would serve a stale compiled result. Call `Remove` on draft update and publish, and consider bounding the cache.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs","line":"91","lens":"L5","title":"Inputs saved before cycle check","body":"`RefreshInputsAsync` saves `TriggerFields`/`DependsOn` and only then checks for a circular dependency, so a cycle is persisted before the exception is thrown unless the caller wraps a transaction. `RefreshInputsForFormulaAsync` also saves per field, with several queries each. Check for cycles before saving, and batch the saves.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs","line":"137","lens":"L3","title":"Client-supplied record ids loaded unchecked","body":"Parent ids come from client-supplied values and are fetched with `queryEngine.GetByIdAsync`. The loaded values feed a formula whose result is returned to the caller, which may expose records the caller shouldn\u0027t see. Verify that the query engine is tenant and authorization scoped. Also check soft delete on `GetModelAsync`.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs","line":"200","lens":"L3","title":"Record fetched by request id unchecked","body":"`GetByIdAsync` uses the request\u0027s `RecordId`. A missing record silently yields empty values, and removed records are not excluded, unlike `RelatedRecordLoader`. Validate that the record belongs to the model and is not removed. Merge the duplicated `if (savedRecord is not null)` blocks.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs","line":"100","lens":"L3","title":"Resolve group lacks logging and explicit auth","body":"The field-process group is mapped without `WithActivityLogging` and has no explicit authorization. It reads values by model name and record id. Confirm the global authorization behavior covers it, or add the same conventions as the sibling group.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs","line":"39","lens":"L3","title":"Model looked up by name only","body":"The model is found by `ToLower()` name with no scoping. If names are not unique or are per tenant, the wrong model may be picked. `ResolveAsync` also returns empty when the model is missing, hiding bad input. Scope the lookup and return a not-found error.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/FieldProcessService.cs","line":"219","lens":"L1","title":"Null request values not guarded","body":"Iterating `request.Values` throws a `NullReferenceException` on a JSON null, while `ChangedFields` is guarded with `?? []`. Guard it the same way or validate the request.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.Requests.cs","line":"24","lens":"L1","title":"Null collections in request DTOs","body":"`Arguments` (`SaveFieldBindingRequest`) and `Parameters` (`CreateFormulaRequest`) have no default, and dictionary values in `ResolveFieldsRequest` can be null. A JSON null flows through and can cause a `NullReferenceException` (500). Default them to empty, or add validator null checks. `ResolveFieldsRequest` already does `?? []` in places.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/CreateBinding/CreateFieldBindingCommand.cs","line":"30","lens":"L4","title":"Binding validator gaps for arguments","body":"`RuleForEach` on `Arguments` skips a null collection, and a null element would throw. Nothing validates per-source required fields (`FieldId` for Field, `ChildRelationshipId` for ChildAggregate, `ChildFieldId` unless Count), so these surface as domain exceptions. The same applies to `UpdateFieldBindingCommand`. Add null and cross-field rules.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/UseCases/Formulas/Commands/Create/CreateFormulaCommand.cs","line":"47","lens":"L1","title":"Null parameters and elements unguarded","body":"`Parameters` can be null via JSON, and a null element makes `ChildRules` throw a `NullReferenceException` on `Name`, giving a 500. Add null checks to the validator.","firstSeen":"v1"},{"id":"F13","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FieldBindingValidator.cs","line":"285","lens":"L4","title":"Aggregate FilterJson and enums unvalidated","body":"`FilterJson` is passed straight to `FormulaArgument.OfChildAggregate` with no check for valid JSON, size, or fields on the child model. A bad filter only fails at record save, which can block every save for the model. `Source` and `AggregateFunction` are also not checked with `Enum.IsDefined`. Validate these on create and update.","firstSeen":"v1"},{"id":"F14","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FieldBindingService.cs","line":"93","lens":"L2","title":"Closed bindings can be edited or deleted","body":"`UpdateAsync` and delete work on any binding by id, including closed ones with `EffectiveTo` set. This rewrites history that Create protects with backdating checks. Reject changes to closed bindings.","firstSeen":"v1"},{"id":"F15","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs","line":"142","lens":"L1","title":"StartNextDraft may hit null version","body":"`formula.Versions.MaxBy` returns null when there are no versions, so `latestVersion.ExpressionJson` throws a `NullReferenceException` (500). Guard it and return a domain error.","firstSeen":"v1"},{"id":"F16","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs","line":"84","lens":"L5","title":"Formula code uniqueness is check-then-insert","body":"`Code` uniqueness is checked with `AnyAsync` and then inserted, so concurrent creates can duplicate it. Ensure a unique index exists and map the violation to a conflict.","firstSeen":"v1"},{"id":"F17","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaService.cs","line":"44","lens":"L6","title":"List query loads all versions","body":"The paged list includes every version with `ExpressionJson` just to build summaries, then re-wraps the in-memory results as a queryable, so sorting by summary columns is unsupported. Project only the needed columns in the query.","firstSeen":"v1"},{"id":"F18","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/DerivedFieldService.cs","line":"66","lens":"L1","title":"Derived field null trigger and write atomicity","body":"`ToDto` uses `fieldValue.Trigger!.Value`, but `GetDerivedFieldsAsync` filters only on `ValueSourceType`, so a row with a null `Trigger` throws. `RemoveDerivation` also does several writes across repositories without a transaction. Filter on `Trigger` and wrap the writes in a transaction.","firstSeen":"v1"},{"id":"F19","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/ComputedFieldDependencyGraph.cs","line":"34","lens":"L1","title":"Cycles silently ordered arbitrarily","body":"When no source has all dependencies resolved, the code silently picks `remaining[0]` instead of reporting a cycle. The ordering is also quadratic with repeated `SplitNames` allocations. Throw a cycle error.","firstSeen":"v1"},{"id":"F20","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/Sources/ExpressionValueSourceResolver.cs","line":"41","lens":"L6","title":"Binding history loaded and cached per scope","body":"All bindings including history are loaded and filtered in memory, which grows unbounded. The fallback in `GetBindingAndFormulaAsync` runs one query per field, and the prepared-field cache is never cleared within a scope. Filter by effective dates in the query and batch the fallback.","firstSeen":"v1"},{"id":"F21","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/RelatedRecordLoader.cs","line":"31","lens":"L6","title":"Loader cache stale and N+1 loads","body":"`parentRows` and `childRows` live for the whole scope, so re-resolving after related rows change uses stale data. Parent lookups are sequential per relationship. Also `IsRemoved` builds a dictionary per row. Invalidate the cache and batch the parent loads.","firstSeen":"v1"},{"id":"F22","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaCallLoader.cs","line":"19","lens":"L6","title":"Called formulas loaded one by one","body":"Each called formula code triggers its own query, and the cache key uses the exact `DateTimeOffset`, so it rarely hits. Nested calls cause N+1 queries per record save. Batch the loads and normalize the as-of key.","firstSeen":"v1"},{"id":"F23","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/DerivedFieldInputService.cs","line":"153","lens":"L10","title":"Mojibake in cycle path separator","body":"The separator is corrupted text (`ΓåÆ`), so the cycle path shown to users is garbled. `DerivedFieldInputServiceTests` asserts the same corrupted string. Use ASCII `-\u003e` in both places, via a shared constant.","firstSeen":"v1"},{"id":"F24","severity":"suggestion","status":"open","file":"src/Modules/Configuration/Configuration.Application/Pipeline/SaveDocumentTypeContext.cs","line":"48","lens":"L1","title":"Unknown document type header ignored","body":"If the document-type header doesn\u0027t match any document type, the code returns null and the save proceeds, silently skipping document-type-scoped bindings. The cancellation token is also not passed to `RetrieveDocumentTypeAsync`. Reject unknown codes with a validation error and pass the token.","firstSeen":"v1"},{"id":"F25","severity":"suggestion","status":"open","file":"src/Modules/Configuration/Configuration.Infrastructure/Data/Converters/FormulaArgumentsJsonConverter.cs","line":"55","lens":"L5","title":"Missing ids default to Guid.Empty","body":"A missing `FieldId` or `ChildRelationshipId` becomes `Guid.Empty` and a missing aggregate function becomes `Sum`, so corrupt stored data turns into wrong semantics. Throw on missing required properties.","firstSeen":"v1"},{"id":"F26","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Formulas/TypeChecking/Rules/ArrayLiteralTypeRule.cs","line":"21","lens":"L1","title":"Type rule dereferences null Elements","body":"`node.Elements` is used without a null check, unlike the compiler\u0027s `?? []`. The same happens in `RuleTypeRule.ExpectElements`. JSON with `\"elements\": null` causes a `NullReferenceException` (500) instead of a validation error.","firstSeen":"v1"},{"id":"F27","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Formulas/Compilation/RelatedRecordRuntime.cs","line":"60","lens":"L1","title":"Aggregate overflow and null field escape","body":"SUM/AVG overflow throws a raw `OverflowException` instead of a coded `FormulaEvaluationException`, which scalar functions do. The `field` delegate is also used with a null-forgiving operator for non-COUNT aggregates. Wrap the computation and rethrow as `NumericOverflow`, and guard the field.","firstSeen":"v1"},{"id":"F28","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Formulas/Evaluation/FormulaScope.cs","line":"79","lens":"L8","title":"Shared row scopes mutated","body":"`InheritCalledFormulas` mutates cached child row scopes, overwriting `CallDepth`. If a row scope is reused at different call depths, the depth limit becomes inconsistent. Create a per-call copy instead.","firstSeen":"v1"},{"id":"F29","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Formulas/Functions/Numeric/ExtremeFunction.cs","line":"28","lens":"L1","title":"MIN/MAX throws on mixed types","body":"`Compare` throws a `TypeMismatch` for mismatched types, and Date versus DateTime is not normalized. This relies entirely on the type checker. Normalize with `ToDate` or guard at runtime.","firstSeen":"v1"},{"id":"F30","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Pipeline/Fields/DynamicValueNormalizer.cs","line":"46","lens":"L4","title":"Timezone lost when parsing dates","body":"`DateTime.TryParse` with `DateTimeStyles.None` converts offsets to server local time, so ISO strings with `Z` are shifted. Use `RoundtripKind` or `AdjustToUniversal`.","firstSeen":"v1"},{"id":"F31","severity":"suggestion","status":"open","file":"src/Modules/Modules.Domain/Models/FormulaVersion.cs","line":"73","lens":"L4","title":"Publish effective date not validated","body":"The past-date rule for `EffectiveFrom` exists only as a domain exception, with no FluentValidation rule in `PublishFormulaDraftCommand`. A same-day earlier time is silently clamped to `publishedAt`, hiding caller errors. Validate in the command and reject instead of clamping.","firstSeen":"v1"},{"id":"F32","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Queries/ResolveFields/ResolveFieldsQuery.cs","line":"13","lens":"L4","title":"Read queries have no validators","body":"`ResolveFieldsQuery`, `GetFieldBindingsQuery`, `GetDerivedFieldsQuery`, `GetDerivedFieldSettingQuery`, `GetFormulaByIdQuery`, `GetFormulasQuery` and `GetFormulaFunctionsQuery` have no validator, against the team rule. A null request or empty ids in `ResolveFieldsQuery` will likely give a 500. Add validators.","firstSeen":"v1"},{"id":"F33","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Endpoints/DerivedFieldEndpoints.cs","line":"79","lens":"L7","title":"Location header points to missing route","body":"POST bindings returns a `Location` of `/derived-fields/bindings/{id}`, but no GET by id exists. Add the route or return the entity. The delete endpoints also return `Ok(id)`, which is a meaningless body. Prefer `NoContent`.","firstSeen":"v1"},{"id":"F34","severity":"suggestion","status":"open","file":"src/Modules/Kernel/Kernel.Application/Endpoints/FormulaEndpoints.cs","line":"25","lens":"L7","title":"Functions group lacks activity logging","body":"The formula-functions group is mapped without `WithActivityLogging`, unlike the formulas group. It is likely fine for a read-only catalog, but it is inconsistent.","firstSeen":"v1"},{"id":"F35","severity":"suggestion","status":"open","file":"src/Web.API.Tests.Integration/Configuration/Formulas/FormulaApiTests.cs","line":"122","lens":"Test","title":"Brittle hard-coded function count","body":"Asserting exactly 23 functions fails whenever a function is added or removed. Assert against the registry count or specific codes. The `UtcNow.AddMinutes(1)` resolution at line 87 also depends on clock and timestamp precision and may be flaky.","firstSeen":"v1"},{"id":"F36","severity":"suggestion","status":"open","file":"src/Web.API.Tests.Integration/Configuration/Formulas/FormulaCallApiTests.cs","line":"77","lens":"Test","title":"Weak circular-publish assertion","body":"The test accepts Conflict or BadRequest and matches the word \"itself\" in the body, so it breaks on message or localization changes. Assert one status and an error code.","firstSeen":"v1"},{"id":"F37","severity":"suggestion","status":"open","file":"src/Web.API.Tests.Unit/Configuration/Formulas/FormulaServiceTests.cs","line":"364","lens":"Test files","title":"Real-clock date tests","body":"The test uses `DateTimeOffset.UtcNow.Date.AddMonths(1)` against the service\u0027s real clock, which can be flaky near midnight. Inject a clock or use fixed dates.","firstSeen":"v1"},{"id":"F38","severity":"suggestion","status":"open","file":"src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs","line":"22","lens":"Test files","title":"JsonDocument never disposed","body":"The `DateInputs` property parses a `JsonDocument` and clones the root element, but never disposes the original, leaking a pooled buffer on every access. Parse inside a `using` block.","firstSeen":"v1"},{"id":"F39","severity":"nit","status":"open","file":"src/Modules/Kernel/Kernel.Application/Dtos/FieldResolutionRequestDto.cs","line":"17","lens":"L10","title":"Null defaults on non-nullable references","body":"`Related = null` and `ResolveFields = null` are declared as non-nullable. Add `?`. The same applies to `FieldValueSourceContextDto.Related`, `FieldTypesById`, and `FormulaFunctionTypeDto.Capability`.","firstSeen":"v1"},{"id":"F40","severity":"nit","status":"open","file":"src/Modules/Kernel/Kernel.Application/FieldProcess/FieldResolutionErrors.cs","line":"37","lens":"L10","title":"Hardcoded English exception message","body":"The `InternalServerException` message is hardcoded English, while other errors use Locale keys. Use a localized key.","firstSeen":"v1"},{"id":"F41","severity":"nit","status":"open","file":"src/Modules/Kernel/Kernel.Application/Services/FormulaService.Validations.cs","line":"74","lens":"L10","title":"Mis-indented foreach","body":"The `foreach` block is over-indented relative to its braces.","firstSeen":"v1"},{"id":"F42","severity":"nit","status":"open","file":"src/Modules/Kernel/Kernel.Application/UseCases/DerivedFields/Commands/MakeDerived/MakeDerivedFieldCommand.cs","line":"28","lens":"L4","title":"Use IsInEnum for trigger","body":"The custom `Must` with `Enum.IsDefined` is equivalent to `IsInEnum`, which sibling validators use.","firstSeen":"v1"},{"id":"F43","severity":"nit","status":"open","file":"src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs","line":"724","lens":"L11","title":"Unrelated whitespace change","body":"A whitespace-only change inside the `EventGuest` constants is unrelated to the feature. Revert it.","firstSeen":"v1"},{"id":"F44","severity":"nit","status":"open","file":"src/Web.API.Tests.Integration/Configuration/Formulas/DerivedFieldApiTests.cs","line":"140","lens":"Test","title":"Large round-trip test poor isolation","body":"The update-conflict step sits inside a big order-dependent round-trip test, so a failure gives poor isolation. Split it into separate tests.","firstSeen":"v1"},{"id":"F45","severity":"nit","status":"open","file":"src/Web.API.Tests.Integration/Configuration/Formulas/ComputedFieldErrorTests.cs","line":"106","lens":"Test","title":"Cleanup skips if init fails","body":"`DisposeAsync` relies on state set in `InitializeAsync`. If init fails partway, cleanup silently skips and leaves orphan tables. Guard for partial init.","firstSeen":"v1"},{"id":"F46","severity":"nit","status":"open","file":"src/Web.API.Tests.Unit/Configuration/FieldProcess/FormulaCompilationCacheTests.cs","line":"70","lens":"Test files","title":"Thread.Sleep in concurrency test","body":"Sleep-based timing only probabilistically exercises the race. Use a barrier or `ManualResetEventSlim`.","firstSeen":"v1"},{"id":"F47","severity":"nit","status":"open","file":"src/Web.API.Tests.Unit/Configuration/DerivedFields/FieldBindingValidatorTests.cs","line":"408","lens":"Test files","title":"Null default and interleaved helpers","body":"`string expressionJson = null` on a non-nullable parameter gives a nullable warning. Helpers and static fields are also interleaved between tests. Tidy up.","firstSeen":"v1"},{"id":"F48","severity":"nit","status":"open","file":"src/Web.API.Tests.Unit/Configuration/FieldProcess/RelatedRecordLoaderTests.cs","line":"183","lens":"Test files","title":"Magic number for removed status","body":"The test uses `Status 2` instead of `(int)Status.Removed` and asserts only `children[0]`. Use the enum and assert which rows were kept.","firstSeen":"v1"},{"id":"F49","severity":"nit","status":"open","file":"src/Web.API.Tests.Unit/Kernel/Formulas/FunctionCatalogTests.cs","line":"161","lens":"Test files","title":"Theory branches on string","body":"The theory picks its expression by ternary on a `function` string, so it is really two tests. Split it or pass the node via `TheoryData`. Also, both `InlineData` rows in `FormulaTypeCheckerTests` line 102 pass the same `errorCode`, so make it a constant.","firstSeen":"v1"},{"id":"F50","severity":"nit","status":"open","file":"src/Web.API.Tests.Unit/Kernel/Formulas/FormulaValuesTests.cs","line":"47","lens":"Test files","title":"Runtime double-to-decimal conversion","body":"The test converts a `double` to `decimal` with a runtime branch, which is fragile. Pass a string and parse it, or split the tests.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

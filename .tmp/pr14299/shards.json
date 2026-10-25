@@ -1,0 +1,24 @@
+[
+    {
+        "id":  "S1",
+        "kind":  "code",
+        "files":  [
+                      "src/Toolbox/CommonServices/DocumentFields.cs"
+                  ]
+    },
+    {
+        "id":  "S2",
+        "kind":  "code",
+        "files":  [
+                      "src/Toolbox/CommonServices/RdmLookupValue.cs"
+                  ]
+    },
+    {
+        "id":  "S3",
+        "kind":  "code",
+        "files":  [
+                      "src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs",
+                      "src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs"
+                  ]
+    }
+]

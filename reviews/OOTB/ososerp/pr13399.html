@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(EMS): Map Resource Schedule Statuses backend changes [OOTB-13036] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(EMS): Map Resource Schedule Statuses backend changes [OOTB-13036]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/13399">ososerp #13399</a>
+      <span>pasanosos</span>
+      <span class="ref">feature/ems-rms-sdm/OOTB-011 ← develop/rms-ems-sdm/sprint-20/OOTB-13036/resource-status-ems-mapping/pasanosos/OOTB-13038/backend-changes</span>
+      <span>2026-08-06</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">4</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">4</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">1</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary">
+      <p>This PR introduces cross-module (EMS ↔ RMS) resource-schedule conflict evaluation: a new <code>ResourceScheduleStatusEvaluator</code> in RMS that checks whether an internal venue/resource is booking-eligible for a set of time windows, exposed via a new <code>evaluate-status</code> query and wired into both <code>EventVenueService</code> (create/update guard) and <code>EventVenueConflictHandler</code> (workflow conflict check). It also adds two new read endpoints (<code>resources-master/all</code>, <code>resource-schedules/calendar</code>) and refactors <code>ResourceScheduleService.GetAsync</code> into a shared <code>GetPagedAsync</code> helper.</p>
+      <p>The architecture is sound (CQRS, FluentValidation, a clean evaluator service), but the new eligibility logic itself has two correctness bugs that directly undermine the double-booking prevention this PR exists to add: the venue time window is converted to UTC with a hardcoded zero offset instead of the event's actual timezone (unlike the sibling <code>TimeZoneUtilities</code>/<code>ConflictManagementService</code> pattern already in the codebase), and the schedule-exclusion filter uses OR instead of AND between the event-level key and the venue-level id, which can let a genuine double-booking of the same resource within the same event slip past undetected. There's also a file-upload-before-validation ordering bug that can orphan uploaded documents, and an unbounded schedule query on a path that's called on every venue create/update.</p>
+    </div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Ems/Ems.Application/Utilities/EventVenueScheduleEvaluationMapper.cs:14-19">src/Modules/Ems/Ems.Application/Utilities/EventVenueScheduleEvaluationMapper.cs:14-19</code>
+      <p><strong>Venue time converted with a hardcoded zero UTC offset.</strong> <code>ToDateTimeOffset</code> builds the request windows as <code>new(date.ToDateTime(time), TimeSpan.Zero)</code>, i.e. it treats the venue's local wall-clock <code>Date</code>/<code>FromTime</code>/<code>ToTime</code> as if they were already UTC. The sibling file in the very same folder, <code>TimeZoneUtilities.ConvertToUtc</code>, exists specifically to convert venue date/time using the event's actual timezone offset, and <code>ConflictManagementService.ValidateConflictsForEventRequestVenuesAsync</code> already threads <code>eventSchedule.TimeZone</code> through for exactly this purpose — confirming venue times are stored in local/event timezone, not UTC. Because this mapper ignores that offset, schedule conflict evaluation will compare the wrong UTC instants for any event whose timezone isn't UTC+00:00, producing false negatives (missed double-bookings) or false positives (blocking valid bookings) depending on the offset direction.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:490-508">src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:490-508</code>
+      <p><strong>Schedule-exclusion filter uses OR instead of AND, over-excluding conflicts.</strong> <code>IsExcluded</code> treats a schedule as excluded from the conflict check if <code>ExcludeSourceReferenceKey</code> matches <strong>or</strong> <code>ExcludeSourceReferenceId</code> matches (after the <code>ExcludeSource</code> check). <code>EventVenueScheduleEvaluationMapper.ToEvaluateRequest</code> always passes <code>ExcludeSourceReferenceKey = venue.EventRequestId</code> (the event-level grouping key, also used by <code>SyncResourceBookingsCommand</code> to batch-replace all bookings sharing that key) and <code>ExcludeSourceReferenceId = venue.Id</code> (the specific venue/booking). With OR, evaluating one venue's eligibility will also exclude <em>any other schedule belonging to the same event</em>, not just this venue's own entry — so if the same physical resource is booked twice within the same event request (two different venues/time slots), the second booking's conflict check silently ignores the first one's existing schedule and lets the double-booking through. This should require both identifiers to match the same schedule row (or match on <code>SourceReferenceId</code> alone), not either one.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Ems/Ems.Application/Services/EventVenueService.cs:118-152">src/Modules/Ems/Ems.Application/Services/EventVenueService.cs:118-152</code>
+      <p><strong>File uploaded before schedule-eligibility check, orphaning it on rejection.</strong> In this <code>CreateAsync</code> overload, <code>eventDocumentService.CreateAsync(...)</code> uploads the layout document earlier in the method, and only afterwards does the newly-added <code>EnsureInternalVenueScheduleEligibleAsync</code> run before <code>repository.AddAsync</code>. If the resource turns out to be schedule-ineligible, the method throws <em>after</em> the file has already been persisted, with no compensating delete — leaving an orphaned document on every rejected create-with-file. Contrast with the sibling <code>UpdateAsync(eventVenue, file, companyCode, cancellationToken)</code> overload a few lines down, which correctly runs <code>EnsureInternalVenueScheduleEligibleAsync</code> <em>before</em> the file-upload block. Move the eligibility check above the upload in this overload too.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:451-453">src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:451-453</code>
+      <p><strong>Unbounded schedule query on a per-venue hot path.</strong> <code>EvaluateAsync</code> loads every <code>Active</code> schedule row for the resource (<code>scheduleRepository.GetListAsync(rs =&gt; rs.ResourceMasterId == ... &amp;&amp; rs.Status == Status.Active, ...)</code>) with no date-range filter, then filters for window overlap in memory. This method is invoked on every internal-venue create/update (via <code>EventVenueService</code>) and once per venue in every workflow conflict check (via <code>EventVenueConflictHandler</code>'s loop), so it runs frequently, and the schedule table only grows over time (old and future bookings alike stay <code>Active</code> until resolved/cancelled). The sibling <code>ResourceScheduleService.GetPagedAsync</code> already filters <code>FromDateTime &gt;= DateTimeOffset.UtcNow</code> for a similar concern — this evaluator should filter schedules by the request's window range (e.g. <code>FromDateTime &lt; maxWindowEnd &amp;&amp; (ToDateTime == null || ToDateTime &gt; minWindowStart)</code>) at the query level instead of pulling the resource's entire schedule history into memory.</p>
+    </div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:58-77">src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:58-77</code>
+      <p><strong>N+1 evaluation per event venue.</strong> <code>GetResourceScheduleConflictMessageKeyAsync</code> loops over each internal venue and issues a separate <code>sender.Send(new EvaluateResourceScheduleStatusQuery(...))</code> sequentially, each of which triggers its own resource-master lookup, schedule query, and (on conflict) status lookup. This handler runs per workflow transition on the event request, so an event with several internal venues means several sequential round-trips where one batched evaluation (all venues' windows against their resources in a single query) would do.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Rms/Rms.Application/Endpoints/ResourceScheduleEndpoints.cs:256-263">src/Modules/Rms/Rms.Application/Endpoints/ResourceScheduleEndpoints.cs:256-263</code>
+      <p><strong>New endpoint missing <code>.SkipActivityLogging()</code>.</strong> Every other read-only endpoint in this file (<code>GET /</code>, <code>/calendar</code>, <code>/{id:guid}</code>, <code>/by-reference/...</code>, <code>/by-key/...</code>) calls <code>.SkipActivityLogging()</code>, since the group is wrapped with <code>.WithActivityLogging(ModuleCodes.RMS)</code>. <code>POST /evaluate-status</code> is functionally a read (the handler only queries, never writes) but is missing the same call, so it will be logged to the audit trail on every invocation — including the per-venue loop in <code>EventVenueConflictHandler</code> above, which will generate disproportionate audit noise for what's a status check, not a user action.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:73">src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:73</code>
+      <p><strong>Duplicated magic string instead of the new constant.</strong> Both this file and <code>EventVenueService.EnsureInternalVenueScheduleEligibleAsync</code> hardcode the fallback <code>"ems.eventVenue.validation.unavailableForSchedule"</code> as a string literal, even though this PR adds <code>Rms.Application.Constants.EventVenueScheduleValidationMessageKeys.UnavailableForSchedule</code> with the exact same value for this exact purpose. If Ems.Application can't take a dependency on Rms.Application directly, consider exposing the constant through <code>Rms.Contracts</code> instead so there's one source of truth rather than two hand-kept copies of the same string.</p>
+    </div>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:44-55">src/Modules/Ems/Ems.Application/Integrations/EventVenueConflict/EventVenueConflictHandler.cs:44-55</code>
+      <p><strong>Schedule conflict silently discards workflow conflict details.</strong> When both a workflow conflict (<code>workflowResponse.HasConflict</code>) and a schedule conflict are present and the workflow isn't next-status-approved, the method builds a brand-new <code>ConflictDetectionResponseDto</code> for the schedule conflict, discarding <code>workflowResponse</code>'s own <code>Severity</code>/<code>SuggestedBehavior</code>/<code>Message</code> entirely. If that's intentional (schedule conflicts always take precedence), worth a one-line comment; if not, the caller loses visibility into the original workflow conflict.</p>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:441-445">src/Modules/Rms/Rms.Application/Services/ResourceScheduleStatusEvaluator.cs:441-445</code>
+      <p><strong>Redundant manual validation.</strong> <code>EvaluateAsync</code> re-checks <code>ResourceMasterId == Guid.Empty</code> and <code>Windows is null || Count == 0</code> even though <code>EvaluateResourceScheduleStatusQueryValidator</code> already enforces both via <code>QueryValidationBehavior</code> before the handler runs. Not wrong, just duplicate logic worth trimming if this evaluator is never called outside the MediatR pipeline.</p>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+
+    <div class="finding-card">
+      <p><strong>Clean CQRS wiring for the new capability.</strong> <code>EvaluateResourceScheduleStatusQuery</code>/<code>Handler</code>/<code>Validator</code> follow the established pattern precisely, and the evaluator is properly interfaced (<code>IResourceScheduleStatusEvaluator</code>) and reused from both EMS (cross-module via <code>ISender</code>) and RMS's own venue-eligibility guard, avoiding duplicated conflict logic between the two call sites.</p>
+    </div>
+
+    <div class="finding-card">
+      <p><strong>Readable priority-based conflict resolution.</strong> <code>GetConflictPriority</code>/<code>worstConflictPriority</code> in <code>ResourceScheduleStatusEvaluator</code> picks the most severe overlapping schedule cleanly, avoiding a nested-if chain.</p>
+    </div>
+
+    <div class="finding-card">
+      <p><strong>Graceful handling of missing configuration.</strong> <code>BuildAvailableResultAsync</code> falls back sensibly and logs a warning when no default "Available" <code>ResourceStatus</code> is configured for a category, rather than throwing and blocking the whole eligibility check.</p>
+    </div>
+
+    <div class="finding-card">
+      <p><strong>Backend validation present for the new write path.</strong> <code>EvaluateResourceScheduleStatusQueryValidator</code> covers the required-field and window-ordering rules consistent with how other RMS validators in this module are structured.</p>
+    </div>
+  </section>
+
+  <footer>guides used: <code>C#_Code_Review.txt, Naming_Conventions.txt</code></footer>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+﻿PR #6210 OPEN head=d7a2342 | files: 16 total, 16 reviewable, 0 generated | reviewable changed lines: 1090 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6210 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6210 'feat(UI): Resource Leveling Graph [OOTB-11339]' | 16 files in scope, 1090 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Resource Leveling Graph [OOTB-11339]
+https://github.com/pbsgears/ososerp-web/pull/6210
+Risk: Medium | 0 must-fix, 5 suggestions, 2 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OOTB\ososerp-web\pr6210.html
+Tokens: 12 input + 65,580 cache-write + 159,115 cache-read + 15,695 output over 5 calls

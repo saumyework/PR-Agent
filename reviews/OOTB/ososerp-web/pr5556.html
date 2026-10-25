@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fix(UI): SDM request list updated and UI modification into Request [OOTB-12264] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>fix(UI): SDM request list updated and UI modification into Request [OOTB-12264]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/5556">ososerp-web #5556</a>
+      <span>Asanka1993</span>
+      <span class="ref">feature/ems-rms-sdm/OOTB-011 ← develop/asanka/sdm/feature/v11/sprint-7/OOTB-12264</span>
+      <span>2026-08-06</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip low">
+        <span class="dot"></span>
+        <span class="label">Risk: Low</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">0</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">2</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">2</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds a new "Request Status" pill column to the SDM Requests list (distinct from the existing workflow "Status" column), reusing and extending the shared <code>IconColouredPill</code> pattern in <code>DatatableV2Component</code>. It also fixes the <code>priority</code> column to use the same pill style, adds a status-dot variant to the pill renderer, fixes a CSS bug where a <code>var(--...)</code> fallback color produced invalid CSS in the pill's tint calculation, and corrects a dictionary-store key that was silently breaking the new column's filter dropdown.</p><p>All files are Angular/TypeScript, reviewed against the Angular guide and cross-cutting naming conventions. No backend/validation surface is touched. Verified against sibling code in the repo (via <code>gh api</code>) that the <code>Request</code> model fields referenced (<code>priorityColor</code>, <code>requestStatusName</code>, <code>requestStatusColor</code>, <code>requestStatus.lookupValue</code>/<code>.color</code>) genuinely exist, and that the dictionary-store rename does not orphan any other caller.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <p class="empty-note">None.</p>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/models/table-metadata.ts:108-124,171-184">libs/features/sdm/src/lib/requests/models/table-metadata.ts:108-124,171-184</code>
+      <p><strong>Duplicated pill-cell logic.</strong> The <code>priority</code> and <code>requestStatus</code> cell functions repeat nearly identical label/color-fallback logic (including the same literal <code>'var(--mat-label-color)'</code> default and the same <code>{ text, color, showStatus: true }</code> shape). Consider extracting a small shared helper, e.g. <code>toStatusPillCell(label, color)</code>, in <code>table-metadata.ts</code> or a shared util, so the fallback rule only has to be read/changed in one place as more pill columns are added.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/assets/data/sdm/request.json:171,185">src/assets/data/sdm/request.json:171,185</code>
+      <p><strong>Two status-like columns default-visible together.</strong> Both <code>status</code> (workflow status, <code>columnDef: 'status'</code>) and the new <code>requestStatus</code> (<code>columnDef: 'requestStatus'</code>) are set <code>isDefault: true, isSelected: true</code>, so they'll both show by default in the list, right next to each other with similar header labels ("Status" / "Request Status"). If this is intentional per the ticket that's fine, but worth a quick UX sanity check since two similarly-named status pills side by side can read as duplicated/confusing to end users.</p>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/shared/components/src/lib/shared-components/datatable-v2/datatable-v2.component.html:1096">libs/shared/components/src/lib/shared-components/datatable-v2/datatable-v2.component.html:1096</code>
+      <p><strong>Boolean flag naming.</strong> <code>showStatus</code> reads as an imperative rather than a boolean-state name; the naming guide's convention for booleans favors an <code>is</code>/<code>has</code> prefix (e.g. <code>isStatusDot</code> or <code>hasStatusDot</code>) to make the truthy/falsy meaning unambiguous at call sites.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/models/table-metadata.ts:104-184">libs/features/sdm/src/lib/requests/models/table-metadata.ts:104-184</code>
+      <p><strong>No test coverage for the new branching cell logic.</strong> Neither <code>priority</code> nor the new <code>requestStatus</code> cell function (both now branch on string-vs-object shapes) has unit coverage. This matches the existing convention for this file (no <code>table-metadata.spec.ts</code> exists in the repo today), so it's not a regression introduced by this PR, just a gap worth closing given the added branching.</p>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:94">libs/features/sdm/src/lib/requests/containers/requests-list-page/requests-list-page.component.ts:94</code>
+      <p><strong>Real bug fix, not just a rename.</strong> Renaming the dictionary key from <code>'status'</code> to <code>'requestStatus'</code> is verified correct: <code>getDictionaryItems('requestStatus')</code> is what the shared filter-dropdown code (<code>base-list-actions-header.component.ts</code>) actually looks up for the new <code>Toolbox</code>-typed <code>requestStatus</code> column, keyed by <code>TableColumn.name</code>. The old <code>'status'</code> key was never read anywhere since the <code>status</code> column's filter uses the <code>Status</code> enum, not the dictionary store — so before this fix, the requestStatus filter dropdown would have silently rendered empty.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/shared/components/src/lib/shared-components/datatable-v2/datatable-v2.component.ts:969-979">libs/shared/components/src/lib/shared-components/datatable-v2/datatable-v2.component.ts:969-979</code>
+      <p><strong>Correct CSS-variable tint fix.</strong> <code>getPillTintColor</code> now special-cases <code>var(...)</code> colors with <code>color-mix()</code> instead of blindly string-concatenating an alpha suffix, which previously would have produced invalid CSS (<code>var(--mat-label-color)1f</code>) once a CSS-variable fallback color was introduced for pills with no explicit color.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="libs/features/sdm/src/lib/requests/models/table-metadata.ts:108-111,171-174">libs/features/sdm/src/lib/requests/models/table-metadata.ts:108-111,171-174</code>
+      <p><strong>Correctly handles the declared union type.</strong> The <code>typeof request.priority === 'string'</code> branch matches the <code>Request</code> model's declared <code>priority?: string | RequestLookupRef</code> type, and the same object-shape handling for <code>requestStatus</code> matches its <code>RequestLookupRef</code> type — both verified against <code>request.ts</code>, no unsafe assumptions.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/assets/i18n/en-US.json:30977, src/assets/i18n/ar-OM.json:30445">src/assets/i18n/en-US.json:30977, src/assets/i18n/ar-OM.json:30445</code>
+      <p><strong>Translations kept in sync.</strong> The new <code>requestStatus</code> header key was added to both <code>en-US.json</code> and <code>ar-OM.json</code> under the same <code>sdm.requests.tableHeaders</code> path referenced by the new column's <code>header</code> field — no missing-locale risk.</p>
+    </div>
+  </section>
+
+  <footer>guides used: <code>guides/Angular Code Review.txt, guides/Naming_Conventions.txt</code></footer>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

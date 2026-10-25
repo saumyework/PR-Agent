@@ -1,0 +1,42 @@
+[
+    {
+        "call":  "S1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  0,
+        "cacheRead":  28714,
+        "output":  2821
+    },
+    {
+        "call":  "S1-B",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  0,
+        "cacheRead":  28713,
+        "output":  2402
+    },
+    {
+        "call":  "S1-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  0,
+        "cacheRead":  28747,
+        "output":  3164
+    },
+    {
+        "call":  "S1-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  3815,
+        "cacheRead":  28179,
+        "output":  1020
+    },
+    {
+        "call":  "merge",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  7697,
+        "cacheRead":  1604,
+        "output":  2356
+    }
+]

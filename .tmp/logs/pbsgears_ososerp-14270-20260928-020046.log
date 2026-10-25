@@ -1,0 +1,17 @@
+﻿I've reviewed [chore(Database): VehicleConfiguration update [FM-0000]](https://github.com/pbsgears/ososerp/pull/14270). It was already merged on 2026-09-27, so any fix needs a follow-up PR against `version/0.12.0`.
+
+**Risk: Low.** 0 must-fix, 2 suggestions, 1 note.
+
+The main finding is that the PR changes nothing in the database:
+- **It repeats names EF already uses.** The three `HasColumnName` calls map each property to its own name, so both migrations (PostgreSQL and SqlServer) have empty `Up`/`Down` methods.
+- **The rename already happened.** PR #14211 renamed the `Liter_Per_*` columns with real migrations four days earlier.
+- **It probably didn't fix whatever prompted it.** If an environment was failing with a "column does not exist" error, that environment is most likely missing the #14211 migration.
+- **The migrations shouldn't be deleted.** They're merged and may already be applied.
+
+The other two findings:
+- The PR description is still the empty template, and the ticket is the placeholder `FM-0000`.
+- About 80 of the changed lines only re-indent code, in a style no other Fleet configuration file uses.
+
+I ran two independent review passes and one gap pass; the gap pass found nothing new. This is the first review of this PR.
+
+Report: `reviews/FM/ososerp/pr14270.html`

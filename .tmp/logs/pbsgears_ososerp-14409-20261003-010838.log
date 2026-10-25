@@ -1,0 +1,24 @@
+﻿PR #14409 OPEN head=ae6cb2c | files: 11 total, 11 reviewable, 0 generated | reviewable changed lines: 762 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr14409 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #14409 'feat(SDM): Added Notification Recipients and Events [OOTB-14862] [OOTB-14863]' | 11 files in scope, 762 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+Template placeholder left unfilled.
+At C:\Users\Dell\Desktop\Work\PR_Agent\.claude\skills\pr-review\engine\review.ps1:610 char:36
++ ... ch '\{\{[A-Z_]+\}\}') { throw 'Template placeholder left unfilled.' }
++                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Template placeholder left unfilled.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Template placeholder left unfilled.
+ 

@@ -1,0 +1,23 @@
+﻿PR #14730 OPEN head=4082fe8 | files: 87 total, 87 reviewable, 0 generated | reviewable changed lines: 2137 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr14730 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #14730 'feat(PMO): Portfolio and Programs [OOTB-15763] [OOTB-15766]' | 87 files in scope, 2137 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(PMO): Portfolio and Programs [OOTB-15763] [OOTB-15766]
+https://github.com/pbsgears/ososerp/pull/14730
+Risk: Medium | 0 must-fix, 5 suggestions, 2 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OOTB\ososerp\pr14730.html
+Tokens: 12 input + 162,656 cache-write + 463,490 cache-read + 18,849 output over 5 calls

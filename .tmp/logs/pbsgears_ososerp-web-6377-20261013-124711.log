@@ -1,0 +1,33 @@
+﻿PR #6377 OPEN head=5752356 | files: 97 total, 97 reviewable, 0 generated | reviewable changed lines: 4791 | shards: 3 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6377 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6377 'feat(UI): Convert Masters [FM-699]' | 97 files in scope, 4791 changed lines | 3 shard(s) | mode: first review
+Round 1: 6 independent passes (3 first, then 3 reusing the cache)
+  -> S1-A (sonnet)
+  -> S2-A (sonnet)
+  -> S3-A (sonnet)
+  <- S3-A done
+  <- S1-A done
+  <- S2-A done
+  -> S1-C (sonnet)
+  -> S2-C (sonnet)
+  -> S3-C (sonnet)
+  <- S3-C done
+  <- S1-C done
+  <- S2-C done
+Round 2: 3 gap pass(es)
+  -> S1-G (sonnet)
+  -> S2-G (sonnet)
+  -> S3-G (sonnet)
+  <- S3-G done
+  <- S1-G done
+  <- S2-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Convert Masters [FM-699]
+https://github.com/pbsgears/ososerp-web/pull/6377
+Risk: High | 2 must-fix, 7 suggestions, 5 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FM\ososerp-web\pr6377.html
+Tokens: 20 input + 191,467 cache-write + 337,758 cache-read + 16,462 output over 10 calls

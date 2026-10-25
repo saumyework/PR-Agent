@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Fleet): Traffic violation [FM-816] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Fleet): Traffic violation [FM-816]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14295">ososerp #14295</a>
+      <span>Chalaka94</span>
+      <span class="ref">feature/fleet/version/0.12.0 ← develop/fleet/FM-816-traffic-violation</span>
+      <span>2026-10-01</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">7</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">1</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds a Traffic Violation feature to the Fleet module (FM-816). It has an entity, a service, CQRS commands and queries, and endpoints for CRUD, unique code generation and assigned drivers by vehicle.</p>
+<p>Two issues block merge. <code>VehicleId</code> and <code>OperatorId</code> are not validated against the caller&#39;s company, which allows cross-tenant references and leaks another tenant&#39;s vehicle and operator data. <code>GetById</code>, <code>Update</code> and <code>Delete</code> also operate on soft-deleted rows.</p>
+<p>The code is generated at random with no uniqueness check on update. Validation is thin, the assigned-drivers query needs fixing, and there are no tests. The team should confirm the unique index exists and decide whether to use <code>DocumentCodeSetup</code> for code generation.</p>
+<p class="empty-note">Method: 4 independent review calls over 1 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:59">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:59</code>
+  <p><strong>VehicleId/OperatorId not validated against company.</strong> <code>CreateAsync</code> and <code>UpdateAsync</code> (via <code>ApplyTo</code>) assign <code>VehicleId</code> and <code>OperatorId</code> from the request without checking that they exist, aren&#39;t removed, and belong to the caller&#39;s company. A caller can link a violation to another tenant&#39;s vehicle or contact, and the DTO then returns that tenant&#39;s vehicle and operator details. Non-existent ids cause FK 500s. Validate both ids against <code>companyId</code> before saving. Do the same in the assigned-drivers query. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:61</code>, <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:39</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:120">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:120</code>
+  <p><strong>Soft-deleted rows returned by GetById/Update/Delete.</strong> <code>GetForCompanyAsync</code> filters only on <code>Id</code> and <code>CompanyId</code>, not <code>Status != Removed</code>. Removed violations can be read, edited and deleted again. <code>GetAllAsync</code> and the code-uniqueness checks already exclude removed rows, so this is inconsistent. Add the <code>Status != Removed</code> filter. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:121</code>, <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:61</code>.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:30">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:30</code>
+  <p><strong>Code uniqueness not enforced on update; create is racy.</strong> <code>UpdateAsync</code> overwrites <code>TrafficViolationCode</code> from the client via <code>ApplyTo</code> with no uniqueness check or immutability guard. Create uses a check-then-insert with a random 6-digit code, which can race without a unique index. <code>Random.Shared.Next(100000, 999999)</code> never returns 999999. The existing <code>DocumentCodeSetup</code> sequence isn&#39;t used. Make the code immutable on update, add a unique index on (<code>CompanyId</code>, <code>TrafficViolationCode</code>), and consider <code>DocumentCodeSetup</code>. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:135</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs:21">src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs:21</code>
+  <p><strong>Incomplete request and query validation.</strong> No rules for Amount (non-negative), string max lengths (OffenseNumber, OffenseLocation, TheCulprit, OffenceId, KeyId, Comment, code), OffenseDate NotEmpty on DateTimeOffset only checks default, cross-field (OperatorId required when !IsIgnitionKeyManual, KeyId when manual; TheCulprit when manual). Same in UpdateCommandValidator. Also Query validators missing: GetAllQuery, GetByIdQuery, GetUniqueCodeQuery, GetAssignedDriversByVehicleQuery have no AbstractValidator (team rule: each IQuery needs one; VehicleId/AssignedDate unchecked).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:92">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:92</code>
+  <p><strong>Assigned-drivers query issues.</strong> The query loads full entities with three Includes just to read <code>ContactId</code>. Use a projection with <code>Distinct</code>, since a contact with several matching assignments is returned repeatedly. The <code>ActualEndDate ?? EndDate</code> comparison excludes open-ended assignments when <code>EndDate</code> is null. The filter matches only <code>Approved</code>, ignoring <code>Started</code>. The vehicle is also not checked against the company. Also at: <code>src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:99</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:86">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:86</code>
+  <p><strong>Flattened DTO columns may break sort/filter.</strong> <code>GetAllAsync</code> maps the page to DTOs in memory and re-wraps it with <code>AsQueryable</code>. The flattened fields (<code>VehicleCodeName</code>, <code>VehiclePlate</code>, <code>OperatorName</code>, <code>IgnitionKey</code>) aren&#39;t entity paths. Sorting or filtering on them could throw if the list config uses entity paths. Check this against the list column config, which isn&#39;t in this shard.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:58">src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:58</code>
+  <p><strong>Endpoint contract issues.</strong> <code>assignedDriversByVehicle</code> is a read exposed as POST, so it should be GET with query params. Delete returns <code>Results.Ok(result.Success)</code>, a meaningless bool, so prefer <code>NoContent</code>. The Created location is a relative path without a leading slash. Also at: <code>src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:27</code>, <code>src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:67</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs:13">src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs:13</code>
+  <p><strong>Command/query names don&#39;t follow convention.</strong> Generic names such as <code>CreateCommand</code>, <code>UpdateCommand</code>, <code>DeleteCommand</code>, <code>GetAllQuery</code> and <code>GetByIdQuery</code> (and their handlers) deviate from the <code>[Action][ModuleNamePlural]</code> convention, e.g. <code>CreateTrafficViolationCommand</code>. They can also be ambiguous with other modules&#39; types.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Constants/Constants.cs">src/Modules/Fleet/Fleet.Application/Constants/Constants.cs</code>
+  <p><strong>No tests, empty description, unverified migration.</strong> The PR description is only template headings. No tests cover the service logic (code generation, company scoping, assigned drivers). No EF configuration or migration is visible, so confirm the unique index and max lengths exist. Also at: <code>src/Modules/Fleet/Fleet.Domain/Models/TrafficViolation.cs:38</code>.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Dtos/TrafficViolationDto.cs:35">src/Modules/Fleet/Fleet.Application/Dtos/TrafficViolationDto.cs:35</code>
+  <p><strong>Request DTO shape and duplicated handler boilerplate.</strong> The request DTO carries a client-settable <code>Id</code> and code. A JSON null overrides the <code>string.Empty</code> defaults and can reach required entity columns. The company-lookup block is repeated across handlers, so consider a shared base.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs</code>
+  <p><strong>Company scoping on service reads and writes.</strong> Get, update, delete and list are all filtered by <code>CompanyId</code>.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs</code>
+  <p><strong>Soft delete.</strong> Delete sets <code>Status.Removed</code>, and the list query excludes removed rows.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs">src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs</code>
+  <p><strong>Operator cleared for manual ignition key.</strong> <code>OperatorId</code> is cleared when the ignition key is entered manually, which keeps the data consistent.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs">src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs</code>
+  <p><strong>Validators on commands.</strong> Each command has a FluentValidation validator.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>325f98d</code></footer>
+
+  <script type="application/json" id="review-state">{"version":3,"headSha":"325f98df44e5717c11f17c0fbc4b9851c099865e","reviewedOn":"2026-10-01","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs","line":"59","lens":"L2","title":"VehicleId/OperatorId not validated against company","body":"`CreateAsync` and `UpdateAsync` (via `ApplyTo`) assign `VehicleId` and `OperatorId` from the request without checking that they exist, aren\u0027t removed, and belong to the caller\u0027s company. A caller can link a violation to another tenant\u0027s vehicle or contact, and the DTO then returns that tenant\u0027s vehicle and operator details. Non-existent ids cause FK 500s. Validate both ids against `companyId` before saving. Do the same in the assigned-drivers query. Also at: `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:61`, `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:39`.","firstSeen":"v3"},{"id":"F2","severity":"must-fix","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs","line":"120","lens":"L5","title":"Soft-deleted rows returned by GetById/Update/Delete","body":"`GetForCompanyAsync` filters only on `Id` and `CompanyId`, not `Status != Removed`. Removed violations can be read, edited and deleted again. `GetAllAsync` and the code-uniqueness checks already exclude removed rows, so this is inconsistent. Add the `Status != Removed` filter. Also at: `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:121`, `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:61`.","firstSeen":"v3"},{"id":"F3","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs","line":"30","lens":"L5","title":"Code uniqueness not enforced on update; create is racy","body":"`UpdateAsync` overwrites `TrafficViolationCode` from the client via `ApplyTo` with no uniqueness check or immutability guard. Create uses a check-then-insert with a random 6-digit code, which can race without a unique index. `Random.Shared.Next(100000, 999999)` never returns 999999. The existing `DocumentCodeSetup` sequence isn\u0027t used. Make the code immutable on update, add a unique index on (`CompanyId`, `TrafficViolationCode`), and consider `DocumentCodeSetup`. Also at: `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:135`.","firstSeen":"v3"},{"id":"F4","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs","line":"21","lens":"L4","title":"Incomplete request and query validation","body":"No rules for Amount (non-negative), string max lengths (OffenseNumber, OffenseLocation, TheCulprit, OffenceId, KeyId, Comment, code), OffenseDate NotEmpty on DateTimeOffset only checks default, cross-field (OperatorId required when !IsIgnitionKeyManual, KeyId when manual; TheCulprit when manual). Same in UpdateCommandValidator. Also Query validators missing: GetAllQuery, GetByIdQuery, GetUniqueCodeQuery, GetAssignedDriversByVehicleQuery have no AbstractValidator (team rule: each IQuery needs one; VehicleId/AssignedDate unchecked).","firstSeen":"v3"},{"id":"F5","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs","line":"92","lens":"L6","title":"Assigned-drivers query issues","body":"The query loads full entities with three Includes just to read `ContactId`. Use a projection with `Distinct`, since a contact with several matching assignments is returned repeatedly. The `ActualEndDate ?? EndDate` comparison excludes open-ended assignments when `EndDate` is null. The filter matches only `Approved`, ignoring `Started`. The vehicle is also not checked against the company. Also at: `src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs:99`.","firstSeen":"v3"},{"id":"F6","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Services/TrafficViolationService.cs","line":"86","lens":"L6","title":"Flattened DTO columns may break sort/filter","body":"`GetAllAsync` maps the page to DTOs in memory and re-wraps it with `AsQueryable`. The flattened fields (`VehicleCodeName`, `VehiclePlate`, `OperatorName`, `IgnitionKey`) aren\u0027t entity paths. Sorting or filtering on them could throw if the list config uses entity paths. Check this against the list column config, which isn\u0027t in this shard.","firstSeen":"v3"},{"id":"F7","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs","line":"58","lens":"L7","title":"Endpoint contract issues","body":"`assignedDriversByVehicle` is a read exposed as POST, so it should be GET with query params. Delete returns `Results.Ok(result.Success)`, a meaningless bool, so prefer `NoContent`. The Created location is a relative path without a leading slash. Also at: `src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:27`, `src/Modules/Fleet/Fleet.Application/Endpoints/TrafficViolationEndpoints.cs:67`.","firstSeen":"v3"},{"id":"F8","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/UseCases/TrafficViolations/Commands/Create/CreateCommand.cs","line":"13","lens":"L10","title":"Command/query names don\u0027t follow convention","body":"Generic names such as `CreateCommand`, `UpdateCommand`, `DeleteCommand`, `GetAllQuery` and `GetByIdQuery` (and their handlers) deviate from the `[Action][ModuleNamePlural]` convention, e.g. `CreateTrafficViolationCommand`. They can also be ambiguous with other modules\u0027 types.","firstSeen":"v3"},{"id":"F9","severity":"suggestion","status":"open","file":"src/Modules/Fleet/Fleet.Application/Constants/Constants.cs","line":"","lens":"L11","title":"No tests, empty description, unverified migration","body":"The PR description is only template headings. No tests cover the service logic (code generation, company scoping, assigned drivers). No EF configuration or migration is visible, so confirm the unique index and max lengths exist. Also at: `src/Modules/Fleet/Fleet.Domain/Models/TrafficViolation.cs:38`.","firstSeen":"v3"},{"id":"F10","severity":"nit","status":"open","file":"src/Modules/Fleet/Fleet.Application/Dtos/TrafficViolationDto.cs","line":"35","lens":"L7","title":"Request DTO shape and duplicated handler boilerplate","body":"The request DTO carries a client-settable `Id` and code. A JSON null overrides the `string.Empty` defaults and can reach required entity columns. The company-lookup block is repeated across handlers, so consider a shared base.","firstSeen":"v3"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

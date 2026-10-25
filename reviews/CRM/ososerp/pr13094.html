@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(CRM): subcategory classification refactor [CRM-0011] — Review</title>
+<style>
+  :root {
+    --bg: #0c0f16;
+    --panel: #141924;
+    --panel-raised: #171d2a;
+    --border: #232a3a;
+    --text: #e4e7ee;
+    --muted: #838da3;
+    --accent: #5b8cff;
+    --accent-dim: #33456e;
+    --error: #f2545b;
+    --error-bg: #2a1418;
+    --warning: #e8a33d;
+    --warning-bg: #2a2013;
+    --nit: #9aa5b8;
+    --nit-bg: #1c212c;
+    --good: #3ecf8e;
+    --good-bg: #10261c;
+    --grid-line: rgba(91, 140, 255, 0.05);
+  }
+  :root[data-theme="light"], :root {
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f4f6fb;
+      --panel: #ffffff;
+      --panel-raised: #ffffff;
+      --border: #dde1ea;
+      --text: #161a23;
+      --muted: #5b6472;
+      --accent: #3b63d1;
+      --accent-dim: #d7e0fb;
+      --error: #c8333a;
+      --error-bg: #fbe9ea;
+      --warning: #9a6408;
+      --warning-bg: #faf0da;
+      --nit: #5b6472;
+      --nit-bg: #edeff3;
+      --good: #157a4d;
+      --good-bg: #e4f5ec;
+      --grid-line: rgba(59, 99, 209, 0.06);
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0f16;
+    --panel: #141924;
+    --panel-raised: #171d2a;
+    --border: #232a3a;
+    --text: #e4e7ee;
+    --muted: #838da3;
+    --accent: #5b8cff;
+    --accent-dim: #33456e;
+    --error: #f2545b;
+    --error-bg: #2a1418;
+    --warning: #e8a33d;
+    --warning-bg: #2a2013;
+    --nit: #9aa5b8;
+    --nit-bg: #1c212c;
+    --good: #3ecf8e;
+    --good-bg: #10261c;
+    --grid-line: rgba(91, 140, 255, 0.05);
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f6fb;
+    --panel: #ffffff;
+    --panel-raised: #ffffff;
+    --border: #dde1ea;
+    --text: #161a23;
+    --muted: #5b6472;
+    --accent: #3b63d1;
+    --accent-dim: #d7e0fb;
+    --error: #c8333a;
+    --error-bg: #fbe9ea;
+    --warning: #9a6408;
+    --warning-bg: #faf0da;
+    --nit: #5b6472;
+    --nit-bg: #edeff3;
+    --good: #157a4d;
+    --good-bg: #e4f5ec;
+    --grid-line: rgba(59, 99, 209, 0.06);
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 100% 28px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 28px 100%,
+      var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono {
+    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", ui-monospace, "SF Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page { max-width: 880px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  /* ---- terminal header ---- */
+  .console {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .console-bar {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .55rem .85rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-raised);
+  }
+  .console-bar span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--border);
+  }
+  .console-bar .label {
+    width: auto; height: auto; border-radius: 0;
+    background: none;
+    margin-left: .5rem;
+    font-size: .72rem;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+  .console-body { padding: 1.1rem 1.35rem 1.4rem; }
+  .prompt {
+    font-size: .92rem;
+    color: var(--muted);
+  }
+  .prompt .accent { color: var(--accent); }
+  .pr-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: .6rem 0 .5rem;
+    text-wrap: balance;
+  }
+  .pr-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem 1.1rem;
+    font-size: .82rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .pr-meta a { color: var(--accent); text-decoration: none; }
+  .pr-meta a:hover { text-decoration: underline; }
+
+  .build-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+    font-size: .85rem;
+    padding-top: .9rem;
+    border-top: 1px dashed var(--border);
+  }
+  .risk-chip {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: .74rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: .2rem .6rem;
+    border-radius: 4px;
+    border: 1px solid currentColor;
+  }
+  .risk-chip.low { color: var(--good); background: var(--good-bg); }
+  .risk-chip.medium { color: var(--warning); background: var(--warning-bg); }
+  .risk-chip.high { color: var(--error); background: var(--error-bg); }
+
+  .tally { display: flex; gap: .9rem; color: var(--muted); }
+  .tally b { color: var(--text); }
+  .tally .n-error b { color: var(--error); }
+  .tally .n-warning b { color: var(--warning); }
+  .tally .n-nit b { color: var(--nit); }
+
+  .summary {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+    font-size: .98rem;
+  }
+  .summary p { margin: .4rem 0; }
+
+  /* ---- jump nav ---- */
+  nav.jump {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    gap: 1.4rem;
+    padding: .7rem 1.25rem;
+    margin: 0 -1.25rem 1.5rem;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+    font-size: .78rem;
+  }
+  nav.jump a {
+    color: var(--muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+  }
+  nav.jump a:hover { color: var(--text); }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.error { background: var(--error); }
+  .dot.warning { background: var(--warning); }
+  .dot.nit { background: var(--nit); }
+  .dot.good { background: var(--good); }
+
+  /* ---- diagnostic groups ---- */
+  section.group { scroll-margin-top: 3.2rem; margin-bottom: 2.1rem; }
+  section.group h2 {
+    font-family: inherit;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    margin: 0 0 .8rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  section.group h2::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2::before { background: var(--warning); }
+  section.nits h2::before { background: var(--nit); }
+  section.good h2::before { background: var(--good); }
+
+  .finding {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 6px;
+    padding: .85rem 1.1rem;
+    margin-bottom: .7rem;
+  }
+  .mustfix .finding { border-left-color: var(--error); }
+  .suggestions .finding { border-left-color: var(--warning); }
+  .nits .finding { border-left-color: var(--nit); }
+  .good .finding { border-left-color: var(--good); }
+
+  .finding-loc {
+    font-size: .82rem;
+    margin-bottom: .45rem;
+    display: block;
+  }
+  .finding-loc::before { font-weight: 600; }
+  .mustfix .finding-loc::before { content: "error --> "; color: var(--error); }
+  .suggestions .finding-loc::before { content: "warning --> "; color: var(--warning); }
+  .nits .finding-loc::before { content: "note --> "; color: var(--nit); }
+  .good .finding-loc::before { content: "pass --> "; color: var(--good); }
+
+  .finding-body { font-size: .96rem; }
+  .finding-body p { margin: .25rem 0; }
+  .finding-body code {
+    font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", ui-monospace, "SF Mono", Consolas, monospace;
+    background: var(--panel-raised);
+    border: 1px solid var(--border);
+    padding: .05rem .3rem;
+    border-radius: 4px;
+    font-size: .88em;
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted);
+    font-size: .78rem;
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border);
+  }
+  footer code {
+    font-family: inherit;
+    background: var(--panel-raised);
+    padding: .05rem .3rem;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="console">
+    <div class="console-bar">
+      <span></span><span></span><span></span>
+      <span class="label">pr-review</span>
+    </div>
+    <div class="console-body">
+      <div class="prompt"><span class="accent mono">$</span> <span class="mono">pr-review pbsgears/ososerp 13094</span></div>
+      <div class="pr-title">feat(CRM): subcategory classification refactor [CRM-0011]</div>
+      <div class="pr-meta">
+        <span><a href="https://github.com/pbsgears/ososerp/pull/13094" class="mono">pbsgears/ososerp #13094</a></span>
+        <span>Chalaka Karunarathne</span>
+        <span class="mono">feature/crm/CM-3043-architecture-migration ← develop/crm/chalaka-subcategory-classification-refactor</span>
+        <span>2026-07-24</span>
+      </div>
+      <div class="summary"><p>Large CRM architecture migration (127 files changed; the reported 63k additions are almost entirely 8 auto-generated EF Core migration <code>Designer.cs</code> snapshot files, ~7,500 lines each — the hand-authored diff is closer to a few thousand lines). The PR moves CRM's CustomDataSource/CustomDataCategory/CustomDataSubCategory/SubCategoryClassification/SystemConfiguration endpoints off a "fat service" pattern and onto CQRS (MediatR Commands/Queries/Handlers/FluentValidation validators per use case), and removes the bilingual <code>SecondaryName</code> field across the whole vertical. The CQRS migration itself is well executed and consistent with the team's guide. However, verifying the refactor against the code it replaced turned up a confirmed cross-tenant data leak and a few silent regressions (lost audit fields, lost list search/filter/sort, inconsistent user-id validation) that should be fixed before merge.</p></div>
+      <div class="build-line">
+        <span class="risk-chip high">risk: High</span>
+        <span class="tally mono">
+          <span class="n-error">errors: <b>4</b></span>
+          <span class="n-warning">warnings: <b>4</b></span>
+          <span class="n-nit">notes: <b>2</b></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix"><span class="dot error"></span>Errors</a>
+    <a href="#suggestions"><span class="dot warning"></span>Warnings</a>
+    <a href="#nits"><span class="dot nit"></span>Notes</a>
+    <a href="#good"><span class="dot good"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Services/CustomDataSourceService.cs (GetAllCustomDataSourceAsync)</div>
+      <div class="finding-body"><p><strong>Cross-tenant data leak.</strong> <code>GetAllCustomDataSourceAsync()</code> resolves <code>companyId</code> via <code>GetCompanyIdFromContextAsync()</code> but never uses it — the repository query is just <code>x => !x.IsDeleted</code>. <code>GET crm/CustomDataSource</code> now returns every company's custom data sources to any authenticated user, not just the caller's own company. Compare <code>CustomDataCategoriesService.GetAllCustomDataCategoriesAsync</code> in the same PR, which correctly filters on <code>x.CustomDataSource.CompanyProfileId == companyId</code> — that's the pattern this method is missing.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Endpoints/SystemConfigurationEndpoints.cs, SystemConfigurationQueryHelper.cs, Services/SystemConfigurationService.cs</div>
+      <div class="finding-body"><p><strong>Lost search/filter/sort/group-by on System Configuration list.</strong> The old endpoint accepted <code>BaseFilterDtoPaginated baseFilter</code> and ran it through <code>ApplySearch</code>/<code>ApplyFilters</code>/<code>ApplySort</code>/<code>GetGroupKeySelector</code> (~120 lines, all deleted from <code>SystemConfigurationQueryHelper.cs</code>). The new <code>GetAllQuery</code> → <code>GetAllHandler</code> → <code>SystemConfigurationService.GetAllSystemConfigurationsAsync()</code> takes no parameters at all and just paginates the unfiltered set. If the Angular list page still sends search text, column filters, sort, or group-by, they'll now be silently ignored server-side. The same shape of regression applies to <code>CustomDataSourceService.GetAllCustomDataSourceAsync()</code>, whose interface also dropped its <code>BaseFilterDtoPaginated</code> parameter.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Services/SystemConfigurationService.cs (RemoveSystemConfigurationAsync)</div>
+      <div class="finding-body"><p><strong>Soft-delete no longer records who/when.</strong> This method now only sets <code>IsDeleted = true; IsActive = false;</code> — <code>DeletedBy</code> and <code>DeletedDate</code> are never assigned. Every sibling service touched in this PR (<code>CustomDataCategoriesService</code>, <code>CustomDataSourceService</code>, <code>CustomDataSubCategoryService</code>, <code>SubCategoryClassificationService</code>) still sets both fields on delete, so this looks like an isolated miss rather than an intentional change.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Services/SubCategoryClassificationService.cs</div>
+      <div class="finding-body"><p><strong>No user-id validation before writes.</strong> Every create/update/delete/status-change method here reads <code>var userId = UserId;</code> and uses it directly with no guard. The sibling <code>CustomDataCategoriesService</code> and <code>CustomDataSubCategoryService</code> in this same PR both introduced a <code>GetRequiredUserId()</code> helper that throws <code>BadRequestException</code> when <code>UserId == Guid.Empty</code> (replacing the old endpoint-level "User id is required" checks). This class dropped that check entirely — if the auth context ever fails to populate a user claim, <code>CreatedBy</code>/<code>UpdatedBy</code>/<code>DeletedBy</code> will silently be written as <code>Guid.Empty</code> instead of the request failing fast.</p></div>
+    </div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Endpoints/CustomDataSourceEndpoints.cs, CustomDataCategoriesEndpoints.cs, SystemConfigurationEndpoints.cs</div>
+      <div class="finding-body"><p>Route casing is inconsistent and violates the team's naming guide (camelCase plural route segments): <code>app.MapGroup("crm/CustomDataSource")</code>, <code>app.MapGroup("crm/CustomDataCategories")</code>, and <code>app.MapGroup("crm/SystemConfiguration")</code> all use PascalCase, while <code>app.MapGroup("crm/subCategoryClassification")</code> (also touched in this PR) correctly uses camelCase. Suggest normalizing to <code>crm/customDataSource</code>, <code>crm/customDataCategories</code>, <code>crm/systemConfiguration</code> per <code>guides/C#_Code_Review.txt</code> §5.1.1 — worth doing now before any frontend/API-consumer code hard-codes the new casing.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/DbMigrator/DataMigrations/Crm/Crm_InitialMigration.cs (SeedCustomDataSourcesAsync)</div>
+      <div class="finding-body"><p>The three seeded <code>CustomDataSource</code> rows now set <code>CompanyProfileId = Guid.Empty</code>. Once the tenant-scoping bug above is fixed, queries that filter on the real <code>CompanyProfileId</code> will make these seed rows invisible to every company. Consider seeding a real/placeholder company id, or documenting why <code>Guid.Empty</code> is intentional (e.g. a "global" pseudo-tenant that's actually handled somewhere).</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/DbMigrator/appsettings.json</div>
+      <div class="finding-body"><p><code>ConnectionStrings:PostgreSQL:Database</code> changed from <code>osos-new-new-test-24</code> to <code>osos-new-36</code>. This reads like a personal local dev database name rather than an intentional shared config change — worth double-checking it isn't accidental, since it'll silently apply to whoever pulls this branch next.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Services/CustomDataSourceService.cs (RemoveCustomDataSourceFromRequestAsync)</div>
+      <div class="finding-body"><p>Delete cascades soft-delete to immediate child <code>CustomDataCategory</code> rows only (<code>SoftDeleteCategoriesAsync</code>) — it doesn't reach further down to <code>CustomDataSubCategory</code> or <code>SubCategoryClassification</code> rows under those categories. If those are expected to stay queryable/active independent of their deleted ancestor that's fine, but if not, this can leave orphaned "active" sub-records under a deleted source.</p></div>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Nits</h2>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Endpoints/CompanyProfileEndpoints.cs:66</div>
+      <div class="finding-body"><p><code>return Results.Ok(result);</code> → <code>return Results.Ok(result.Detail);</code> is an unrelated response-shape change bundled into a PR that's otherwise scoped to CustomDataSource/Category/SubCategory/SubCategoryClassification/SystemConfiguration. Not wrong, just scope creep worth calling out per PR hygiene — consider splitting unrelated fixes into their own PR next time.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/UseCases/SystemConfigurations/Commands/Delete/DeleteCommandValidator.cs</div>
+      <div class="finding-body"><p>Good to see a validator added here (<code>DeleteCommandValidator</code> requires a non-empty id) — worth double-checking the equivalent delete commands for <code>CustomDataSource</code>/<code>CustomDataSubCategory</code>/<code>SubCategoryClassification</code> have the same guard, since only a subset of the ~30 new validator files were sampled during this review given the PR's size.</p></div>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/UseCases/**</div>
+      <div class="finding-body"><p>The CQRS migration itself is clean and consistent with the team guide: one Command/Query + Handler + FluentValidation Validator per use case, <code>NotFoundException</code> thrown consistently for missing entities, and async uniqueness checks (e.g. <code>KeyAlreadyUsed</code> in <code>SystemConfigurations/Commands/Create/CreateFromRequestCommandValidator.cs</code>) done via <code>MustAsync</code> against the repository rather than in the handler.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/Modules/Crm/Crm.Application/Services/CustomDataCategoriesService.cs, CustomDataSubCategoryService.cs, SubCategoryClassificationService.cs</div>
+      <div class="finding-body"><p>The "assigned to custom field masters" delete-guard and the parent/child existence-flag syncing (<code>IsSubCategoryExists</code>, <code>IsSubCategoryClassificationsExists</code>) were carried over faithfully from the old endpoint-level orchestration into the new service methods — this logic is easy to lose in a refactor this size and it wasn't.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">src/DbMigrator/DataMigrations/Crm/Crm_InitialMigration.cs</div>
+      <div class="finding-body"><p>~360 lines of already-dead, commented-out seed code (<code>SeedCompanyProfilesAsync</code>, <code>SeedUserInformationsAsync</code> — including hardcoded employee PII) were fully deleted rather than left to rot further. Good cleanup.</p></div>
+    </div>
+    <div class="finding">
+      <div class="finding-loc">Domain/Dtos/Endpoints (SecondaryName removal)</div>
+      <div class="finding-body"><p>The bilingual <code>SecondaryName</code>/<code>isEnglish</code> localization removal was applied thoroughly and consistently across domain models, DTOs, query helpers, and endpoints in the reviewed files — no stray references were found in the files sampled.</p></div>
+    </div>
+  </section>
+
+  <footer>guides used: <code>guides/C#_Code_Review.txt, guides/Naming_Conventions.txt, guides/C#_Coding_Conventions_&_Best_Practice.txt</code></footer>
+
+</div>
+</body>
+</html>

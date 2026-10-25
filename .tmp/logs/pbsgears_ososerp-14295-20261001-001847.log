@@ -1,0 +1,23 @@
+﻿PR #14295 OPEN head=325f98d | files: 24 total, 24 reviewable, 0 generated | reviewable changed lines: 755 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr14295 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #14295 'feat(Fleet): Traffic violation [FM-816]' | 24 files in scope, 755 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(Fleet): Traffic violation [FM-816]
+https://github.com/pbsgears/ososerp/pull/14295
+Risk: High | 3 must-fix, 8 suggestions, 1 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FM\ososerp\pr14295.html
+Tokens: 12 input + 47,014 cache-write + 93,814 cache-read + 13,156 output over 5 calls

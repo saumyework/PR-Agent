@@ -1,0 +1,82 @@
+[
+    {
+        "call":  "S1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  43694,
+        "cacheRead":  778,
+        "output":  1369
+    },
+    {
+        "call":  "S3-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  66167,
+        "cacheRead":  778,
+        "output":  2918
+    },
+    {
+        "call":  "S2-A",
+        "model":  "sonnet",
+        "input":  4,
+        "cacheWrite":  44515,
+        "cacheRead":  40271,
+        "output":  8356
+    },
+    {
+        "call":  "S2-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  718,
+        "cacheRead":  38808,
+        "output":  3013
+    },
+    {
+        "call":  "S1-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  712,
+        "cacheRead":  43793,
+        "output":  4420
+    },
+    {
+        "call":  "S3-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  718,
+        "cacheRead":  66260,
+        "output":  4657
+    },
+    {
+        "call":  "S1-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  4585,
+        "cacheRead":  43793,
+        "output":  973
+    },
+    {
+        "call":  "S3-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  9979,
+        "cacheRead":  66260,
+        "output":  1301
+    },
+    {
+        "call":  "S2-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  5123,
+        "cacheRead":  38808,
+        "output":  1590
+    },
+    {
+        "call":  "merge",
+        "model":  "sonnet",
+        "input":  4,
+        "cacheWrite":  10681,
+        "cacheRead":  12902,
+        "output":  4493
+    }
+]

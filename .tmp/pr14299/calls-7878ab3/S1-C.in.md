@@ -1,0 +1,1 @@
+Review pass C over shard S1. Walk by request flow: endpoint -> command/validator -> handler -> service -> mapping -> model/EF config -> migration, then any file not reached. You also cover PR-level items (L11).

@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Fleet): Company code setup [FM-749] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Fleet): Company code setup [FM-749]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14111">ososerp #14111</a>
+      <span>Chalaka94</span>
+      <span class="ref">feature/fleet/version/0.12.0 ← develop/chalaka/fleet/FM-749-company-code-setup</span>
+      <span>2026-09-28</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">3</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">15</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">8</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">6</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds full CRUD for <code>DocumentCodeSetup</code> ("company code setup") in the Fleet module. It adds a new service, Create/Update/Delete/Ensure commands, GetAll/GetById/GetByCompanyId/GetActiveLookup queries, an endpoint group, DTOs and three localized messages. Document-code provisioning moves out of <code>CompanySettingService</code> into <code>EnsureForCompanyAsync</code>. Some unrelated <code>VehiclePlate</code> cleanup is bundled in.</p>
+<p><strong>This is the complete, consolidated review of commit 22d418d and replaces v1â€“v7.</strong> It was produced by three independent full review passes, merged and checked against the code, followed by gap-finding passes until one found nothing new. Everything from v7 is included (F1, F6, F8, F14, F17, F19). Future reviews of this PR will only re-check these IDs and look at newly pushed code.</p>
+<p><strong>Blocking:</strong> the API accepts <code>Status</code> values it shouldn't (F1), lets an update move a setup to another company or rewind its serial number (F2), and returns 500s for non-existent company or module ids (F3). F4 (company scoping) needs a decision from the team before merge.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:22">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:22</code>
+  <p><strong>Status is never validated.</strong> Neither validator checks <code>Status</code> on the setup or on its <code>Formats</code>. <code>ToEntity</code>/<code>ApplyTo</code> copy it straight from the request. As a result: (a) POST with <code>status: 2</code> (Removed) commits the row, then <code>CreateAsync</code> returns <code>GetByIdAsync</code>, which filters out Removed, so the client gets a 404 for a row that was saved. (b) PUT with Removed soft-deletes the setup outside <code>DeleteAsync</code>, so its formats are never cascaded. (c) Out-of-range values like <code>99</code> are stored. <em>Fix:</em> add <code>.IsInEnum()</code> and restrict the setup and every format to Active/Inactive, in both <code>CreateCommand</code> and <code>UpdateCommand</code>. Only Delete should set Removed.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/DocumentCodeSetupExtensions.cs:60">src/Modules/Fleet/Fleet.Application/Extensions/DocumentCodeSetupExtensions.cs:60</code>
+  <p><strong>Update can move a setup or rewind its serial.</strong> <code>ApplyTo</code> overwrites <code>CompanyId</code> and <code>CodeModuleId</code> from the PUT body, and <code>UpdateAsync</code> loads by Id alone. A PUT can therefore move an existing setup, with its formats and serial counter, to another company or module. Its <code>Prefix</code> (<code>{companyCode}-{ShortCode}</code>) then points at the wrong company. <code>SerialNo</code> can also be set lower than numbers already issued, so later documents reuse existing numbers. <em>Fix:</em> treat <code>CompanyId</code>/<code>CodeModuleId</code> as immutable on update (don't apply them, or reject the request if they differ), and don't allow <code>SerialNo</code> to decrease.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:23">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:23</code>
+  <p><strong>Company and CodeModule existence not checked.</strong> Create and Update only check <code>NotEmpty()</code> on <code>CompanyId</code>/<code>CodeModuleId</code> (also <code>UpdateCommand.cs:23</code>). A random GUID passes validation and then fails the FK in <code>SaveChangesAsync</code>, so the client gets a 500 instead of a localized 400. An inactive CodeModule is accepted, even though Ensure only provisions Active modules. <em>Fix:</em> add <code>MustAsync</code> rules that check the company exists and is active, and the CodeModule exists with <code>Status.Active</code>.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:29">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:29</code>
+  <p><strong>No company scoping on list, get, update and delete.</strong> <code>GetAllAsync</code> returns every company's setups (only <code>Status != Removed</code>). <code>GetById</code>/<code>Update</code>/<code>Delete</code> act on any Id, and <code>Create</code>/<code>Update</code> trust the body's <code>CompanyId</code>. Meanwhile <code>/lookup</code> scopes by the caller's <code>CompanyCode</code> header. Decide which model is intended: either an admin-only cross-company screen (then enforce that with a permission on the group), or filter every query and write by the caller's company.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:121">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:121</code>
+  <p><strong>Null formats crashes Create.</strong> A body with <code>"formats": null</code> overrides the <code>= []</code> initializer. <code>RuleForEach</code> skips a null collection, then <code>dto.Formats.Count</code> throws a <code>NullReferenceException</code> (500). Null items inside the array fail the same way. Update already guards against this with <code>incomingFormats ??= []</code>. <em>Fix:</em> add <code>RuleFor(x =&gt; x.DocumentCodeSetup.Formats).NotNull()</code> plus a per-item <code>NotNull</code>, or use <code>dto.Formats ?? []</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Queries/GetActiveLookup/GetActiveLookupHandler.cs:22">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Queries/GetActiveLookup/GetActiveLookupHandler.cs:22</code>
+  <p><strong>Lookup crashes on an unknown company code.</strong> <code>CompanyByCodeQuery</code> returns a null <code>Company</code> for an unknown or missing code, and <code>company.Company.Id</code> throws a <code>NullReferenceException</code> (500). The other two company-resolving handlers in this PR null-check and throw <code>NotFoundException</code>. Do the same here.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:29">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:29</code>
+  <p><strong>Remaining validation gaps.</strong> These are in both validators. Each format's <code>FormatNumber</code> has no rule, so 0, negative and duplicate values within a setup are accepted. <code>CodeType</code> is free text, although the only known value is <code>DocumentCodeSetupDefaults.SequentialCodeType</code>. No <code>MaximumLength</code> on <code>Prefix</code>/<code>CodeType</code>/<code>DocumentReferenceNo</code>/<code>PrintHeaderFooter</code>/<code>Value</code> to match the DB columns. <code>FormatLength</code>/<code>SerialNo</code> have no upper bound, and nothing checks that <code>SerialNo</code> fits in <code>FormatLength</code> digits.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:209">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:209</code>
+  <p><strong>Format sync silently drops edits.</strong> In <code>SyncFormatsAsync</code>, an incoming format whose non-empty Id isn't among this setup's active formats (stale, removed, or from another setup) is skipped with <code>continue</code>. The edit is lost and PUT still returns 200. Also, a PUT that omits <code>formats</code> removes every existing format. <em>Fix:</em> reject unknown format Ids with a validation or NotFound error, and document or guard the omit-means-delete-all behaviour.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:106">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:106</code>
+  <p><strong>Duplicates possible under concurrency.</strong> Uniqueness of (<code>CompanyId</code>, <code>CodeModuleId</code>) is only check-then-insert: <code>AnyAsync</code> in the validator, and the existing-setups read in <code>EnsureForCompanyAsync</code>. <code>DocumentCodeSetupConfiguration</code> has no unique index, so a double-clicked Create or two concurrent <code>/ensure</code> calls both insert. <em>Fix:</em> add a filtered unique index on (<code>CompanyId</code>, <code>CodeModuleId</code>) <code>WHERE Status &lt;&gt; Removed</code> and map the violation to <code>DocumentCodeSetupAlreadyExistsForCompany</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:48">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:48</code>
+  <p><strong>Ensure treats deleted setups as existing.</strong> <code>EnsureForCompanyAsync</code> loads setups with no status filter, so a module whose setup was soft-deleted is never provisioned again. The Create duplicate check does ignore Removed rows, so the two paths disagree about what "exists" means. Filter <code>x.Status != Status.Removed</code>, or restore the removed row, whichever the business intends.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Ensure/EnsureHandler.cs:21">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Ensure/EnsureHandler.cs:21</code>
+  <p><strong>Deleted or inactive companies accepted.</strong> <code>GetComapanyByIdQuery</code> maps to <code>CompanyService.GetAsync(Guid)</code>, which has no Status or IsDeleted filter and returns null only when the row doesn't exist at all. So <code>/ensure</code> provisions setups for a deleted or inactive company, and <code>GET /companyId/{id}</code> returns 200 for one (also <code>GetByCompanyIdHandler.cs:21</code>). Use an active-company check.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:95">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:95</code>
+  <p><strong>Lookup lists setups for inactive modules.</strong> <code>GetActiveLookupAsync</code> filters only on the setup's own status. After an admin deactivates a CodeModule, its setups still appear in the dropdown. Add <code>x.CodeModule.Status == Status.Active</code> to the predicate, consistent with Ensure.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Extensions/DocumentCodeSetupExtensions.cs:22">src/Modules/Fleet/Fleet.Application/Extensions/DocumentCodeSetupExtensions.cs:22</code>
+  <p><strong>codeModuleShortCode cannot be sorted or filtered.</strong> Team rule: list <code>path</code> values must match a real entity property chain. <code>GetAllAsync</code> applies <code>$orderby</code>/<code>$filter</code> to the <code>DocumentCodeSetup</code> entity through <code>CriteriaBuilder</code>, but <code>CodeModuleShortCode</code> only exists on the DTO. If the list config uses <code>codeModuleShortCode</code>, sorting or filtering that column throws <code>InfrastructureException</code>. The frontend column must use <code>codeModule/shortCode</code> with <code>isInsideObject: true</code>. Check this against the ososerp-web list JSON.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:24">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:24</code>
+  <p><strong>Misleading, reused validation messages.</strong> Missing <code>Prefix</code>, <code>CodeType</code> and format <code>Value</code> all return <code>CodeRequired</code>, and a missing <code>CodeModuleId</code> returns the generic <code>IdRequired</code>, so the user can't tell which field failed. The PR already adds <code>DocumentCodeSetup*</code> keys. Add <code>...PrefixRequired</code>, <code>...CodeTypeRequired</code>, <code>...CodeModuleRequired</code> and <code>...FormatValueRequired</code> the same way, in all three resx files.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/IDocumentCodeSetupService.cs:15">src/Modules/Fleet/Fleet.Application/Services/IDocumentCodeSetupService.cs:15</code>
+  <p><strong>CancellationToken not propagated.</strong> Every handler receives a <code>CancellationToken</code>, but no service method accepts one, and the validators' <code>MustAsync</code> discards it. EF calls (<code>ListAsync</code>, <code>AnyAsync</code>, <code>SaveChangesAsync</code>, â€¦) cannot be cancelled. Add the parameter and pass it through.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Queries/GetByCompanyId/GetByCompanyIdHandler.cs:21">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Queries/GetByCompanyId/GetByCompanyIdHandler.cs:21</code>
+  <p><strong>Heavy query used as an existence check.</strong> <code>GetComapanyByIdQuery</code> loads the company logo and stamp and generates presigned URLs for them. Here it's only used for a null check (and in Ensure, for <code>CompanyCode</code>). Use a lightweight lookup. The active-company fix in F11 is a good place to do this.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F17</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Domain/Models/VehiclePlate.cs:24">src/Modules/Fleet/Fleet.Domain/Models/VehiclePlate.cs:24</code>
+  <p><strong>Unrelated VehiclePlate change bundled in.</strong> This removes the <code>VehiclePlate.Delete()</code> domain method, and <code>VehiclePlateService.cs:30</code> now sets <code>Status</code> directly. That moves soft-delete behaviour out of the entity, and it has nothing to do with FM-749. The same goes for the <code>GetIncludes</code> reformat and removed usings. Keep the domain method, or move these changes to a separate PR.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>Empty description and no tests.</strong> The PR body is the unfilled template (What/Why placeholders, nothing ticked, no Confluence link). There are no unit tests for the new service, validators, <code>SyncFormatsAsync</code> or <code>EnsureForCompanyAsync</code>. The branch history also has commits that toggle local <code>DbMigrator/appsettings.json</code> DB and password values (05c94dba, 0c6e4ea7). They cancel out in the final diff, so squash on merge.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F19</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/DocumentCodeSetupEndpoints.cs:27">src/Modules/Fleet/Fleet.Application/Endpoints/DocumentCodeSetupEndpoints.cs:27</code>
+  <p><strong>Location header and route shape.</strong> The <code>Created</code> URI has no leading slash (<code>documentCodeSetups/{id}</code>), while the sibling <code>VehiclePlateEndpoints</code> uses <code>/vehiclePlate/{id}</code>. The <code>/companyId/{companyId}</code>, <code>/ensure</code> and <code>/lookup</code> routes put the parameter name or an action in the path. The C# guide (5.1.1) says to let the HTTP verb carry the action.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F20</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Endpoints/DocumentCodeSetupEndpoints.cs:37">src/Modules/Fleet/Fleet.Application/Endpoints/DocumentCodeSetupEndpoints.cs:37</code>
+  <p><strong>Delete and Ensure return Ok(true).</strong> Both always return a constant <code>true</code>, which carries no information. Use <code>204 NoContent</code> for Delete. For Ensure, use 204 or return the resulting setups, as the removed <code>ProvisionDocumentCodeSetupsAsync</code> did.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F21</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:100">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:100</code>
+  <p><strong>Lookup naming and ordering.</strong> The lookup's <code>Name</code> is filled from <code>CodeModule.ShortCode</code>, although <code>CodeModule</code> has a <code>Name</code> column. The lookup is unordered, and <code>GetByCompanyIdAsync</code> orders by <code>Prefix</code> descending. Pick deliberate values for both.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F22</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Domain/Models/DocumentCodeSetup.cs:39">src/Modules/Fleet/Fleet.Domain/Models/DocumentCodeSetup.cs:39</code>
+  <p><strong>Paged list eagerly loads all formats.</strong> <code>GetIncludes()</code> includes every format, removed ones too. The paged <code>GetAll</code> uses it, which produces a cartesian join, and <code>MapToDto</code> then filters in memory. Formats are not ordered by <code>FormatNumber</code>. Use a filtered and ordered include, or a list-specific include set.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F23</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Update/UpdateCommand.cs:20">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Update/UpdateCommand.cs:20</code>
+  <p><strong>Create and Update validators duplicated.</strong> The same eight rules and <code>NotDuplicateAsync</code> are copied into both validators, and F1/F7 would have to be fixed twice. Extract an <code>AbstractValidator&lt;DocumentCodeSetupRequestDto&gt;</code> and use <code>SetValidator</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F24</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:14">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Create/CreateCommand.cs:14</code>
+  <p><strong>Command and query names lack the entity.</strong> C# guide 5.2 asks for names like <code>CreateDocumentCodeSetupCommand</code>, not the bare <code>CreateCommand</code>/<code>GetAllQuery</code>. Existing Fleet siblings do the same, so this is low priority.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F25</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:123">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:123</code>
+  <p><strong>Create depends on the Id being generated early.</strong> Formats are built with <code>setup.Id</code> right after <code>AddAsync</code>. This works only because EF generates the Guid on Add. Assigning <code>setup.Formats = â€¦</code> removes that dependency and makes <code>formatRepository</code> unnecessary here.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F26</span>
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/CompanySettingService.cs:21">src/Modules/Fleet/Fleet.Application/Services/CompanySettingService.cs:21</code>
+  <p><strong>Signature collapsed onto one long line.</strong> <code>GetAllAsync</code> is now about 140 characters on one line. This reverses the earlier "code format" commit, and <code>ICompanySettingService</code> still uses the wrapped form.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:153">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:153</code>
+  <p><strong>Soft delete cascades to formats.</strong> <code>DeleteAsync</code> marks the child <code>DocumentFormat</code> rows as Removed together with the parent, and all reads exclude Removed rows and throw a typed <code>NotFoundException</code>.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Dtos/DocumentCodeSetupRequestDto.cs:12">src/Modules/Fleet/Fleet.Application/Dtos/DocumentCodeSetupRequestDto.cs:12</code>
+  <p><strong>Separate request and response DTOs.</strong> The entity isn't exposed on the API, unlike the sibling VehiclePlate endpoints.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Update/UpdateCommand.cs:30">src/Modules/Fleet/Fleet.Application/UseCases/DocumentCodeSetups/Commands/Update/UpdateCommand.cs:30</code>
+  <p><strong>Duplicate check on both write paths.</strong> Create and Update both check for an existing (company, module) setup, and Update correctly excludes its own Id.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:1286">src/BuildingBlocks/BuildingBlocks.Locale/Constants/Constants.cs:1286</code>
+  <p><strong>Localization done in full.</strong> The new keys are added to <code>Constants.cs</code> and to all three resx files, including Arabic.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/CompanySettingService.cs:18">src/Modules/Fleet/Fleet.Application/Services/CompanySettingService.cs:18</code>
+  <p><strong>Dead code removed.</strong> The deleted provisioning and approval-group methods were not on <code>ICompanySettingService</code>, and they referenced a <code>DefaultApprovalGroup</code> constant that no longer exists. Removing them fixes a build break rather than losing behaviour.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:128">src/Modules/Fleet/Fleet.Application/Services/DocumentCodeSetupService.cs:128</code>
+  <p><strong>Create is atomic.</strong> The setup and its formats are written with a single <code>SaveChangesAsync</code>.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Code_Review.txt, Naming_Conventions.txt</code> · reviewed commit <code>22d418d</code></footer>
+
+  <script type="application/json" id="review-state">{"version":8,"headSha":"22d418d6897dd9b73386e48e9f89af8dc0ccde52","reviewedOn":"2026-09-28","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"CreateCommand.cs","line":"22","lens":"L4","title":"Status is never validated.","firstSeen":"v8"},{"id":"F2","severity":"must-fix","status":"open","file":"DocumentCodeSetupExtensions.cs","line":"60","lens":"L2","title":"Update can move a setup or rewind its serial.","firstSeen":"v8"},{"id":"F3","severity":"must-fix","status":"open","file":"CreateCommand.cs","line":"23","lens":"L1","title":"Company and CodeModule existence not checked.","firstSeen":"v8"},{"id":"F4","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"29","lens":"L3","title":"No company scoping on list, get, update and delete.","firstSeen":"v8"},{"id":"F5","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"121","lens":"L1","title":"Null formats crashes Create.","firstSeen":"v8"},{"id":"F6","severity":"suggestion","status":"open","file":"GetActiveLookupHandler.cs","line":"22","lens":"L1","title":"Lookup crashes on an unknown company code.","firstSeen":"v8"},{"id":"F7","severity":"suggestion","status":"open","file":"CreateCommand.cs","line":"29","lens":"L4","title":"Remaining validation gaps.","firstSeen":"v8"},{"id":"F8","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"209","lens":"L5","title":"Format sync silently drops edits.","firstSeen":"v8"},{"id":"F9","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"106","lens":"L5","title":"Duplicates possible under concurrency.","firstSeen":"v8"},{"id":"F10","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"48","lens":"L5","title":"Ensure treats deleted setups as existing.","firstSeen":"v8"},{"id":"F11","severity":"suggestion","status":"open","file":"EnsureHandler.cs","line":"21","lens":"L5","title":"Deleted or inactive companies accepted.","firstSeen":"v8"},{"id":"F12","severity":"suggestion","status":"open","file":"DocumentCodeSetupService.cs","line":"95","lens":"L5","title":"Lookup lists setups for inactive modules.","firstSeen":"v8"},{"id":"F13","severity":"suggestion","status":"open","file":"DocumentCodeSetupExtensions.cs","line":"22","lens":"L10","title":"codeModuleShortCode cannot be sorted or filtered.","firstSeen":"v8"},{"id":"F14","severity":"suggestion","status":"open","file":"CreateCommand.cs","line":"24","lens":"L10","title":"Misleading, reused validation messages.","firstSeen":"v8"},{"id":"F15","severity":"suggestion","status":"open","file":"IDocumentCodeSetupService.cs","line":"15","lens":"L10","title":"CancellationToken not propagated.","firstSeen":"v8"},{"id":"F16","severity":"suggestion","status":"open","file":"GetByCompanyIdHandler.cs","line":"21","lens":"L6","title":"Heavy query used as an existence check.","firstSeen":"v8"},{"id":"F17","severity":"suggestion","status":"open","file":"VehiclePlate.cs","line":"24","lens":"L11","title":"Unrelated VehiclePlate change bundled in.","firstSeen":"v8"},{"id":"F18","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"Empty description and no tests.","firstSeen":"v8"},{"id":"F19","severity":"nit","status":"open","file":"DocumentCodeSetupEndpoints.cs","line":"27","lens":"L7","title":"Location header and route shape.","firstSeen":"v8"},{"id":"F20","severity":"nit","status":"open","file":"DocumentCodeSetupEndpoints.cs","line":"37","lens":"L7","title":"Delete and Ensure return Ok(true).","firstSeen":"v8"},{"id":"F21","severity":"nit","status":"open","file":"DocumentCodeSetupService.cs","line":"100","lens":"L7","title":"Lookup naming and ordering.","firstSeen":"v8"},{"id":"F22","severity":"nit","status":"open","file":"DocumentCodeSetup.cs","line":"39","lens":"L6","title":"Paged list eagerly loads all formats.","firstSeen":"v8"},{"id":"F23","severity":"nit","status":"open","file":"UpdateCommand.cs","line":"20","lens":"L10","title":"Create and Update validators duplicated.","firstSeen":"v8"},{"id":"F24","severity":"nit","status":"open","file":"CreateCommand.cs","line":"14","lens":"L10","title":"Command and query names lack the entity.","firstSeen":"v8"},{"id":"F25","severity":"nit","status":"open","file":"DocumentCodeSetupService.cs","line":"123","lens":"L10","title":"Create depends on the Id being generated early.","firstSeen":"v8"},{"id":"F26","severity":"nit","status":"open","file":"CompanySettingService.cs","line":"21","lens":"L10","title":"Signature collapsed onto one long line.","firstSeen":"v8"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

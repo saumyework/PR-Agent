@@ -1,0 +1,34 @@
+[
+    {
+        "call":  "S1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  0,
+        "cacheRead":  22017,
+        "output":  740
+    },
+    {
+        "call":  "S1-B",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  0,
+        "cacheRead":  22016,
+        "output":  524
+    },
+    {
+        "call":  "S1-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  758,
+        "cacheRead":  21482,
+        "output":  179
+    },
+    {
+        "call":  "merge",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  1293,
+        "cacheRead":  1604,
+        "output":  524
+    }
+]

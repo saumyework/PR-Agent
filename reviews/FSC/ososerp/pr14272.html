@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>chore(Database): Inventory Management | Goods Receipt Voucher - Migration Update: Add RdmLookupValue Configuration [FSC-893] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>chore(Database): Inventory Management | Goods Receipt Voucher - Migration Update: Add RdmLookupValue Configuration [FSC-893]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/14272">pbsgears/ososerp #14272</a>
+      <span>ShaimaAlariemi</span>
+      <span class="ref">version/0.12.0 ← version/0.12.0-db-migrations-012/ShaimaAlariemi</span>
+      <span>2026-09-28</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip low">
+        <span class="dot"></span>
+        <span class="label">Risk: Low</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">0</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">5</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">2</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">3</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>Adds an <code>RdmLookupValueConfiguration</code> to the InventoryManagement context so EF maps <code>RdmLookupValue.RdmLookupType</code> through the real <code>LookupTypeId</code> column instead of an inferred shadow <code>RdmLookupTypeId</code> column that doesn't exist. This is needed for the Goods Receipt Voucher <code>Type</code> lookup. It regenerates both providers' snapshots with an empty (snapshot-only) <code>AddLookupTable</code> migration. <strong>Risk: Low.</strong> The shared tables are <code>ExcludeFromMigrations</code>, so there is no DDL and no data impact, and the change fixes a runtime bug.</p>
+<p>Nothing blocks merge. The main follow-ups: the migration name is misleading (F1); the root cause lives in the shared entity and still affects seven other modules (F2); the same entity's Company relationship is also mis-inferred here (F3); and unrelated Department snapshot drift is bundled in without mention (F4). Generated <code>*.Designer.cs</code> files were skipped as generated, and every other file was reviewed.</p>
+<p>Process: 3 independent review passes plus 1 gap pass. The gap pass's only addition, "staircase" indentation, was dropped because it matches this module's sibling configurations, so the last pass came back with nothing substantive.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <p class="empty-note">None.</p>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/20260927202810_AddLookupTable.cs:8">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/20260927202810_AddLookupTable.cs:8</code>
+  <p><strong>Migration name says it adds a table, but it adds none.</strong> Both <code>AddLookupTable</code> migrations (PostgreSQL and SqlServer <code>20260927202839_AddLookupTable.cs:8</code>) have empty <code>Up</code>/<code>Down</code>. That is correct: <code>RdmLookupValues</code> is owned by EDM and mapped with <code>ExcludeFromMigrations()</code> here, so the change only touches the model snapshot. The name is the problem. Anyone reading the migration history will look for a lookup table in the InventoryManagement schema that doesn't exist. Rename both migrations to what they actually do (e.g. <code>ConfigureRdmLookupValueLookupTypeFk</code>) by regenerating them or renaming the class, files and Designer <code>[Migration]</code> id together. Also add a one-line comment in <code>Up</code>: "snapshot-only sync; table owned by EDM".</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:23">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:23</code>
+  <p><strong>Fixes a shared-entity bug one module at a time.</strong> The real cause is in <code>Shared.Domain.Models.RdmLookupValue</code>: the navigation <code>RdmLookupType</code> and the FK <code>LookupTypeId</code> don't match EF's naming convention. So every context that pulls in the entity without its own configuration invents a shadow <code>RdmLookupTypeId</code> column, and that column doesn't exist in <code>EnterpriseDataManagement.RdmLookupValues</code>. Sdm already has an identical copy of this configuration, and this PR adds a second one. Code search still finds <code>RdmLookupTypeId</code> in the snapshots of Sms, Lnd, JobPortal, Appraisal, Attendance, Recruitment and ExpenseManagement, so they carry the same latent "column does not exist" failure. The entity already uses <code>[ForeignKey("CompanyId")]</code> for Company. Adding <code>[ForeignKey(nameof(LookupTypeId))]</code> to the <code>RdmLookupType</code> navigation would fix every context at once and make these per-module configurations unnecessary. This is fine to merge as a module-local fix, but raise a follow-up ticket.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs:1676">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs:1676</code>
+  <p><strong>Company relationship on the same entity is still mis-inferred.</strong> This file exists to correct an EF convention guess on <code>RdmLookupValue</code>, but it leaves a second wrong guess on the same entity. In the IM model, <code>RdmLookupValue.Company</code> is paired with <code>Company.IndustryType</code> as a <em>one-to-one</em>: <code>.WithOne("IndustryType").HasForeignKey("Shared.Domain.Models.RdmLookupValue", "CompanyId")</code> (snapshot line 2495). That also puts <code>b.HasIndex("CompanyId").IsUnique()</code> on the entity (line 1676), even though many lookup values share one company. EDM, which owns the table, maps it as <code>HasOne(Company).WithMany().HasForeignKey(CompanyId)</code>. There is no DDL impact because the table is excluded from migrations. However, when a tracking query loads several lookup values for the same company (e.g. GRV <code>Type</code>s), EF relationship fix-up can re-point <code>Company.IndustryType</code>. Pin it in this configuration: <code>builder.HasOne(lookupValue =&gt; lookupValue.Company).WithMany().HasForeignKey(lookupValue =&gt; lookupValue.CompanyId);</code>. The F2 attribute approach, applied to <code>Company.IndustryType</code> as well, would also cover it.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs:143">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs:143</code>
+  <p><strong>Unrelated Department drift swept into this migration.</strong> Both snapshots and both Designers now contain the whole <code>Shared.Domain.Models.Department</code> entity: properties from line 143 and relationships around line 1794 (PG) / 1796 (SqlServer). Nothing in this PR touches Department. The entity comes from an earlier base-branch model change that was never migrated in this module. It is harmless for the database (<code>ExcludeFromMigrations</code>), but it makes a migration named for lookups misstate where the change came from. The two providers also differ on delete behaviour for it: PG uses <code>Cascade</code> and SqlServer uses <code>NoAction</code> for <code>CreatedBy</code>/<code>UpdatedBy</code>. Say so in the PR description, or split it into its own sync migration.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="(PR description)">(PR description)</code>
+  <p><strong>Description is the unfilled template.</strong> The What and Why sections still hold the placeholder text and no checklist box is ticked, including "Tested my changes locally". This PR especially needs the Why. It fixes a runtime bug: before it, the IM model mapped the non-existent shadow column <code>RdmLookupTypeId</code>, so loading <code>GoodsReceiptVoucher.Type</code> through the IM context would fail. It also adds an intentionally empty migration and absorbs Department drift (F4). None of that is visible without reading the snapshots. There is also no test covering the mapping.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:26">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:26</code>
+  <p><strong>Delete behaviour differs from the owning module.</strong> EDM's <code>RdmLookupTypeConfiguration</code> configures this relationship with <code>OnDelete(DeleteBehavior.Cascade)</code>, and this copy declares <code>NoAction</code> (as the Sdm copy does). The table is excluded from migrations, so the real FK is unchanged and only EF's client-side cascade in the IM context differs. IM never deletes lookup types, so nothing breaks. A short comment ("table owned by EDM; model-only mapping") would stop someone later "fixing" one to match the other.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:15">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:15</code>
+  <p><strong>Redundant using.</strong> <code>using Shared.Domain.Models;</code> is already a <code>global using</code> in <code>InventoryManagement.Infrastructure/GlobalUsing.cs</code>. Sibling configurations such as <code>GoodsReceiptVoucherConfiguration</code> don't re-import it.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:23">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs:23</code>
+  <p><strong>Fixes a real latent bug.</strong> The removed snapshot lines <code>b.Property&lt;Guid?&gt;("RdmLookupTypeId")</code> / <code>HasForeignKey("RdmLookupTypeId")</code> show that the IM model referenced a column that doesn't exist. The FK now binds to the real <code>LookupTypeId</code> and is marked <code>IsRequired()</code>, which matches the non-nullable <code>Guid</code>.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations</code>
+  <p><strong>Both providers regenerated consistently.</strong> PostgreSQL and SqlServer each got a migration, Designer and snapshot update, and the RdmLookupValue changes are the same in both (property removal, <code>LookupTypeId</code> index, FK with <code>NoAction</code> + <code>IsRequired</code>). The empty <code>Up</code>/<code>Down</code> correctly leaves the EDM-owned tables alone.</p>
+</div>
+<div class="finding-card">
+  <code class="path-chip" data-path="src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs">src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs</code>
+  <p><strong>Follows the existing pattern.</strong> It mirrors the Sdm module's <code>RdmLookupValueConfiguration</code> and the module's configuration style: copyright header, file-scoped namespace, descriptive lambda names, and the nested fluent indentation used in <code>GoodsReceiptVoucherConfiguration</code>. It is picked up automatically by <code>ApplyConfigurationsFromAssembly</code>.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, C#_Code_Review.txt, Naming_Conventions.txt</code> · reviewed commit <code>cbb572d</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"cbb572ddd383d4a125116e6daf3a77d68deef669","reviewedOn":"2026-09-28","findings":[{"id":"F1","severity":"suggestion","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/20260927202810_AddLookupTable.cs","line":"8","lens":"L12","title":"Migration name says it adds a table, but it adds none.","firstSeen":"v1"},{"id":"F2","severity":"suggestion","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs","line":"23","lens":"L10","title":"Fixes a shared-entity bug one module at a time.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs","line":"1676","lens":"L12","title":"Company relationship on the same entity is still mis-inferred.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Migrations/PostgreSQL/InventoryManagement/InventoryManagementPostgresDbContextModelSnapshot.cs","line":"143","lens":"L11","title":"Unrelated Department drift swept into this migration.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"(PR description)","line":"","lens":"L11","title":"Description is the unfilled template.","firstSeen":"v1"},{"id":"F6","severity":"nit","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs","line":"26","lens":"L12","title":"Delete behaviour differs from the owning module.","firstSeen":"v1"},{"id":"F7","severity":"nit","status":"open","file":"src/Modules/InventoryManagement/InventoryManagement.Infrastructure/Data/Configurations/RdmLookupValueConfiguration.cs","line":"15","lens":"L10","title":"Redundant using.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

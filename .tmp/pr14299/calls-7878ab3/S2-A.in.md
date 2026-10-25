@@ -1,0 +1,1 @@
+Review pass A over shard S2. Walk the files top to bottom in the order shown. Skip PR-level items (L11); another pass covers them.

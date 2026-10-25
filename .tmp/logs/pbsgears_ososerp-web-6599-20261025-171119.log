@@ -1,0 +1,23 @@
+﻿PR #6599 OPEN head=8ab9765 | files: 13 total, 13 reviewable, 0 generated | reviewable changed lines: 679 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6599 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6599 'feat(UI): SDM Request Management KPI Cards [OOTB-16307]' | 13 files in scope, 679 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-B done
+  <- S1-C done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): SDM Request Management KPI Cards [OOTB-16307]
+https://github.com/pbsgears/ososerp-web/pull/6599
+Risk: Low | 0 must-fix, 5 suggestions, 4 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OOTB\ososerp-web\pr6599.html
+Tokens: 10 input + 43,601 cache-write + 96,243 cache-read + 13,848 output over 5 calls

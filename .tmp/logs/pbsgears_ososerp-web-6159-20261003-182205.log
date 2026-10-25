@@ -1,0 +1,23 @@
+﻿PR #6159 OPEN head=77731f6 | files: 30 total, 30 reviewable, 0 generated | reviewable changed lines: 1631 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6159 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6159 'feat(UI): Supplier ranking list Implementation [CM-6431]' | 29 files in scope, 1628 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-C done
+  <- S1-B done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Supplier ranking list Implementation [CM-6431]
+https://github.com/pbsgears/ososerp-web/pull/6159
+Risk: Medium | 2 must-fix, 9 suggestions, 4 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\CM\ososerp-web\pr6159.html
+Tokens: 12 input + 97,754 cache-write + 257,234 cache-read + 14,956 output over 5 calls

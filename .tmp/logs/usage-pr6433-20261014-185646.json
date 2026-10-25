@@ -1,0 +1,58 @@
+[
+    {
+        "call":  "S2-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  11909,
+        "cacheRead":  0,
+        "output":  572
+    },
+    {
+        "call":  "S1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  130061,
+        "cacheRead":  0,
+        "output":  1952
+    },
+    {
+        "call":  "S2-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  718,
+        "cacheRead":  11224,
+        "output":  587
+    },
+    {
+        "call":  "S1-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  712,
+        "cacheRead":  129382,
+        "output":  3322
+    },
+    {
+        "call":  "S2-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  909,
+        "cacheRead":  11224,
+        "output":  129
+    },
+    {
+        "call":  "S1-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  1589,
+        "cacheRead":  129382,
+        "output":  915
+    },
+    {
+        "call":  "merge",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  5845,
+        "cacheRead":  0,
+        "output":  1472
+    }
+]

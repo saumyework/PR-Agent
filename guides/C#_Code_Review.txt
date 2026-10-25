@@ -1,0 +1,4058 @@
+C# Code Review
+Scope: All projects under Modules
+.NET Target: .NET 8, .NET 9
+C# Version: 12.0
+
+Project Structure & Organization
+
+Observation:
+
+Recommendation:
+•	Projects are organized by domain (e.g., Configuration, Lnd, Dms, Recruitment).
+•	Each module follows a layered structure: Application, Domain, Infrastructure, and Endpoints.
+
+Best Practice Sample:
+
+
+
+Modules/
+  Configuration/
+    Configuration.Application/
+    Configuration.Domain/
+    Configuration.Infrastructure/
+    Configuration.Endpoints/
+  Lnd/
+    Lnd.Application/
+    Lnd.Domain/
+    Lnd.Infrastructure/
+    Lnd.Endpoints/
+  ...
+Recommendation:
+•	Maintain this separation for scalability and clarity.
+•	Ensure each layer has a clear responsibility.
+
+Dependency Injection
+
+Observation:
+•	Dependency injection is handled via DependencyInjection.cs in each module.
+
+
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddConfigurationServices(this IServiceCollection services)
+    {
+        services.AddScoped<ICompanyService, CompanyService>();
+        services.AddScoped<IRepository<Company>, CompanyRepository>();
+        // ...other services
+        return services;
+    }
+}
+Recommendation:
+•	Register all services and repositories in the DI container.
+•	Prefer constructor injection over service locator or static access.
+
+CQRS & Mediator Pattern
+
+Observation:
+•	Commands and queries are separated, using handlers for each.
+
+
+
+public record CreateCompanyCommand(string Name, string Code) : IRequest<Guid>;
+public class CreateCompanyHandler : IRequestHandler<CreateCompanyCommand, Guid>
+{
+    public async Task<Guid> Handle(CreateCompanyCommand request, CancellationToken cancellationToken)
+    {
+        // Business logic
+    }
+}
+Recommendation:
+•	Keep command/query handlers focused and single-responsibility.
+•	Use MediatR or similar libraries for orchestration.
+
+Exception Handling
+
+Observation:
+•	Custom exceptions are defined in BuildingBlocks/Exceptions.
+
+
+
+public class DomainException : Exception
+{
+    public DomainException(string message) : base(message) { }
+}
+Recommendation:
+•	Use custom exceptions for domain-specific errors.
+•	Handle exceptions globally using middleware.
+
+Validation
+
+Observation:
+•	Validation behaviors are present (e.g., CommandValidationBehavior).
+
+
+
+public class CommandValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    // Uses FluentValidation to validate requests
+}
+Recommendation:
+•	Validate all incoming requests at the boundary.
+•	Use FluentValidation for complex validation logic.
+
+ 
+
+Repository Pattern
+
+Observation:
+•	Generic repositories are used for data access.
+
+
+
+public interface IRepository<T> where T : class
+{
+    Task<T> GetByIdAsync(Guid id);
+    Task<List<T>> ListAsync();
+    Task AddAsync(T entity);
+    // ...
+}
+Recommendation:
+•	Use repositories for data access abstraction.
+•	For complex queries, consider specifications or custom repositories.
+
+DTOs & Mapping
+
+Observation:
+•	DTOs are used for API contracts, mapping via extension methods or libraries.
+
+
+
+public static class CompanyMappings
+{
+    public static CompanyDto ToDto(this Company entity) =>
+        new CompanyDto { Id = entity.Id, Name = entity.Name };
+}
+Recommendation:
+•	Never expose domain entities directly in API responses.
+•	Keep DTOs flat and versioned if needed.
+
+Endpoints & Minimal APIs
+
+Observation:
+•	Endpoints are defined in dedicated files (e.g., CompanyEndpoints.cs).
+
+
+
+app.MapPost("/companies", async (CreateCompanyCommand command, IMediator mediator) =>
+{
+    var id = await mediator.Send(command);
+    return Results.Created($"/companies/{id}", id);
+});
+Recommendation:
+•	Keep endpoint logic thin; delegate to handlers/services.
+•	Use attribute routing and OpenAPI annotations for documentation.
+
+Logging & Auditing
+
+Observation:
+•	Logging behaviors and interceptors are present.
+
+
+
+public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    // Logs request and response details
+}
+Recommendation:
+•	Log at appropriate levels (Information, Warning, Error).
+•	Avoid logging sensitive data.
+
+ 
+
+Testing
+
+Observation:
+•	Not all test files are visible, but structure supports unit and integration testing.
+
+
+
+[Fact]
+public async Task CreateCompany_ShouldReturnNewId()
+{
+    // Arrange
+    // Act
+    // Assert
+}
+Recommendation:
+•	Cover all handlers, services, and critical logic with unit tests.
+•	Use integration tests for endpoints and repositories.
+
+Security
+
+Observation:
+•	API key, Auth key, and authorization behaviors are present.
+
+
+
+public class ApiKeyBehavior : IEndpointFilter
+{
+    // Validates API key in request headers
+}
+Recommendation:
+•	Centralize authentication and authorization logic.
+•	Never log or expose secrets.
+
+Modern C# Features
+
+Observation:
+•	Use of records, pattern matching, and nullable reference types is encouraged.
+
+
+
+public record CompanyDto(Guid Id, string Name);
+Recommendation:
+•	Enable nullable reference types in all projects.
+•	Use records for immutable data structures.
+
+Configuration & Secrets
+
+Observation:
+•	Configuration via appsettings.json and user secrets.
+
+
+
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "..."
+  }
+}
+Recommendation:
+•	Never commit secrets to source control.
+•	Use environment variables or secret managers in production.
+
+Performance
+
+Observation:
+•	Use of IQueryable, Include, and pagination in repositories.
+
+
+
+var paged = await repository.ListAsync(new PaginationRequest { Page = 1, PageSize = 20 });
+Recommendation:
+•	Avoid N+1 queries.
+•	Use projection for large datasets.
+
+Summary Checklist
+•	[x] Layered architecture is followed.
+•	[x] Dependency injection is used throughout.
+•	[x] CQRS and Mediator patterns are implemented.
+•	[x] Custom exceptions and global error handling are present.
+•	[x] Validation is performed at the boundary.
+•	[x] DTOs are used for API contracts.
+•	[x] Logging and auditing are implemented.
+•	[x] Security best practices are followed.
+•	[x] Modern C# features are used.
+•	[x] Configuration and secrets are managed securely.
+•	[x] Performance considerations are addressed.
+•	[x] Documentation is present.
+
+
+>Files
+
+The following are the naming conventions and guidance for naming C# files.
+
+Naming
+File names should follow the PascalCase convention followed by the file extension .cs.
+
+Do
+
+
+Student.cs
+Also, Do
+
+
+StudentService.cs
+Don't
+
+
+student.cs
+Also, Don't
+
+
+studentService.cs
+Also, Don't
+
+
+Student_Service.cs
+Partial Class Files
+Partial class files are files that contain nested classes for a root file. For instance:
+
+StudentService.cs
+
+StudentService.Validations.cs
+
+StudentService.Exceptions.cs
+
+Both validations and exceptions are partial classes to display a different aspect of any given class in a multi-dimensional space.
+
+Do
+
+
+StudentService.Validations.cs
+Also, Do
+
+
+StudentService.Validations.Add.cs
+Don't
+
+
+StudentServiceValidations.cs
+Also, Don't
+
+
+StudentService_Validations.cs
+
+
+> Variables
+
+2.0 Naming
+Variable names should be concise and representative of nature and the quantity of the value it holds or will potentially hold.
+
+2.0.0 Names
+Do
+
+
+var student = new Student();
+Don't
+
+
+var s = new Student();
+Also, Don't
+
+
+var stdnt = new Student();
+The same rule applies to lambda expressions:
+
+Do
+
+
+students.Where(student => student ... );
+Don't
+
+
+students.Where(s => s ... );
+ 
+
+2.0.1 Plurals
+Do
+
+
+var students = new List<Student>();
+Don't
+
+
+var studentList = new List<Student>();
+ 
+
+2.0.2 Names with Types
+Do
+
+
+var student = new Student();
+Don't
+
+
+var studentModel = new Student();
+Also, Don't
+
+
+var studentObj = new Student();
+ 
+
+2.0.3 Nulls or Defaults
+If a variable value is it's default such as 0 for int or null for strings and you are not planning on changing that value (for testing purposes for instance) then the name should identify that value.
+
+Do
+
+
+Student noStudent = null;
+Don't
+
+
+Student student = null;
+Also, Do
+
+
+int noChangeCount = 0;
+But, Don't
+
+
+int changeCount = 0;
+ 
+
+2.1 Declarations
+Declaring a variable and instantiating it should indicate the immediate type of the variable, even if the value is to be determined later.
+
+2.1.0 Clear Types
+If the right side type is clear, then use var to declare your variable
+
+Do
+
+
+var student = new Student();
+Don't
+
+
+Student student = new Student();
+ 
+
+2.1.1 Semi-Clear Types
+If the right side isn't clear (but known) of the returned value type, then you must explicitly declare your variable with it's type.
+
+Do
+
+
+Student student = GetStudent();
+Don't
+
+
+var student = GetStudent();
+ 
+
+2.1.2 Unclear Types
+If the right side isn't clear and unknown (such as an anonymous types) of the returned value type, you may use var as your variable type.
+
+Do
+
+
+var student = new
+{
+    Name = "Hassan",
+    Score = 100
+};
+ 
+
+2.1.3 Single-Property Types
+Assign properties directly if you are declaring a type with one property.
+
+Do
+
+
+var inputStudentEvent = new StudentEvent();
+inputStudentEvent.Student = inputProcessedStudent;
+Don't
+
+
+var inputStudentEvent = new StudentEvent
+{
+    Student = inputProcessedStudent
+};
+Also, Do
+
+
+var studentEvent = new StudentEvent
+{
+    Student = someStudent,
+    Date = someDate
+}
+Don't
+
+
+var studentEvent = new StudentEvent();
+studentEvent.Student = someStudent;
+studentEvent.Date = someDate;
+2.2 Organization
+2.2.0 Breakdown
+If a variable declaration exceeds 120 characters, break it down starting from the equal sign.
+
+Do
+
+
+List<Student> washingtonSchoolsStudentsWithGrades = 
+    await GetAllWashingtonSchoolsStudentsWithTheirGradesAsync();
+Don't
+
+
+List<Student> washgintonSchoolsStudentsWithGrades = await GetAllWashingtonSchoolsStudentsWithTheirGradesAsync();
+ 
+
+2.2.1 Multiple Declarations
+Declarations that occupy two lines or more should have a new line before and after them to separate them from previous and next variables declarations.
+
+Do
+
+
+Student student = GetStudent();
+List<Student> washingtonSchoolsStudentsWithGrades = 
+    await GetAllWashingtonSchoolsStudentsWithTheirGradesAsync();
+School school = await GetSchoolAsync();
+Don't
+
+
+Student student = GetStudent();
+List<Student> washgintonSchoolsStudentsWithGrades = 
+    await GetAllWashingtonSchoolsStudentsWithTheirGradesAsync();
+School school = await GetSchoolAsync();
+Also, declarations of variables that are of only one line should have no new lines between them.
+
+Do
+
+
+Student student = GetStudent();
+School school = await GetSchoolAsync();
+Don't
+
+
+Student student = GetStudent();
+School school = await GetSchoolAsync();
+
+>Classes
+
+3.0. Naming
+Classes that represent services or brokers in a Standard-Compliant architecture should represent the type of class in their naming convention, however that doesn't apply to models.
+
+3.0.0 Models
+Do
+
+
+class Student {
+	...
+}
+Don't
+
+
+class StudentModel {
+}
+ 
+
+3.0.1 Services
+In a singular fashion, for any class that contains business logic.
+
+Do
+
+
+class StudentService {
+	....
+}
+Don't
+
+
+class StudentsService{
+	...
+}
+Also, Don't
+
+
+class StudentBusinessLogic {
+	...
+}
+Also, Don't
+
+
+class StudentBL {
+	...
+}
+3.1 Fields
+A field is a variable of any type that is declared directly in a class or struct. Fields are members of their containing type.
+
+3.1.0 Naming
+Class fields are named in a camel cased fashion.
+
+Do
+
+
+class StudentsController {
+	private readonly string studentName;
+}
+Don't
+
+
+class StudentController {
+	private readonly string StudentName;
+}
+Also, Don't
+
+
+class StudentController {
+	private readonly string _studentName;
+}
+Should follow the same rules for naming as mentioned in the Variables sections.
+
+ 
+
+3.1.1 Referencing
+When referencing a class private field, use this keyword to distinguish private class member from a scoped method or constructor level variable.
+
+Do
+
+
+class StudentsController {
+	private readonly string studentName;
+	public StudentsController(string studentName) {
+		this.studentName = studentName;
+	}
+}
+Don't
+
+
+class StudentController {
+	private readonly string _studentName;
+	public StudentsController(string studentName) {
+		_studentName = studentName;
+	}
+}
+ 
+
+3.2 Instantiations
+3.2.0 Input Params Aliases
+If the input variables names match to input aliases, then use them, otherwise you must use the aliases, especially with values passed in.
+
+Do
+
+
+int score = 150;
+string name = "Josh";
+var student = new Student(name, score);
+Also, Do
+
+
+var student = new Student(name: "Josh", score: 150);
+But, Don't
+
+
+var student = new Student("Josh", 150);
+Also, Don't
+
+
+Student student = new (...);
+3.2.1 Honoring Property Order
+When instantiating a class instance - make sure that your property assignment matches the properties order in the class declarations.
+
+Do
+
+
+public class Student
+{
+	public Guid Id {get; set;}
+	public string Name {get; set;}
+}
+var student = new Student
+{
+	Id = Guid.NewGuid(),
+	Name = "Elbek"
+}
+Also, Do
+
+
+public class Student
+{
+	private readonly Guid id;
+	private readonly string name;
+	public Student(Guid id, string name)
+	{
+		this.id = id;
+		this.name = name;
+	}
+}
+var student = new Student (id: Guid.NewGuid(), name: "Elbek");
+Don't
+
+
+public class Student
+{
+	public Guid Id {get; set;}
+	public string Name {get; set;}
+}
+var student = new Student
+{
+	Name = "Elbek",
+	Id = Guid.NewGuid()
+}
+Also, Don't
+
+
+public class Student
+{
+	private readonly Guid id;
+	private readonly string name;
+	public Student(string name, Guid id)
+	{
+		this.id = id;
+		this.name = name;
+	}
+}
+var student = new Student (id: Guid.NewGuid(), name: "Elbek");
+Also, Don't
+
+
+public class Student
+{
+	private readonly Guid id;
+	private readonly string name;
+	public Student(Guid id, string name)
+	{
+		this.id = id;
+		this.name = name;
+	}
+}
+var student = new Student (name: "Elbek", id: Guid.NewGuid());
+
+> Endpoints
+5.0 Static Method Naming
+The static method used to group relevant endpoints should clearly relate to the module it handles.
+
+5.0.0 Naming Convention: Prefix, Module, and Postfix
+Static method names must:
+
+Begin with the prefix Map.
+
+Follow with the relevant module name.
+
+End with the postfix Endpoints.
+
+Do
+
+
+public static void MapStudentEndpoints(this WebApplication app) 
+{ 
+    ...
+}
+Don’t
+
+
+public static void MapCrudStudentEndpoints(this WebApplication app) 
+{ 
+    ...
+}
+ 
+
+5.1 Endpoint URL Paths
+Each endpoint should clearly indicate the module it pertains to through the URL path.
+
+5.1.1 Route Segments for Common URL Paths
+Endpoints should convey the action being performed through the HTTP method itself (GET, POST, PUT, DELETE), so there is no need to include the action name in the route segment. Use camelCase plural naming for route segments.
+
+Do
+
+
+public static void MapStudentEndpoints(this WebApplication app)
+{
+    var group = app.MapGroup("students");
+    group.MapPost("/", async (Stage request, ISender sender) => { });
+}
+Don’t
+
+
+public static void MapStudentEndpoints(this WebApplication app)
+{
+    var group = app.MapGroup("Students");
+    group.MapPost("/", async (Stage request, ISender sender) => { });
+}
+Don’t
+
+
+public static void MapStudentEndpoints(this WebApplication app)
+{
+    var group = app.MapGroup("students");
+    group.MapPost("/createStudents", async (Stage request, ISender sender) => { });
+}
+ 
+
+5.1.2 Route Segments for Special Cases
+When retrieving data using a property other than the primary key, the property name should be included in the route segment to clearly indicate the intent.
+
+For example, if Id is the primary key and courseId is an alternate property:
+
+Do
+
+
+group.MapGet("/{id}", async (Stage request, ISender sender) => { });
+Also, Do
+
+
+group.MapGet("/courseId/{id}", async (Stage request, ISender sender) => { });
+Don’t
+
+
+group.MapGet("id/{id}", async (Stage request, ISender sender) => { });
+Don’t
+
+
+group.MapGet("GetById/{id}", async (Stage request, ISender sender) => { });
+Don’t
+
+
+group.MapGet("/getByCourseId/{id}", async (Stage request, ISender sender) => { });
+ 
+
+5.2 Query/Command Naming
+Every Query or Command class should clearly communicate its purpose. The name should follow this pattern:
+
+
+
+[action prefix] + [module name in plural] + [Query/Command postfix]
+Do
+
+
+GetStudentsQuery
+CreateStudentCommand
+DeleteStudentCommand
+Don’t
+
+
+GetStudent
+StudentCommand
+5.2.1 Handlers for queries/commands
+In CQRS (Command Query Responsibility Segregation), the Handle method is a core component used in both Queries and Commands, typically in combination with the Mediator pattern via MediatR in .NET.
+
+5.2.2 Handler in Query
+Handlers in Queries use for data retrievals.
+
+5.2.2.1 Purpose
+To fetch data (read-only operation).
+
+Returns some result without modifying state.
+
+5.2.2.1 Usage
+Implements the logic for retrieving the requested data.
+
+Uses services to gather and return data.
+
+Most of the times these queries will return pagination results as the response.
+
+5.2.2.1 Example
+
+
+public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+{
+    var result = await userService.GetByIdAsync(request.Id);
+    return new(user);
+}
+5.2.3 Handler in Command
+Handlers in commands use for data write operations.
+
+5.2.3.1 Purpose
+To perform an action that modifies the state of the system (create/update/delete).
+
+Might return a result, but main goal is side effects.
+
+5.2.3.1 Usage
+Implements the business logic to change the system state.
+
+May include validation, logging, events etc.
+
+5.2.3.1 Example
+
+
+public async Task<Guid> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+{
+    var user = new User { Name = request.Name, Email = request.Email };
+    await userService.AddAsync(user);
+    return new CreateUserResult(user);
+}
+5.2.3.2 Fluent Validation Example
+
+
+public record CreateUserCommand(CreateUserDto User) : ICommand<CreateUserResult>;
+public record CreateUserResult(User User);
+public class CreateUserValidator : AbstractValidator<CreateUserCommand>
+{
+    public CreateUserValidator()
+    {
+        RuleFor(p => p.User.Code).NotNull().WithMessage("CodeIsRequired");
+        RuleFor(p => p.User.Title).NotNull().WithMessage("TitleIsRequired");
+    }
+}
+ 
+
+5.3 Modular Endpoint Registration
+Each MapEndpoints method should be registered inside the module’s own DependencyInjection.cs file, not in Program.cs. This keeps the application modular and the main file clean and organized.
+
+ 
+> Authentication, Authorization, Pipelines and Custom Behaviors
+
+6.0 Authentication and Authorization
+6.0.1 Authentication
+Authentication is applied using the middleware:
+
+
+
+app.UseAuthentication();
+6.0.2 Authorization
+Authorization is enforced with:
+
+
+
+app.UseAuthorization();
+ 
+
+6.1 Middleware Pipeline
+In the application we use a middleware pipeline that processes each HTTP request. The pipeline is configured by calling app.Use...() methods in order. 
+
+6.1.1 Pipeline order
+Following chart will show the order of the pipeline in our application.
+
+Order
+
+Middleware
+
+Description
+
+1
+
+app.UseRequestLocalization();
+
+Sets the culture for each request based on headers or query parameters.
+
+2
+
+app.UseSwagger(); (dev only)
+
+Enables Swagger UI for API testing.
+
+3
+
+app.Use(async (context, next) => { context.Request.EnableBuffering(); await next(); });
+
+Allows reading the request body multiple times (useful for logging).
+
+4
+
+app.UsePathBase("/v2/api");
+
+Makes all endpoints available under /v2/api instead of the root (/).
+
+5
+
+app.UseCors("AllowAngularApp");
+
+Enables CORS for the Angular frontend.
+
+6
+
+app.UseAuthentication();
+
+Authenticates requests.
+
+7
+
+app.UseAuthorization();
+
+Enforces access control.
+
+8
+
+app.Use...Endpoints();
+
+Registers your actual API endpoints. Each Map...Endpoints() method adds a module's routes.
+
+9
+
+app.UseExceptionHandler(options => { });
+
+Handles unhandled exceptions and sends custom error responses.
+
+10
+
+app.UseHangfireDashboard();
+
+Exposes a dashboard for Hangfire background jobs.
+
+ 
+
+6.1.2 Endpoint Registration
+For each module there is an endpoint registration file. within that file there are endpoint mappings as well. When adding a new module we need to register the whole module inside the endpoint registration section then under that we need to relevant endpoint mappings as well. use following pattern to do the endpoint registrations:
+
+
+
+app.[use prefix] + [module name] + [Endpoints postfix]
+Do:
+
+
+app.UseDmsEndpoints();
+app.UseRecruitmentEndpoints();
+Don’t:
+
+
+app.UseDmsModuleEndpoints();
+app.UseRecruitmentModuleOnlyEndpoints();
+ 
+
+6.2 MediatR Pipeline Behaviors
+After middleware completes and the request reaches a handler (via MediatR.Send()), the pipeline behaviors are executed in sequence before the actual request handler runs. These behaviors encapsulate cross-cutting concerns.
+
+6.2.1 Steps of Authentication and Authorization Behaviors overview
+The following behaviors are applied in the order they are registered in the DI container.
+
+Step
+
+Behavior
+
+Purpose
+
+Middleware Authentication
+
+Authorization: Bearer ...
+
+JWT token validated, user claims set in HttpContext.
+
+MediatR Pipeline Behavior #1
+
+AuthKey header (optional)
+
+Custom auth key decrypted and user claims set if present.
+
+MediatR Pipeline Behavior #2
+
+-
+
+Authorization enforced based on user claims and request.
+
+These are executed for every IRequest<TResponse> using MediatR. For example:
+
+
+
+await mediator.Send(new CreateStudentCommand(...));
+This way, the system supports two authentication approaches seamlessly:
+
+Standard Bearer JWT token authentication.
+
+Custom AuthKey header for special scenarios.
+
+ 
+
+6.2.2 API Key Behavior
+This MediatR pipeline behavior enforces API key-based validation for incoming requests. It's typically used to protect APIs from unauthorized access.
+
+6.2.2.1 When It's Used
+This behavior is injected into the MediatR pipeline and runs before the actual request handler. If an API key is missing or incorrect, it triggers an authorization failure. 
+
+6.2.2.2 How It Works
+
+
+internal class ApiKeyBehavior<TRequest, TResponse>(
+    IHttpContextAccessor httpContextAccessor,
+    IConfiguration configuration)
+IHttpContextAccessor — gives access to the current HTTP context (so you can read headers).
+
+IConfiguration — lets you read your configured API key from appsettings.json or environment variables.
+
+
+
+public async Task<TResponse> Handle(...)
+This is where the actual logic happens.
+
+
+
+var httpContext = httpContextAccessor.HttpContext;
+Ensures that the request is part of an HTTP pipeline (e.g., not a background task).
+
+
+
+httpContext.Request.Headers.TryGetValue(ApiKeyIdentifiers.TenantBasedApiKey, out var extractedApiKey)
+Looks for the specific header sent by the client. The header key is stored in a constant (ApiKeyIdentifiers.TenantBasedApiKey).
+
+
+
+var apiKey = configuration.GetValue<string>(ApiKeyIdentifiers.TenantBasedApiKey);
+if (apiKey is not null && apiKey.Equals(extractedApiKey))
+{
+    httpContext.Items[ContextItemsKeys.ApiKeyValid] = true;
+}
+else
+{
+    new BehaviorExceptions("You are not authorized to access this resource.");
+}
+Retrieves the expected API key from configuration.
+
+If the keys match, it stores a flag ApiKeyValid = true in the HTTP context so downstream components (maybe policies or filters) can check it.
+
+If they don’t match, it tries to create an exception — but doesn't throw it (this is a bug, see below).
+
+
+
+return await next();
+If no issue is found, execution continues to the next behavior or the handler itself.
+
+ 
+
+6.2.3 Authorization Behavior
+6.2.3.1 Purpose
+It's a way to centralize and enforce fine-grained access control for each request without scattering Authorize attributes across your codebase.
+
+6.2.3.2 How It Works
+
+
+internal class AuthorizationBehavior<TRequest, TResponse>(...)
+Injects:
+
+IHttpContextAccessor – access to current HTTP request
+
+IAuthService – your domain-level service for user-role checks
+
+IConfiguration – access environment values, API keys, etc.
+
+
+
+SetGrantsBasedOnRequestName(requestName);
+This method inspects the TRequest type's name and infers the required permissions
+
+
+
+if (configuration[ConfigurationProperties.Environment] == ConfigurationProperties.Testing)
+Allows skipping access checks if you're in testing mode (good for integration tests).
+
+
+
+if (endpoint?.Metadata.GetMetadata<AllowAnonymousAttribute>() is not null && menuId == DefaultValues.Default.ToLower())
+If:
+
+Endpoint allows anonymous access
+
+MenuId header is set to a default value (likely a placeholder)
+
+Then → skips authorization.
+
+
+
+await AuthorizedRequestAsync(httpContext);
+This is the heart of the behavior. It:
+
+Checks for a MenuId header → if found, treats as user-based request and checks roles
+
+If no MenuId, looks for X-Api-Key → treats as API key-based request
+
+If neither → considers request unauthorized
+
+
+
+await AuthorizeUserAsync(httpContext, headerValue);
+await authService.IsUserAuthorized(menuId, grants);
+Which checks:
+
+Does the current user (from HttpContext) have the required grants for the menu/module?
+
+
+
+await AuthorizeApiKeyAsync(httpContext, extractedApiKey);
+Compares the X-Api-Key value to what's configured
+
+If matches → assumes full access (Grants.Add(ModuleRoleGrants.All))
+
+
+
+public enum ModuleRoleGrants
+{
+    All = 0,
+    Read = 1,
+    Create = 2,
+    Edit = 3,
+    Delete = 4,
+    Print = 5,
+    ExportCsvPdf = 6,
+    Execute = 7
+}
+These are the module role grants relevant to authorization.
+
+6.2.3.3 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
+ 
+
+6.2.4 Auth Key Behavior
+The AuthKeyBehavior<TRequest, TResponse> is a MediatR pipeline behavior that handles authentication based on a custom AuthKey header. It ensures that, if present, a token is validated and the corresponding user info is attached to the HttpContext.User
+
+6.2.4.1 Purpose
+To authenticate a request using a custom token (not JWT, but likely something like a proprietary API token or access key), and populate the HTTP context with user information if the token is valid.
+
+6.2.4.2 How It Works
+
+
+var httpContext = httpContextAccessor.HttpContext;
+Gets the HTTP request context for the current request.
+
+
+
+httpContext.Request.Headers.TryGetValue(KeyNames.AuthKey, out StringValues token)
+From here the AuthKey header will be extracted.
+
+
+
+var userAuthKeyRequest = authKeyService.DecryptProcessAccessToken(token);
+This method likely:
+
+Decrypts the token.
+
+Parses it into a model (e.g., containing userId, email, etc.)
+
+Validates its structure or expiration.
+
+
+
+TokenDto? tokenDto = userAuthKeyRequest is not null
+    ? await authKeyService.AuthUserAsync(userAuthKeyRequest)
+    : null;
+If the token was successfully decrypted, it tries to authenticate the user.
+
+AuthUserAsync checks if the user is known and active.
+
+
+
+var claims = new List<Claim>
+{
+    new Claim(ClaimName.UserId, tokenDto.User.Id.ToString()),
+    new Claim(ClaimTypes.Email, tokenDto.User.Email)
+};
+var identity = new ClaimsIdentity(claims, "CustomAuth");
+httpContext.User = new ClaimsPrincipal(identity);
+If the token is valid and the user exists:
+
+A list of claims (like user ID and email) is created.
+
+These are added to a custom ClaimsIdentity.
+
+This identity is then assigned to httpContext.User, allowing downstream code (e.g., controllers, services, or authorization filters) to know who the user is.
+
+
+
+await next();
+If the token is missing or invalid, the request just continues.
+
+6.2.4.3 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(AuthKeyBehavior<,>));
+ 
+
+6.2.5 Doc Naming Behavior
+The DocNamingBehavior<TRequest, TResponse> is a custom MediatR pipeline behavior that dynamically applies document auto-naming logic to incoming POST requests based on headers like DocumentTypeCode and CompanyCode.
+
+6.2.5.1 Purpose
+This behavior intercepts requests and:
+
+Checks if a document type code is present.
+
+Applies automatic naming (e.g., serial number generation or prefixing).
+
+Mutates the request body before it reaches the handler.
+
+Updates the serial number once the request is processed.
+
+6.2.5.2 How It Works
+
+
+if (context.Request.Method.Equals(HTTPMethods.Post, ...))
+Only applies this logic to POST requests, since auto-naming typically occurs during creation.
+
+
+
+context.Request.Headers.TryGetValue(KeyNames.DocumentTypeCode, out ...)
+Looks for headers like: 
+
+DocumentTypeCode: INV001 CompanyCode: OS123 
+
+If either is missing or DocumentTypeCode is "DEFAULT" (likely a constant to skip naming), then the behavior exits early.
+
+
+
+requestBody = ExtractRequestBody(request);
+This reflects into the request object to get the payload and serializes it to a JSON string.
+
+
+
+if (string.IsNullOrEmpty(requestBody) || !IsJsonObject(requestBody))
+If the extracted JSON is not valid or not an object ({}), it exits early.
+
+
+
+updatedRequestBodyString = await documentTypeService.RetrieveDocNamingByMenuId(...);
+This service presumably:
+
+Inserts a new document number (e.g., PO-000123)
+
+Modifies the JSON to include IsAutoNamingApplied = true
+
+Returns the updated JSON string
+
+
+
+if (isAutoNamingApplied)
+    ModifyRequestProperties(request, updatedRequestBodyString);
+This deserializes the modified JSON back into the request’s payload property and replaces the original value.
+
+
+
+var response = await next();
+if (isAutoNamingApplied && documentTypeCode is not null)
+    await documentTypeService.ModifyDocumentTypeLastSerialNoAsync(documentTypeCode);
+After the request is handled:
+
+If auto-naming was applied, the serial number counter for that document type is incremented.
+
+6.2.5.3 Helper Methods
+Helper Method
+
+Purpose
+
+ 
+
+ExtractRequestBody
+
+Finds the first object-type property of the request and serializes it.
+
+ 
+
+ModifyRequestProperties
+
+Overwrites the payload of the request with the new JSON values. This essentially replaces the original request data with the auto-named version.
+
+ 
+
+IsAutoNamingApplied
+
+Parses the updated JSON and checks the "IsAutoNamingApplied" flag.
+
+ 
+
+IsJsonObject
+
+Validates that a string is a properly structured JSON object.
+
+ 
+
+6.2.5.4 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(DocNamingBehavior<,>));
+ 
+
+6.2.6 Command Validation Behavior
+The CommandValidationBehavior<TRequest, TResponse> that you're using is a custom MediatR pipeline behavior designed to validate command requests before they are handled by their respective handlers. This pattern is a clean way to apply cross-cutting concerns such as validation, logging, or authorization. This is located under the BuildingBlocks behaviors.
+
+6.2.6.1 Purpose
+It ensures that commands (requests implementing ICommand<TResponse>) are validated using FluentValidation validators before being executed by their handler.
+
+6.2.6.2 How It Works
+
+
+public class CommandValidationBehavior<TRequest, TResponse>
+    (IEnumerable<IValidator<TRequest>> validators)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : ICommand<TResponse>
+IPipelineBehavior<TRequest, TResponse>: Part of MediatR, allows you to intercept the handling of requests.
+
+IEnumerable<IValidator<TRequest>> validators: All FluentValidation validators that apply to this specific command (TRequest) are injected.
+
+
+
+var context = new ValidationContext<TRequest>(request);
+Creates a FluentValidation context using the incoming command.
+
+
+
+var validationResults = await Task.WhenAll(validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+Runs all applicable validators asynchronously.
+
+
+
+var failures = validationResults
+    .Where(r => r.Errors.Any())
+    .SelectMany(r => r.Errors)
+    .ToList();
+Collects all validation failures.
+
+
+
+if (failures.Any())
+    throw new ValidationException(failures);
+If any validation errors exist, it throws a FluentValidation.ValidationException. This prevents the command handler from running.
+
+
+
+return await next();
+If validation passes, the command proceeds to the next behavior or handler.
+
+6.2.6.3 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(CommandValidationBehavior<,>));
+This tells MediatR to automatically insert this behavior for any command implementing ICommand<TResponse>, assuming matching validators are registered via:
+
+
+
+services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+6.2.6.3 Example
+Suppose you have a command like:
+
+
+
+public record CreateStudentCommand(string Email, string Password) : ICommand<Guid>;
+And a validator:
+
+
+
+public class CreateStudentCommandValidator : AbstractValidator<CreateStudentCommand>
+{
+    public CreateStudentCommandValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).MinimumLength(6);
+    }
+}
+Before the CreateStudentCommandHandler is called, the CommandValidationBehavior runs this validator. If the email is invalid or password is too short, the handler is never executed, and a validation exception is thrown.
+
+ 
+
+6.2.7 Logging Behavior
+The LoggingBehavior<TRequest, TResponse> is a MediatR pipeline behavior that captures and logs details about non-GET HTTP requests and their responses. It's primarily used for auditing and tracking user actions, particularly for write or update operations (e.g., POST, PUT, DELETE).
+
+6.2.7.1 How It Works
+
+
+public async Task<TResponse> Handle(...)
+Executes before and after a MediatR request.
+
+Proceeds to the next() delegate to execute the actual handler.
+
+After the handler runs, it:
+
+Reads the HTTP request body (unless it's GET).
+
+Serializes and processes the response.
+
+Constructs a log entry with user details and request/response info.
+
+Outputs the audit log to the console (could be extended to file/DB/etc)
+
+
+
+ReadRequestBody(HttpRequest request)
+Reads and returns the raw body content of the request.
+
+Supports both JSON and multipart/form-data (like file uploads).
+
+Uses request.EnableBuffering() to allow multiple reads of the body stream.
+
+
+
+CreateAuditLog(HttpContext context, string requestBody, string responseBody)
+Builds an anonymous object that captures:
+
+Status code, method (GET/POST/PUT...)
+
+User identity (ID, email, full name, etc.)
+
+Request and response bodies
+
+Uses ClaimTypes and custom claim names to fetch user info.
+
+
+
+LogAuditInfo(dynamic auditlog)
+Constructs a CloudEvents-style audit log object.
+
+Serializes it to JSON and logs to console using:
+
+Console.WriteLine(JsonConvert.SerializeObject(log));
+
+Built structure: 
+
+{
+  "specversion": "1.0.2",
+  "type": "configuration.access" or "configuration.audit",
+  "source": "/api/users/update",
+  "id": "guid-here",
+  "datacontenttype": "application/json",
+  "Datetime": "UTC timestamp",
+  "data": { ...audit log info... }
+}
+
+
+
+RemoveWrapperObject(string json)
+Trims the outer wrapper object from a serialized response (if present).
+
+E.g., converts: { "data": { "value": 123 } } ➝ { "value": 123 }
+
+
+
+FlattenAndRemoveWrapperObject(...)
+Meant to flatten nested JSON structures.
+
+Could used to simplify deeply nested responses into flat key-value pairs for easier audit viewing.
+
+6.2.7.2 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+6.2.7.3 Example
+If a student updates their profile:
+
+Request: PUT /api/student/profile
+
+RequestBody: { "name": "student1" }
+
+ResponseBody: { "success": true }
+
+Audit Log Output: includes method, path, user ID/email/name, request, response, timestamp, etc.
+
+ 
+
+6.2.8 Query Validation Behavior
+The QueryValidationBehavior<TRequest, TResponse> is a MediatR pipeline behavior that ensures validation rules are applied to queries before they are handled.
+
+This is part of CQRS (Command Query Responsibility Segregation) where queries and commands are treated differently.
+
+6.2.8.1 How It Works
+
+
+public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, ...)
+{
+  var context = new ValidationContext<TRequest>(request);
+}
+This wraps your query request (TRequest) in a validation context so validators can access its data.
+
+
+
+var validationResults = await Task.WhenAll(
+    validators.Select(v => v.ValidateAsync(context, cancellationToken))
+);
+Runs all registered IValidator<TRequest> implementations asynchronously.
+
+
+
+var failures = validationResults
+    .Where(r => r.Errors.Any())
+    .SelectMany(r => r.Errors)
+    .ToList();
+Extracts all the validation errors into one list.
+
+
+
+if (failures.Any())
+{
+    throw new ValidationException(failures);
+}
+If any validation rule fails, it stops the pipeline and throws a ValidationException.
+
+
+
+return await next();
+If validation passes, proceeds to the actual query handler to fetch/process data.
+
+6.2.8.2 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(QueryValidationBehavior<,>));
+6.2.8.3 Example
+Query DTO:
+
+
+
+public record GetStudentByIdQuery(Guid Id) : IQuery<UserDto>;
+Validator:
+
+
+
+public class GetStudentByIdQueryValidator : AbstractValidator<GetStudentByIdQuery>
+{
+    public GetStudentByIdQueryValidator()
+    {
+        RuleFor(q => q.Id).NotEmpty().WithMessage("Student ID must be provided.");
+    }
+}
+ 
+
+6.2.9. Workflow Approval Behavior
+The WorkflowApprovalBehavior<TRequest, TResponse> is a MediatR pipeline behavior that enhances the response of a POST request by checking and setting workflow approval status
+
+6.2.9.1  Purpose
+After the main logic (request handler) finishes, this behavior checks:
+
+If the response (or its nested object) contains a HasPendingDocTypeApproval property.
+
+If yes, it sets that property to true or to the value retrieved from the IWorkflowTransactionDetailService.
+
+This allows the client (frontend or API consumer) to know whether the created/processed entity is awaiting approval.
+
+6.2.9.2  How It Works
+
+
+var response = await next();
+This runs the actual handler (e.g., command or query logic), and captures the returned object.
+
+
+
+if (httpContext.Request.Method.Equals(HTTPMethods.Post, StringComparison.OrdinalIgnoreCase))
+Only applies to POST requests. Also checks that the response is not null.
+
+
+
+var isPendingProp = responseType.GetProperty("HasPendingDocTypeApproval");
+if (isPendingProp is not null && isPendingProp.CanWrite)
+{
+    isPendingProp.SetValue(response, true);
+}
+If the response has a top-level property named HasPendingDocTypeApproval, it sets it to true.
+
+
+
+foreach (var prop in responseType.GetProperties())
+If the top-level doesn't have HasPendingDocTypeApproval, it loops through all properties of the response.
+
+
+
+if (prop.GetIndexParameters().Length > 0)
+    continue;
+skips indexers
+
+
+
+value = prop.GetValue(response);
+if (value is null) continue;
+In here it’s safely gets property value
+
+
+
+catch (Exception ex)
+{
+    logger.LogWarning(ex, $"Skipping property {prop.Name} due to exception.");
+}
+Catches and logs exceptions so the loop continues safely
+
+
+
+var nestedProp = value.GetType().GetProperty("HasPendingDocTypeApproval");
+Checks nested object for HasPendingDocTypeApproval
+
+
+
+var isApproval = await transactionDetailService.GetStatusAsync();
+nestedProp.SetValue(value, isApproval);
+prop.SetValue(response, value);
+break;
+If found, it calls this. This means it updates the nested object’s approval flag based on business logic from transactionDetailService.
+
+6.2.9.3  How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(WorkflowApprovalBehavior<,>));
+ 
+
+6.2.10 Recently Visited Behavior
+The RecentlyVisitedBehavior<TRequest, TResponse> is a MediatR pipeline behavior designed to track user activity by recording recently visited menu pages in the system.
+
+6.2.10.1 Purpose
+This behavior intercepts all GET requests and checks whether a MenuId is present in the request headers. If so, it attempts to:
+
+Retrieve the corresponding menu from the database.
+
+Record that the user visited this menu via the IRecentlyVisitedService.
+
+6.2.10.2 How It Works
+
+
+var httpContext = httpContextAccessor.HttpCont
+Ensures there's an active HTTP context
+
+
+
+if (httpContext.Request.Method.Equals(HTTPMethods.Get, StringComparison.OrdinalIgnoreCase))
+This behavior only triggers for GET requests
+
+
+
+if (httpContext.Request.Headers.TryGetValue(KeyNames.MenuId, out StringValues menuId))
+Tries to get the MenuId from the HTTP headers
+
+
+
+if (navMenuId is not DefaultValues.Default)
+Skips processing if the MenuId equals a default value.
+
+
+
+var menu = await menuService.RetrieveMenuByMenuId(navMenuId);
+if (menu is not null)
+{
+    await recentlyVisitedService.CreateRecentlyVisitedPageAsync(menuId: menu.Id);
+}
+Retrieves the actual menu object using menuService.
+
+If found, it creates a "recently visited" record using recentlyVisitedService.
+
+
+
+return await next();
+This allows the request to proceed to its handler
+
+6.2.10.3 How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(RecentlyVisitedBehavior<,>));
+ 
+
+> Code Structure & Readability
+Meaningful Naming Conventions
+Naming conventions are crucial in any software system because they improve readability, maintainability, and team collaboration. In .NET and clean architecture/CQRS-based systems, following naming standards brings clarity, reduces onboarding time, and prevents confusion.
+
+Do:
+
+Use PascalCase for file names and class names.
+
+Use camelCase for local variables, parameters, and private fields (optionally with _prefix).
+
+Keep names descriptive and concise, avoid abbreviations and suffixes like Helper, BL, or Utils unless appropriate.
+
+Endpoint grouping methods should follow the Map + ModuleName + Endpoints pattern.
+
+
+
+// File: StudentService.cs
+public class StudentService { }
+// File: StudentService.Validations.cs
+public class StudentValidator : AbstractValidator<Student> { }
+public static void MapStudentEndpoints(this WebApplication app) { }
+Don’t:
+
+Avoid any other naming conventions.
+
+
+
+// File: student_service.cs
+public class StudentBL { }
+public static void MapCrudStudentEndpoints(this WebApplication app) { }
+Proper Indentation & Formatting
+Proper indentation and formatting are fundamental to clean, maintainable, and professional code. It's not just about aesthetic. it's about communication, collaboration, and long-term stability of the codebase.
+
+Do:
+
+Break lines exceeding 120 characters.
+
+Use indentation for blocks, initializers, and nested calls.
+
+Align related code for better readability.
+
+Separate logical code sections with line breaks for clarity.
+
+
+
+var studentEvent = new StudentEvent
+{
+    Student = someStudent,
+    Date = someDate
+};
+Don’t:
+
+Avoid no indentation or poor formatting.
+
+
+
+var studentEvent = new StudentEvent(); studentEvent.Student = someStudent; studentEvent.Date = someDate;
+//No indentation
+public class Student{public string Name;public int Age;}
+//All in one line, hard to read
+if(condition){DoSomething();Log();return;}
+Minimal Inline Comments & Self-Documenting Code
+Writing clean, expressive code that explains itself is more powerful than littering it with inline comments. Self-documenting code improves readability, maintainability, and team collaboration, and reduces the need for constantly updating comments.
+
+Do:
+
+Let your naming explain intent.
+
+Only comment non-obvious logic and use it to explain the intent.
+
+
+
+// Retry due to known third-party API flakiness
+await RetryPolicy.ExecuteAsync(() => apiClient.Call());
+Don’t:
+
+Do not use obvious comments and remove outdated comments.
+
+Do not comment source codes.
+
+
+
+// Create student
+var s = new Student();
+//Redundant comment
+int age = 18; // set age to 18
+//Misleading or outdated comment
+//This deletes a user
+CreateUser(userDto);
+//Code that's unclear and relies too much on comment
+//Validating student
+var x = Do(x => Validate(y));
+Consistent Coding Style
+Follow .NET naming conventions.
+
+Use FluentValidation for all validation.
+
+Organize code by feature/layer, e.g., Controllers, Validators, Services.
+
+>Language/Framework-Specific (.NET)
+
+
+Dependency Injection (DI)
+Decouples service implementation from its usage, improves testability, and aligns with SOLID (especially D: Dependency Inversion).
+
+Do:
+
+Scoped: New instance per HTTP request.
+
+Singleton: One instance for the app lifetime.
+
+Transient: New instance every time it's requested.
+
+
+
+// Register service in Startup.cs or Program.cs
+services.AddScoped<IUserService, UserService>();
+Don’t:
+
+Do not instantiate dependencies manually.
+
+
+
+// ❌ DON'T: Instantiate dependencies manually
+var service = new UserService();  // tight coupling & hard to mock
+Async/Await Everywhere
+Non-blocking I/O improves scalability and responsiveness. Essential in web APIs and CQRS pipeline behaviors.
+
+Do:
+
+
+
+public async Task<UserDto> Handle(GetUserQuery request, CancellationToken ct)
+{
+    var user = await _repository.GetUserByIdAsync(request.Id);
+    return _mapper.Map<UserDto>(user);
+}
+Don’t:
+
+
+
+// ❌ DON'T: Use .Result or .Wait() — can cause deadlocks
+var result = _repository.GetUserByIdAsync(id).Result;
+Nullable Reference Handling
+Helps prevent NullReferenceException by forcing developers to handle null safely in modern C# (8+).
+
+Do:
+
+Use ? for nullable reference types.
+
+Use ! only if you're sure a value is not null (not recommended unless necessary).
+
+
+
+TokenDto? tokenDto = await authService.AuthUserAsync(...);
+if (tokenDto is null)
+    return Unauthorized();
+Don’t:
+
+
+
+// ❌ DON'T: Assume reference values are non-null
+var token = tokenDto.AccessToken.Length;  // will throw if tokenDto is null
+Partial Classes for Separation of Concerns
+Helps organize large classes into smaller, purpose-based files without losing access to private members.
+
+Do:
+
+Keeps logic modular (e.g., validation, error handling, persistence).
+
+Improves readability and maintenance.
+
+
+
+// StudentService.cs
+public partial class StudentService { }
+// StudentService.Validations.cs
+public partial class StudentService 
+{
+    private void ValidateStudent(Student s) { ... }
+}
+// StudentService.Exceptions.cs
+public partial class StudentService 
+{
+    private void ThrowIfInvalid(Student s) { ... }
+}
+Don’t:
+
+
+
+// ❌ DON'T: Dump everything into one huge class file (anti-pattern)
+public class StudentService {
+    // validation, exception handling, business logic, logging, etc.
+}
+ 
+
+> Functionality & Business Logic
+
+Code fulfills the business requirement or user story
+Do:
+
+Before starting implementation understand requirements clearly this will avoid future changes and bugs.
+
+Understand the CQRS implementation for the specific scenario.
+
+Use CQRS to separate read (Query) and write (Command) logic.
+
+Support workflows like approvals, role-based access, validation, etc.
+
+
+
+//Query
+public record GetPathwayListQuery() : IQuery<GetListPathwaysResult>;
+public record GetListPathwaysResult(PaginationResult<Pathway> paginationResult);
+//Query Handler
+public class GetPathwayListHandler(IPathwayService service) : IQueryHandler<GetPathwayListQuery, GetListPathwaysResult>
+{
+    public async Task<GetListPathwaysResult> Handle(GetPathwayListQuery request, CancellationToken cancellationToken)
+    {
+        var result = await service.GetListAsync();
+        return new GetListPathwaysResult(result);
+    }
+}
+//Command
+ublic record CreatePathwayCommand(CreatePathwayDto Pathway) : ICommand<CreatePathwayResult>;
+public record CreatePathwayResult(Pathway Pathway);
+//Command Handler
+public class CreatePathwayHandler(IPathwayService service) : ICommandHandler<CreatePathwayCommand, CreatePathwayResult>
+{
+    public async Task<CreatePathwayResult> Handle(CreatePathwayCommand request, CancellationToken cancellationToken)
+    {
+        var result = await service.AddAsync(request.Pathway);
+        return new CreatePathwayResult(result);
+    }
+}
+Don’t:
+
+Do not start implementation until the requirements are not well understand or finalized.
+
+avoid hardcoding business logics
+
+properly implement business logics.
+
+
+
+//Mixing read and write logic in one class
+public class StudentManager {
+    public void CreateStudent(...) { ... }
+    public StudentDto GetStudent(...) { ... }
+}
+//Using CRUD-style naming in endpoints or commands
+group.MapPost("/AddStudentRecord", ...);
+//Business rule hardcoded in controller
+if (user.Age < 18) return BadRequest("Underage");
+Proper handling of conditional logic and edge cases 
+Do:
+
+Handle edge cases as well.
+
+Use exception handling appropriately for error cases.
+
+Test edge cases properly.
+
+
+
+//proper if statement
+if (endpoint?.Metadata.GetMetadata<AllowAnonymousAttribute>() is not null &&
+    menuId == "default")
+{
+    return await next();
+}
+//proper if else statement
+private static Expression ConvertToTypeExpression(Type type, string value)
+{
+    Type underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+    object typedValue = value;
+    if (underlyingType.IsEnum && Enum.TryParse(underlyingType, value, true, out var enumValue))
+    {
+        typedValue = enumValue;
+    }
+    else if (underlyingType == typeof(DateTime) && DateTime.TryParse(value, out var dt))
+    {
+        typedValue = dt;
+    }
+    else
+    {
+        try
+        {
+            typedValue = Convert.ChangeType(value, underlyingType);
+        }
+        catch
+        {
+            return Expression.Constant(null, type);
+        }
+    }
+    return Expression.Constant(typedValue, type);
+}
+
+
+//proper exception handling
+public class ExternalApiException : Exception
+{
+    public ExternalApiException(string message) :
+        base($"External Api Exception: {message}, throws from Infrastructure Layer.")
+    { }
+}
+Don’t:
+
+Do not ignore edge cases.
+
+Avoid deeply nested conditions.
+
+Avoid unclear and hard to maintain codes.
+
+
+
+//Overly nested conditions
+if (x != null) {
+    if (x.Enabled) {
+        if (x.Count > 0) {
+            return x.Value;
+        }
+    }
+}
+//Magic strings and numbers
+if (user.Status == "X1") { ... }
+//Hard to maintain and unclear
+if (flag == 1 && id == "999" && mode != "live") { DoSomething(); }
+
+
+//not proper exception handling
+public class ExternalApiException : Exception
+{
+    public ExternalApiException(string message) :
+        //not proper message returned
+        base($"Exception returned")
+    { }
+}
+Feature toggles or configuration-driven logic when necessary
+Do:
+
+Use proper configuration files for configuration.
+
+Use proper Dependencyinjection.cs file to inject dependency and for clean architecture.
+
+Use environment-specific configurations.
+
+Document configuration options with clear explanations for better understanding.
+
+
+
+//proper configuration
+if (configuration["Environment"] == "Testing") return;
+
+
+//proper dependency injection in modules
+public static class DependencyInjection
+{
+    public static IServiceCollection AddConfigurationServices
+        (this IServiceCollection services, IConfiguration config)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAngularApp",
+                builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+        });
+        services.AddHttpClient();
+        services.AddHttpContextAccessor();
+        services.AddInfrastructureServices(config);
+        services.AddScoped<DataSourceHeaderFactory>();
+        var redisConnectionString = config.GetConnectionString("Redis");
+        if (!string.IsNullOrEmpty(redisConnectionString))
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = config.GetConnectionString("Redis");
+            });
+        }
+        services.AddControllersWithViews()
+            .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix);
+        services.AddLocalization(options => { options.ResourcesPath = "Resources"; });
+        services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = new[]
+            {
+                new CultureInfo(i18n.English),
+                new CultureInfo(i18n.Arabic),
+            };
+            options.DefaultRequestCulture = new RequestCulture(i18n.English);
+            options.SupportedCultures = supportedCultures;
+            options.SupportedUICultures = supportedCultures;
+            options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
+            {
+                var userLangs = context.Request.Headers[Localization.LanguageParam].ToString();
+                var culture =
+                    supportedCultures.FirstOrDefault(c => c.Name.Equals(userLangs, StringComparison.OrdinalIgnoreCase));
+                if (culture is not null)
+                {
+                    return new ProviderCultureResult(culture.Name, culture.Name);
+                }
+                return new ProviderCultureResult(i18n.English, i18n.English);
+            }));
+        });
+        if (config["Environment"] != "Testing")
+        {
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = config["Keycloak:Authority"];
+                options.Audience = config["Keycloak:Audience"];
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = config["Keycloak:Authority"],
+                    ValidAudience = config["Keycloak:Audience"],
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+        }
+        services.AddAuthorization();
+        services.AddMediatR(config =>
+        {
+            config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            config.AddOpenBehavior(typeof(AuthKeyBehavior<,>));
+        });
+        services.RegisterServicesWithAttributes(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddExceptionHandler<CustomExceptionHandler>();
+        return services;
+    }
+    public static WebApplication UseConfigurationEndpoints(this WebApplication app)
+    {
+        app.MapUserEndpoints();
+        app.MapHistoryEndpoints();
+        return app;
+    }
+}
+Don’t:
+
+Do not hardcode environment checks.
+
+Do not use program.cs file for direct injections.
+
+Keep configuration documents uptodate.
+
+
+
+// Hardcoded environment check
+if (Environment.GetEnvironmentVariable("ENV") == "qa-uat") { ... }
+// Using bool flags all over instead of config-driven logic
+if (isTestMode) { ... }
+
+> Maintainability & Modularity
+
+Code is modular and reusable
+Do:
+
+Break whole business logic into smaller, manageable components and implement.
+
+Use DependencyInjection.cs for each module.
+
+Keep Program.cs clean by delegating configuration.
+
+Create relevant service when access the database for reusability.
+
+Create well defined interfaces and DTOs when interacting with data.
+
+
+
+//dependency injection
+services.AddValidatorsFromAssembly(typeof(StudentModule).Assembly);
+config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+
+
+//proper service implmentation
+public class PathwayService(
+    IRepository<Pathway> repository,
+    IRepository<JobResponsibility> jobResponsibilityRepository,
+    IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), IPathwayService
+{
+    public async Task<Pathway> AddAsync(CreatePathwayDto dto)
+    {
+        var entity = await repository.AddAsync(Pathway.Create(
+            dto.Code,
+            dto.Title,
+            dto.CriticalPositionId,
+            dto.CriticalPositionSelectionId,
+            dto.SuccessProfileId,
+            dto.CompanyId,
+            dto.Status
+            ));
+        await repository.SaveChangesAsync();
+        return entity;
+    }
+    public async Task<Pathway> UpdateAsync(UpdatePathwayDto dto)
+    {
+        var entity = await repository.GetByIdAsync(dto.Id);
+        entity.Title = dto.Title;
+        entity.CriticalPositionId = dto.CriticalPositionId;
+        entity.CriticalPositionSelectionId = dto.CriticalPositionSelectionId;
+        entity.SuccessProfileId = dto.SuccessProfileId;
+        entity.Status = dto.Status;
+        await repository.SaveChangesAsync();
+        return entity;
+    }
+    public async Task<Pathway> GetByIdAsync(Guid id) => 
+        await repository.GetByIdAsync(id, Pathway.GetIncludes(), true);
+    public async Task<PathwayJobresponsibilityDto> GetPathwayWithResponsibilityById(Guid id){
+        var pathway = await repository.GetByIdAsync(id);
+        var jobResponsibility = await jobResponsibilityRepository.GetAsync(s => s.SuccessProfileId == pathway.SuccessProfileId);
+        return new PathwayJobresponsibilityDto(
+            pathway: pathway,
+            jobResponsibility: jobResponsibility
+        );
+    }
+    public async Task<PaginationResult<Pathway>> GetListAsync()
+        => await repository.ListAsync(PaginationRequest(), Pathway.GetIncludes(), false);
+    public async Task<Pathway> DeleteAsync(Guid id)
+    {
+        var entity = await repository.GetByIdAsync(id);
+        entity.SetDeleted();
+        await repository.SaveChangesAsync();
+        return entity;
+    }
+    public async Task<bool> CodeExistsAsync(string code, Guid companyId)
+    {
+        var exists = await repository.GetAsync(s => s.Code.ToLower() == code.ToLower() && s.CompanyId == companyId);
+        return exists is not null;
+    }
+    public async Task<bool> TitleExistsAsync(string title, Guid companyId)
+    {
+        var exists = await repository.
+            GetAsync(s => s.Title.ToLower() == title.ToLower() && s.CompanyId == companyId && !s.IsDeleted);
+        return exists is not null;
+    }
+}
+Don’t:
+
+Do not inject endpoints directly in the Program.cs file
+
+Do not put services in the single place divide them according to the module and place them accordingly.
+
+Do not create two or more service for the same purpose.
+
+
+
+// Registering endpoints directly in Program.cs
+app.MapPost("/students", ...);
+// Putting all services in a single Startup.cs or static method
+services.AddScoped<IStudentService, StudentService>();
+services.AddScoped<ICourseService, CourseService>();
+services.AddScoped<ITeacherService, TeacherService>();
+// ... all in Program.cs
+No duplicated logic, consider DRY principle
+Do:
+
+Create separate methods or classes when there are repeated codes.
+
+Use method overloading and method overriding when necessary.
+
+Use base models when creating models for maintainability and readability.
+
+
+
+//reusable services
+await _menuService.RetrieveMenuByMenuId(menuId);
+Don’t:
+
+Avoid duplicate codes.
+
+Do not copy paste codes since that can lead to repeatable codes.
+
+
+
+// ❌ Duplicate logic
+if (menuId == "M1") { ... } // in 3 different services
+// ❌ No shared utility or base class
+var user = new UserService().GetUserById(id);
+// then again elsewhere:
+var another = new UserService().GetUserById(id);
+Adheres to SOLID principles
+Do:
+
+Single Responsibility Principle: Each class should have only one reason to change
+
+Open/Closed Principle: Software entities should be open for extension but closed for modification
+
+Liskov Substitution Principle: Derived classes must be substitutable for their base classes
+
+Interface Segregation Principle: Clients should not be forced to depend on methods they don't use
+
+Dependency Inversion Principle: High-level modules should not depend on low-level modules; both should depend on abstractions
+
+
+
+// --- Single Responsibility Principle (SRP) ---
+// Separate repositories and services
+public interface IEmployeeRepository
+{
+    void Add(Employee employee);
+    Employee GetById(int id);
+}
+public class EmployeeRepository : IEmployeeRepository
+{
+    public void Add(Employee employee) { /* save to DB */ }
+    public Employee GetById(int id) { /* fetch from DB */ return new Employee(); }
+}
+public interface ILoggerService
+{
+    void Log(string message);
+}
+public class LoggerService : ILoggerService
+{
+    public void Log(string message) { /* log to file or system */ }
+}
+// --- Open/Closed Principle (OCP) ---
+// Authorization behaviors open to extension without modification
+public interface IAuthorizationPolicy
+{
+    bool IsAuthorized(User user, string action);
+}
+public class AdminPolicy : IAuthorizationPolicy
+{
+    public bool IsAuthorized(User user, string action) => user.Role == "Admin";
+}
+public class EditorPolicy : IAuthorizationPolicy
+{
+    public bool IsAuthorized(User user, string action) => user.Role == "Editor";
+}
+// --- Liskov Substitution Principle (LSP) ---
+// Base class for salary calculation, derived classes extend behavior safely
+public abstract class SalaryCalculator
+{
+    public abstract decimal CalculateSalary(Employee employee);
+}
+public class FullTimeSalaryCalculator : SalaryCalculator
+{
+    public override decimal CalculateSalary(Employee employee) => employee.BaseSalary;
+}
+public class ContractorSalaryCalculator : SalaryCalculator
+{
+    public override decimal CalculateSalary(Employee employee) => employee.HourlyRate * employee.HoursWorked;
+}
+// --- Interface Segregation Principle (ISP) ---
+// Separate interfaces for different employee actions
+public interface IWorkable
+{
+    void Work();
+}
+public interface ITrainable
+{
+    void AttendTraining();
+}
+public class Employee : IWorkable, ITrainable
+{
+    public void Work() { /* working logic */ }
+    public void AttendTraining() { /* training logic */ }
+}
+public class Contractor : IWorkable
+{
+    public void Work() { /* working logic */ }
+}
+// --- Dependency Inversion Principle (DIP) ---
+// High-level CQRS handler depends on abstractions
+public interface ICommandHandler<TCommand>
+{
+    void Handle(TCommand command);
+}
+public class UpdateEmployeeCommand { public int Id; public string Name; }
+public class UpdateEmployeeCommandHandler : ICommandHandler<UpdateEmployeeCommand>
+{
+    private readonly IEmployeeRepository _repo;
+    private readonly ILoggerService _logger;
+    public UpdateEmployeeCommandHandler(IEmployeeRepository repo, ILoggerService logger)
+    {
+        _repo = repo;
+        _logger = logger;
+    }
+    public void Handle(UpdateEmployeeCommand command)
+    {
+        var employee = _repo.GetById(command.Id);
+        employee.Name = command.Name;
+        _repo.Add(employee);
+        _logger.Log($"Employee {command.Id} updated.");
+    }
+}
+Don’t:
+
+Avoid "God" classes that handle too many responsibilities
+
+Don't modify existing code when adding new functionality if possible
+
+Avoid breaking the contract of parent classes in child classes
+
+Don't create fat interfaces that force clients to implement methods they don't need
+
+Avoid tight coupling between high-level and low-level components
+
+
+
+// --- Single Responsibility Principle (SRP) Violation ---
+// One class does too many things: data access, logging, validation all mixed
+public class EmployeeService
+{
+    public void Add(Employee employee)
+    {
+        // Save to DB
+        Console.WriteLine("Saving employee...");
+        // Log the action
+        Console.WriteLine("Logging employee addition...");
+        // Validate employee (mixed responsibility)
+        if (string.IsNullOrEmpty(employee.Name))
+            throw new Exception("Invalid employee");
+    }
+}
+// --- Open/Closed Principle (OCP) Violation ---
+// Every time a new role is added, this method must be modified
+public class AuthorizationService
+{
+    public bool IsAuthorized(User user, string action)
+    {
+        if (user.Role == "Admin") return true;
+        else if (user.Role == "Editor") return action != "Delete";
+        else if (user.Role == "Manager") return action == "Read";
+        // Add new roles by modifying this method (bad)
+        return false;
+    }
+}
+// --- Liskov Substitution Principle (LSP) Violation ---
+// Derived class breaks expected behavior, throws exception unexpectedly
+public class SalaryCalculator
+{
+    public virtual decimal Calculate(Employee employee) => employee.BaseSalary;
+}
+public class ContractorSalaryCalculator : SalaryCalculator
+{
+    public override decimal Calculate(Employee employee)
+    {
+        throw new NotSupportedException("Contractors don't have fixed salary");
+    }
+}
+// --- Interface Segregation Principle (ISP) Violation ---
+// Fat interface forces classes to implement methods they don't need
+public interface IEmployeeActions
+{
+    void Work();
+    void AttendTraining();
+    void ManageTeam();
+}
+public class Contractor : IEmployeeActions
+{
+    public void Work() { /* works */ }
+    public void AttendTraining() { throw new NotImplementedException(); } // Not applicable
+    public void ManageTeam() { throw new NotImplementedException(); } // Not applicable
+}
+// --- Dependency Inversion Principle (DIP) Violation ---
+// High-level module depends directly on low-level concrete class
+public class UpdateEmployeeHandler
+{
+    private readonly EmployeeRepository _repo = new EmployeeRepository();
+    private readonly LoggerService _logger = new LoggerService();
+    public void Handle(UpdateEmployeeCommand command)
+    {
+        var emp = _repo.GetById(command.Id);
+        emp.Name = command.Name;
+        _repo.Add(emp);
+        _logger.Log("Employee updated");
+    }
+    // Cannot swap repository or logger without changing this class
+}
+Clear Separation of Concerns in CQRS with MediatR
+Do:
+
+Separate Read and Write Operations.
+
+Split your application into queries (read-only operations) and commands (write operations).
+
+This makes your codebase easier to understand, maintain, and scale.
+
+Use MediatR for Decoupling.
+
+Delegate request handling to Handlers, not controllers.
+
+Controllers should only send queries/commands to MediatR and return results.
+
+Use Separate Handler Classes for Each Query and Command.
+
+Each Handler should have a single responsibility.
+
+Use a Service Layer for Complex Business Logic.
+
+Keep the Handler thin — delegate to domain services when needed.
+
+Leverage MediatR Pipelines for Cross-Cutting Concerns
+
+Use IPipelineBehavior<TRequest, TResponse> for things like:
+
+Logging
+
+Validation
+
+Authorization
+
+Caching
+
+Performance tracking
+
+
+
+//seperate read and write
+public record GetUserByIdQuery(Guid Id) : IRequest<UserDto>;
+public record UpdateUserCommand(Guid Id, string Name) : IRequest<bool>;
+//decoupling
+public class UserController : ControllerBase
+{
+    private readonly IMediator _mediator;
+    public UserController(IMediator mediator) => _mediator = mediator;
+    [HttpGet("{id}")]
+    public async Task<IActionResult> Get(Guid id)
+        => Ok(await _mediator.Send(new GetUserByIdQuery(id)));
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(Guid id, UpdateUserDto dto)
+        => Ok(await _mediator.Send(new UpdateUserCommand(id, dto.Name)));
+}
+//seperate handler classes for query and command
+public class GetUserByIdHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+{
+    public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken ct)
+    {
+        var user = await _userRepository.GetByIdAsync(request.Id);
+        return _mapper.Map<UserDto>(user);
+    }
+}
+//service layer for complex business logics
+public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, bool>
+{
+    public async Task<bool> Handle(UpdateUserCommand request, CancellationToken ct)
+    {
+        return await _userService.UpdateUserAsync(request.Id, request.Name);
+    }
+}
+//pipelines for cross-cutting concerns
+public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+{
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
+    {
+        _logger.LogInfo($"Handling {typeof(TRequest).Name}");
+        return await next();
+    }
+}
+Don’t:
+
+Mix Command and Query Responsibilities.
+
+Avoid combining read/write logic in the same handler or request.
+
+Use MediatR for Simple Dependency Injection.
+
+Only use MediatR when you need decoupling or cross-cutting behaviors—not just to call a service.
+
+Let Controllers Handle Business Logic.
+
+Controllers should not contain if-else, database access, or domain logic.
+
+Overload Handlers.
+
+Don’t make a handler do too much. Split logic into smaller components or services.
+
+Skip Validation.
+
+Always validate input before executing commands. Use FluentValidation with pipeline behavior.
+
+
+
+//mix command and query
+public class SaveAndFetchUserHandler : IRequestHandler<SaveAndFetchUserCommand, UserDto>
+//use mediateR for simple dependency injections
+await _mediator.Send(new CalculateTaxCommand());
+//controllers handle business logic
+if (user.IsActive && user.Age > 18) { ... }
+//overload handlers
+public async Task<bool> Handle(...) {
+    // validate, log, audit, update, send email...
+}
+//skip validations
+public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
+{
+    public UpdateUserCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty();
+    }
+}
+ 
+> Error Handling & Logging
+
+
+Proper try-catch blocks with specific exception types 
+Do:
+
+Use domain-specific or validation exceptions
+
+Handle exceptions at appropriate level of the application.
+
+In exceptions return an informative response.
+
+Use proper exceptions in the module level.
+
+
+
+if (failures.Any())
+    throw new ValidationException(failures);
+
+
+//module level exception
+public class RecruitmentDomainException : Exception
+{
+    public RecruitmentDomainException(string message) : base(message) { }
+}
+//module level exception two
+public class PmoDomainException : Exception
+{
+    public PmoDomainException(string message) : base(message) { }
+}
+Don’t:
+
+Avoid too generic responses
+
+Inform the details about the exceptions at the relevant level.
+
+
+
+// Too generic — loses context and clarity
+throw new Exception("Invalid input");
+// Silent fail — doesn't halt execution or alert developers
+return default;
+Descriptive logging with no sensitive data
+Do:
+
+Log meaning full content in the logs.
+
+Use appropriate log levels.
+
+Use appropriate structure when logging.
+
+Mask sensitive data for external logs.
+
+
+
+Console.WriteLine(JsonConvert.SerializeObject(new {
+    type = "audit",
+    source = "/api/users/update",
+    data = new { userId = user.Id, action = "update" }
+}));
+Don’t:
+
+Avoid sensitive data in external logs.
+
+Avoid generic messages and use proper structure when logging.
+
+
+
+❌ Never log: passwords, tokens, API keys, full JWTs.
+✅ Mask or redact sensitive fields if necessary.
+Consistent Error Response Formats (Especially in APIs)
+Do:
+
+Use following existing exceptions to return consistent error responses.
+
+BadRequestException
+
+CompanyCountMissMatchException
+
+CustomValidationException
+
+DomainException
+
+ForbiddenException
+
+InternalServerException
+
+LicenseValidationException
+
+NotFoundDictionaryItemException
+
+NotFoundException
+
+UserLimitExceedException
+
+UserRoleExistsException
+
+
+
+// File: StudentService.cs
+public class StudentService { }
+// File: StudentService.Validations.cs
+public class StudentValidator : AbstractValidator<Student> { }
+public static void MapStudentEndpoints(this WebApplication app) { }
+//Not found exception
+public class NotFoundException : Exception
+{
+    public NotFoundException(string message) : base(message)
+    {
+    }
+    public NotFoundException(string name, object key) : base($"Entity \"{name}\" ({key}) was not found.")
+    { 
+    }
+}
+//Domain exception
+public class DomainException : Exception
+{
+    public DomainException(string message)
+        : base($"Domain Exception: {message} throws from Domain Layer.")
+    {
+    }
+}
+//Internal server exception
+public class InternalServerException : Exception
+{
+    public InternalServerException(string message) : base(message)
+    {
+    }
+    public InternalServerException(string message, string details) : base(message)
+    {
+        Details = details;
+    }
+    public string? Details { get; }
+}
+Don’t:
+
+
+
+// File: student_service.cs
+public class StudentBL { }
+public static void MapCrudStudentEndpoints(this WebApplication app) { }
+Logging Behavior
+The LoggingBehavior<TRequest, TResponse> is a MediatR pipeline behavior that captures and logs details about non-GET HTTP requests and their responses. It's primarily used for auditing and tracking user actions, particularly for write or update operations (e.g., POST, PUT, DELETE).
+
+How It Works
+
+
+public async Task<TResponse> Handle(...)
+Executes before and after a MediatR request.
+
+Proceeds to the next() delegate to execute the actual handler.
+
+After the handler runs, it:
+
+Reads the HTTP request body (unless it's GET).
+
+Serializes and processes the response.
+
+Constructs a log entry with user details and request/response info.
+
+Outputs the audit log to the console (could be extended to file/DB/etc)
+
+
+
+ReadRequestBody(HttpRequest request)
+Reads and returns the raw body content of the request.
+
+Supports both JSON and multipart/form-data (like file uploads).
+
+Uses request.EnableBuffering() to allow multiple reads of the body stream.
+
+
+
+CreateAuditLog(HttpContext context, string requestBody, string responseBody)
+Builds an anonymous object that captures:
+
+Status code, method (GET/POST/PUT...)
+
+User identity (ID, email, full name, etc.)
+
+Request and response bodies
+
+Uses ClaimTypes and custom claim names to fetch user info.
+
+
+
+LogAuditInfo(dynamic auditlog)
+Constructs a CloudEvents-style audit log object.
+
+Serializes it to JSON and logs to console using:
+
+Console.WriteLine(JsonConvert.SerializeObject(log));
+
+Built structure:
+
+{
+  "specversion": "1.0.2",
+  "type": "configuration.access" or "configuration.audit",
+  "source": "/api/users/update",
+  "id": "guid-here",
+  "datacontenttype": "application/json",
+  "Datetime": "UTC timestamp",
+  "data": { ...audit log info... }
+}
+
+
+
+RemoveWrapperObject(string json)
+Trims the outer wrapper object from a serialized response (if present).
+
+E.g., converts: { "data": { "value": 123 } } ➝ { "value": 123 }
+
+
+
+FlattenAndRemoveWrapperObject(...)
+Meant to flatten nested JSON structures.
+
+Could used to simplify deeply nested responses into flat key-value pairs for easier audit viewing.
+
+How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+Example
+If a student updates their profile:
+
+Request: PUT /api/student/profile
+
+RequestBody: { "name": "student1" }
+
+ResponseBody: { "success": true }
+
+Audit Log Output: includes method, path, user ID/email/name, request, response, timestamp, etc.
+
+
+
+> Security Best Practices
+
+Input Validation and output escaping
+All input should be validated using FluentValidation to prevent injection attacks and bad data propagation.
+
+Fluent Validation Example
+
+
+public record CreateUserCommand(CreateUserDto User) : ICommand<CreateUserResult>;
+public record CreateUserResult(User User);
+public class CreateUserValidator : AbstractValidator<CreateUserCommand>
+{
+    public CreateUserValidator()
+    {
+        RuleFor(p => p.User.Code).NotNull().WithMessage("CodeIsRequired");
+        RuleFor(p => p.User.Title).NotNull().WithMessage("TitleIsRequired");
+    }
+Use of parameterized queries
+Using LINQ parameterized query protection will be fulfilled. It’ll be happen like following:
+
+LINQ builds an expression tree — EF analyzes your query structure, not the string values.
+
+EF Core translates that tree into SQL using placeholders for values.
+
+Your input (inputEmail) becomes a SQL parameter, like:
+
+
+
+SELECT TOP(1) * FROM Users WHERE Email = @__inputEmail_0
+EF sends the query and parameter separately to the database.
+
+This ensures special characters (e.g., '; DROP TABLE Users; --) are never interpreted as SQL.
+
+The database sees them only as data, not part of the SQL logic.
+
+Do:
+
+
+
+//basic filtering 
+var employee = context.Employees
+                      .FirstOrDefault(e => e.Email == inputEmail);
+//compound condition
+var employees = context.Employees
+                       .Where(e => e.Age > minAge && e.Department == deptName)
+                       .ToList();
+//using contains
+var results = context.Employees
+                     .Where(e => e.Name.Contains(searchTerm))
+                     .ToList();
+//using any, all with inner queries
+var activeDepartments = context.Departments
+                               .Where(d => d.Employees.Any(e => e.IsActive))
+                               .ToList();
+Don’t:
+
+
+
+//dynamic sql in linq via string concatenation
+var query = "e => e.Name == \"" + inputName + "\"";
+var employee = context.Employees
+                      .Where(System.Linq.Dynamic.Core.DynamicExpressionParser.ParseLambda<Employee, bool>(query))
+                      .FirstOrDefault();
+// mixed with LINQ — unsafe
+var results = context.Employees
+    .FromSqlRaw("SELECT * FROM Employees WHERE Name = '" + inputName + "'")
+    .ToList();
+Secure storage of secrets and credentials
+Do:
+
+Manage user secrets in a file called secret.json in Web applicatioin
+
+Manage system users through keycloak along with central hub.
+
+Don’t:
+
+Avoid direct implementation of the sensitive data in the application’s source code.
+
+Authentication & authorization logic present and correct
+AuthKey Behavior (Custom Header Authentication)
+The AuthKeyBehavior<TRequest, TResponse> is a MediatR pipeline behavior that handles authentication based on a custom AuthKey header. It ensures that, if present, a token is validated and the corresponding user info is attached to the HttpContext.User
+
+Purpose
+To authenticate a request using a custom token (not JWT, but likely something like a proprietary API token or access key), and populate the HTTP context with user information if the token is valid.
+
+How It Works
+
+
+var httpContext = httpContextAccessor.HttpContext;
+Gets the HTTP request context for the current request.
+
+
+
+httpContext.Request.Headers.TryGetValue(KeyNames.AuthKey, out StringValues token)
+From here the AuthKey header will be extracted.
+
+
+
+var userAuthKeyRequest = authKeyService.DecryptProcessAccessToken(token);
+This method likely:
+
+Decrypts the token.
+
+Parses it into a model (e.g., containing userId, email, etc.)
+
+Validates its structure or expiration.
+
+
+
+TokenDto? tokenDto = userAuthKeyRequest is not null
+    ? await authKeyService.AuthUserAsync(userAuthKeyRequest)
+    : null;
+If the token was successfully decrypted, it tries to authenticate the user.
+
+AuthUserAsync checks if the user is known and active.
+
+
+
+var claims = new List<Claim>
+{
+    new Claim(ClaimName.UserId, tokenDto.User.Id.ToString()),
+    new Claim(ClaimTypes.Email, tokenDto.User.Email)
+};
+var identity = new ClaimsIdentity(claims, "CustomAuth");
+httpContext.User = new ClaimsPrincipal(identity);
+If the token is valid and the user exists:
+
+A list of claims (like user ID and email) is created.
+
+These are added to a custom ClaimsIdentity.
+
+This identity is then assigned to httpContext.User, allowing downstream code (e.g., controllers, services, or authorization filters) to know who the user is.
+
+
+
+await next();
+If the token is missing or invalid, the request just continues.
+
+How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(AuthKeyBehavior<,>));
+Authorization Behavior (Role/Claim Based)
+Purpose
+It's a way to centralize and enforce fine-grained access control for each request without scattering Authorize attributes across your codebase.
+
+How It Works
+
+
+internal class AuthorizationBehavior<TRequest, TResponse>(...)
+Injects:
+
+IHttpContextAccessor – access to current HTTP request
+
+IAuthService – your domain-level service for user-role checks
+
+IConfiguration – access environment values, API keys, etc.
+
+
+
+SetGrantsBasedOnRequestName(requestName);
+This method inspects the TRequest type's name and infers the required permissions
+
+
+
+if (configuration[ConfigurationProperties.Environment] == ConfigurationProperties.Testing)
+Allows skipping access checks if you're in testing mode (good for integration tests).
+
+
+
+if (endpoint?.Metadata.GetMetadata<AllowAnonymousAttribute>() is not null && menuId == DefaultValues.Default.ToLower())
+If:
+
+Endpoint allows anonymous access
+
+MenuId header is set to a default value (likely a placeholder)
+
+Then → skips authorization.
+
+
+
+await AuthorizedRequestAsync(httpContext);
+This is the heart of the behavior. It:
+
+Checks for a MenuId header → if found, treats as user-based request and checks roles
+
+If no MenuId, looks for X-Api-Key → treats as API key-based request
+
+If neither → considers request unauthorized
+
+
+
+await AuthorizeUserAsync(httpContext, headerValue);
+await authService.IsUserAuthorized(menuId, grants);
+Which checks:
+
+Does the current user (from HttpContext) have the required grants for the menu/module?
+
+
+
+await AuthorizeApiKeyAsync(httpContext, extractedApiKey);
+Compares the X-Api-Key value to what's configured
+
+If matches → assumes full access (Grants.Add(ModuleRoleGrants.All))
+
+
+
+public enum ModuleRoleGrants
+{
+    All = 0,
+    Read = 1,
+    Create = 2,
+    Edit = 3,
+    Delete = 4,
+    Print = 5,
+    ExportCsvPdf = 6,
+    Execute = 7
+}
+These are the module role grants relevant to authorization.
+
+How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(AuthorizationBehavior<,>));
+
+> Performance Considerations
+
+
+Avoid Unnecessary API/Database Calls 
+Do:
+
+Select only needed columns and relevant chunk of data.
+
+Use bulk operations
+
+
+
+//bulk insert 
+public async Task<List<T>> AddAsync(List<T> entity)
+{
+    try
+    {
+        await dbContext.Set<T>().AddRangeAsync(entity); // Adds multiple entities to the DbContext
+        return entity; // Returns the added entities
+    }
+    catch (Exception ex) when (ex is DbUpdateException || ex is DbUpdateConcurrencyException)
+    {
+        throw new InfrastructureException($"Error adding entities: {typeof(T).Name}"); // Handles errors
+    }
+}
+//bulk delete
+public virtual Task DeleteAsync(List<T> entity)
+{
+    dbContext.Set<T>().RemoveRange(entity); // Removes multiple entities from the DbContext
+    return Task.CompletedTask; // Completes the task
+}
+Don’t:
+
+Don't retrieve unused data from databases or APIs
+
+Avoid nested loops that perform database queries
+
+Don't make API calls inside loops without batching
+
+
+
+//loops that perform database queries
+public virtual Task UpdateAsync(List<T> entities)
+{
+    foreach (T entity in entities)
+    {
+        dbContext.Entry(entity).State = EntityState.Modified; // Marks each entity as modified
+    }
+    return Task.CompletedTask; // Completes the task
+}
+//loops that perform database queries 2
+public virtual async Task InsertAsync(List<T> entities)
+{
+    for (int i = 0; i < entities.Count; i++)
+    {
+        await dbContext.Set<T>().AddAsync(entities[i]);
+    }
+    await dbContext.SaveChangesAsync();
+}
+Proper pagination for data retrieval
+Returning large datasets in one response can lead to high memory usage, slow responses, and poor client experience. Pagination limits data size and improves performance.
+
+Do:
+
+Use pagination chunks when possible 
+
+
+
+// Return paginated result instead of full list
+public async Task<PaginatedResult<User>> Handle(GetUsersQuery query)
+{
+    int pageSize = query.PageSize;
+    int pageNumber = query.PageNumber;
+    var users = await _repository.GetUsersAsync(pageNumber, pageSize);
+    int totalCount = await _repository.GetUsersCountAsync();
+    return new PaginatedResult<User>(users, totalCount, pageNumber, pageSize);
+}
+Don’t:
+
+Avoid unnecessary large data returns when possible
+
+
+
+// Returning all users without pagination can cause huge payloads
+public async Task<List<User>> Handle(GetUsersQuery query)
+{
+    return await _repository.GetAllUsersAsync();  // can be millions of records!
+}
+Async Operations
+Using asynchronous operations helps keep your application responsive and scalable by freeing up threads during I/O-bound operations.
+
+Do:
+
+Use Asynchronous handlers.
+
+
+
+// Asynchronous handler properly awaits async service call
+public async Task<User> Handle(GetUserQuery query)
+{
+    return await _userService.GetUserAsync(query.UserId);
+}
+Don’t:
+
+Avoid thread waiting for result.
+
+
+
+// Blocking async call causes thread starvation
+public User Handle(GetUserQuery query)
+{
+    // Blocks thread waiting for result, bad for scalability
+    return _userService.GetUserAsync(query.UserId).Result;
+}
+
+
+
+> Database Transaction Handling
+
+When performing multiple related database operations, ensuring consistency is crucial. Transactions help maintain data integrity — especially when multiple changes need to succeed or fail as a group.
+
+ACID properties
+Property
+
+Description
+
+Why It Matters
+
+A – Atomicity
+
+All operations in a transaction succeed or none do.
+
+Prevents partial updates (e.g., debiting account without crediting the other).
+
+C – Consistency
+
+Transactions move the DB from one valid state to another.
+
+Business rules stay intact (e.g., referential integrity).
+
+I – Isolation
+
+Transactions don’t interfere with each other.
+
+Prevents dirty reads, lost updates, etc.
+
+D – Durability
+
+Once committed, changes survive crashes.
+
+Data stays safe after success.
+
+Transactions are used when multiple DB operations must succeed together
+Do:
+
+Group related DB operations that must succeed or fail together (e.g., updating multiple tables).
+
+Begin a transaction explicitly when you have multiple dependent operations.
+
+Commit the transaction only after all operations succeed.
+
+Rollback the transaction immediately if any operation fails or throws an exception.
+
+Use async/await for async database calls inside transactions.
+
+Use appropriate isolation levels to balance data consistency and concurrency performance.
+
+Use Unit of Work or DbContext as a transaction boundary.
+
+Keep the transaction scope as short as possible to reduce locking and improve performance.
+
+Use try/catch blocks to ensure rollback on errors.
+
+Use transactional retries or circuit breakers if transient failures occur.
+
+Log transaction start, commit, and rollback for troubleshooting.
+
+
+
+public async Task AddWithTransactionAsync(List<T> entities)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        await dbContext.Set<T>().AddRangeAsync(entities);
+        await dbContext.SaveChangesAsync();
+        // Commit only after all operations succeed
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // Rollback on any failure
+        await transaction.RollbackAsync();
+        throw new InfrastructureException($"Transaction failed: {ex.Message}");
+    }
+}
+public async Task AddEntitiesAsync(List<T> entities)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        await dbContext.Set<T>().AddRangeAsync(entities);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+// Call external services separately after committing
+public async Task ProcessDataAsync(List<T> entities)
+{
+    await AddEntitiesAsync(entities);
+    await SomeExternalCallAsync();
+}
+Don’t:
+
+Don’t perform unrelated operations in the same transaction.
+
+Don’t commit a transaction before all work is complete.
+
+Don’t leave transactions open for a long time, causing database locks.
+
+Don’t ignore exceptions and fail to rollback — this can corrupt data integrity.
+
+Don’t mix multiple DbContexts or database connections without coordinating transactions.
+
+Don’t perform long-running or user-interactive operations inside a transaction.
+
+Don’t use highest isolation levels like Serializable unless absolutely necessary (performance cost).
+
+Don’t nest transactions unless your database explicitly supports it.
+
+Don’t put non-database logic (e.g., calling external services) inside the transaction boundary.
+
+Don’t forget to dispose or close transaction objects properly.
+
+
+
+public async Task AddWithTransactionWithoutRollbackAsync(List<T> entities)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        await dbContext.Set<T>().AddRangeAsync(entities);
+        await dbContext.SaveChangesAsync();
+        // Committing without handling exceptions properly
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // Missing rollback: data might be left inconsistent
+        throw new InfrastructureException($"Transaction failed: {ex.Message}");
+    }
+}
+public async Task LongRunningTransactionAsync(List<T> entities)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        // Do DB operation
+        await dbContext.Set<T>().AddRangeAsync(entities);
+        await dbContext.SaveChangesAsync();
+        // Simulate a long-running operation (e.g., external API call)
+        await SomeExternalCallAsync();
+        await transaction.CommitAsync();
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+public async Task MultipleDbContextsAsync(List<T> entities)
+{
+    using var transaction1 = await dbContext1.Database.BeginTransactionAsync();
+    using var transaction2 = await dbContext2.Database.BeginTransactionAsync();
+    try
+    {
+        await dbContext1.Set<T>().AddRangeAsync(entities);
+        await dbContext1.SaveChangesAsync();
+        await dbContext2.Set<T>().AddRangeAsync(entities);
+        await dbContext2.SaveChangesAsync();
+        await transaction1.CommitAsync();
+        await transaction2.CommitAsync();
+    }
+    catch
+    {
+        await transaction1.RollbackAsync();
+        await transaction2.RollbackAsync();
+        throw;
+    }
+}
+Transactions are committed only after successful completion of logic
+Do:
+
+Commit Transaction After All Logic Completes Successfully.
+
+
+
+public async Task UpdateOrderAndInventoryAsync(Order order, Inventory inventory)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        // Update order details
+        dbContext.Orders.Update(order);
+        // Update inventory stock
+        dbContext.Inventories.Update(inventory);
+        // Save all changes together
+        await dbContext.SaveChangesAsync();
+        // Commit only after all above succeed
+        await transaction.CommitAsync();
+    }
+    catch (Exception)
+    {
+        // Rollback if anything fails
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+Don’t:
+
+Commit Transaction Before Completing All Business Logic
+
+Commit Inside Business Logic Before All Operations Finish
+
+
+
+//Commit Transaction Before Completing All Business Logic
+public async Task IncorrectUpdateAsync(Order order, Inventory inventory)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        // Commit too early before all DB operations
+        await transaction.CommitAsync();
+        // Update order after commit (this is wrong)
+        dbContext.Orders.Update(order);
+        await dbContext.SaveChangesAsync();
+        // Update inventory after commit (this is also wrong)
+        dbContext.Inventories.Update(inventory);
+        await dbContext.SaveChangesAsync();
+    }
+    catch (Exception)
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+//Commit Inside Business Logic Before All Operations Finish
+public async Task PartialCommitAsync(Order order, Inventory inventory)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        // Update order and commit immediately
+        dbContext.Orders.Update(order);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+        // Update inventory after commit (out of transaction scope)
+        dbContext.Inventories.Update(inventory);
+        await dbContext.SaveChangesAsync();
+    }
+    catch (Exception)
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+Rollbacks are implemented properly on exceptions/failures 
+Do:
+
+Properly Rollback on Exceptions.
+
+Use finally or Proper Exception Flow to Guarantee Rollback.
+
+
+
+//Properly Rollback on Exceptions
+public async Task UpdateCustomerAndOrdersAsync(Customer customer, List<Order> orders)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        // Update customer details
+        dbContext.Customers.Update(customer);
+        // Update orders
+        dbContext.Orders.UpdateRange(orders);
+        await dbContext.SaveChangesAsync();
+        // Commit after all succeed
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // Rollback transaction on any failure
+        await transaction.RollbackAsync();
+        // Optional: log or wrap exception for higher layers
+        throw new ApplicationException("Transaction failed, rollback executed.", ex);
+    }
+}
+//Use finally or Proper Exception Flow to Guarantee Rollback
+public async Task SafeTransactionAsync(Customer customer)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        dbContext.Customers.Update(customer);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+Don’t:
+
+Forget to Rollback in Catch Block.
+
+Catch Exceptions Without Rolling Back Transaction.
+
+
+
+//Forget to Rollback in Catch Block
+public async Task FaultyUpdateAsync(Customer customer, List<Order> orders)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        dbContext.Customers.Update(customer);
+        dbContext.Orders.UpdateRange(orders);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch (Exception)
+    {
+        // No rollback called here — BAD!
+        // This leaves the transaction open or in an inconsistent state
+        throw;
+    }
+}
+//Catch Exceptions Without Rolling Back Transaction
+public async Task AnotherFaultyExampleAsync(Customer customer)
+{
+    using var transaction = await dbContext.Database.BeginTransactionAsync();
+    try
+    {
+        dbContext.Customers.Update(customer);
+        await dbContext.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // Just swallowing or logging exception without rollback
+        Console.WriteLine("Error: " + ex.Message);
+        // Transaction stays unrolled back — bad!
+    }
+}
+Use unit of work patterns in .NET
+Do:
+
+Implement Unit of Work to Manage Transactions
+
+
+
+// Interface for Unit of Work
+public interface IUnitOfWork : IDisposable
+{
+    IStudentRepository Students { get; }
+    ICourseRepository Courses { get; }
+    Task<int> CommitAsync();
+}
+// Concrete Implementation
+public class UnitOfWork : IUnitOfWork
+{
+    private readonly AppDbContext _context;
+    public IStudentRepository Students { get; }
+    public ICourseRepository Courses { get; }
+    public UnitOfWork(AppDbContext context, IStudentRepository students, ICourseRepository courses)
+    {
+        _context = context;
+        Students = students;
+        Courses = courses;
+    }
+    public async Task<int> CommitAsync()
+    {
+        // Commit all changes inside a single transaction
+        return await _context.SaveChangesAsync();
+    }
+    public void Dispose()
+    {
+        _context.Dispose();
+    }
+}
+Don’t:
+
+Perform Multiple Independent SaveChanges Calls.
+
+Mix Transaction Handling Outside Unit of Work.
+
+
+
+//perform multiple independent calls
+public async Task FaultyEnrollStudentAsync(Student student, Course course)
+{
+    // This may cause partial updates if the second call fails
+    await _context.Students.AddAsync(student);
+    await _context.SaveChangesAsync();
+    await _context.Courses.AddAsync(course);
+    await _context.SaveChangesAsync();  // Separate calls — no atomicity!
+}
+//Mix Transaction Handling Outside Unit of Work
+public async Task ConfusingTransactionHandling()
+{
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        _context.Students.Add(new Student());
+        await _context.SaveChangesAsync();
+        _context.Courses.Add(new Course());
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+Avoid nested transactions unless supported and intentional 
+Do:
+
+Use a Single Transaction Scope Per Logical Operation.
+
+
+
+public async Task PerformDatabaseOperationsAsync()
+{
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        // Multiple operations inside a single transaction
+        await _context.Students.AddAsync(new Student { Name = "Alice" });
+        await _context.Courses.AddAsync(new Course { Title = "Math 101" });
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
+Don’t:
+
+Start a New Transaction Inside an Existing One Unintentionally.
+
+
+
+public async Task NestedTransactionsWrongExample()
+{
+    using var outerTransaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        // First operation
+        await _context.Students.AddAsync(new Student { Name = "Bob" });
+        await _context.SaveChangesAsync();
+        // Unintentionally starting a new transaction inside an existing one
+        using var innerTransaction = await _context.Database.BeginTransactionAsync();
+        await _context.Courses.AddAsync(new Course { Title = "Physics" });
+        await _context.SaveChangesAsync();
+        await innerTransaction.CommitAsync(); // May not behave as expected
+        await outerTransaction.CommitAsync();
+    }
+    catch
+    {
+        await outerTransaction.RollbackAsync();
+        throw;
+    }
+}
+Catch blocks must handle rollback explicitly 
+Do:
+
+Explicitly Rollback in the Catch Block.
+
+
+
+public async Task UpdateEntitiesAsync()
+{
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        // Perform multiple DB operations
+        _context.Students.Update(new Student { Id = 1, Name = "John" });
+        _context.Courses.Add(new Course { Title = "History" });
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // Explicit rollback on error
+        await transaction.RollbackAsync();
+        // Optionally log and rethrow or handle exception
+        Console.WriteLine($"Transaction rolled back due to: {ex.Message}");
+        throw;
+    }
+}
+Don’t:
+
+Omit Rollback in Catch Block.
+
+
+
+public async Task UpdateEntitiesWithoutRollbackAsync()
+{
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        _context.Students.Update(new Student { Id = 1, Name = "Jane" });
+        _context.Courses.Add(new Course { Title = "Science" });
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+    catch (Exception ex)
+    {
+        // No rollback call here - this is dangerous!
+        Console.WriteLine($"Error occurred: {ex.Message}");
+        throw;
+    }
+}
+
+
+> Testing & Validation
+
+Use FluentValidation
+Validation ensures that your system receives correct and safe input — before processing, saving, or executing logic. FluentValidation is a powerful library that makes this easy and maintainable in .NET projects, especially when using CQRS + MediatR.
+
+Type
+
+Description
+
+Command Validation
+
+Ensures write operations (e.g., AddUserCommand) meet business rules.
+
+Query Validation
+
+Optional, but useful to ensure filters, IDs, or pagination parameters are valid before hitting DB.
+
+Do:
+
+Add proper validations in appropriate level to avoid mistakes in the business logic.
+
+Through proper validations user can interact with the system smoothly.
+
+
+
+public class AddUserCommandValidator : AbstractValidator<AddUserCommand>
+{
+    public AddUserCommandValidator()
+    {
+        RuleFor(p => p.User.Code)
+            .NotEmpty()
+            .WithMessage("Code is required");
+        RuleFor(p => p.User.Email)
+            .EmailAddress()
+            .WithMessage("Invalid email address");
+        RuleFor(p => p.User.Age)
+            .InclusiveBetween(18, 60)
+            .WithMessage("User must be between 18 and 60 years old");
+    }
+}
+Don’t:
+
+Do not avoid validations due to that bad data or bad response may returned.
+
+Avoid unvalidated user input using.
+
+
+
+// Accept and use unvalidated input in your handlers
+public async Task<Unit> Handle(AddUserCommand command, CancellationToken ct)
+{
+    // No validation on input — may crash or save bad data
+    var user = new User { Email = command.Email };
+    await _context.Users.AddAsync(user);
+    await _context.SaveChangesAsync();
+    return Unit.Value;
+}
+Query Validation Behavior
+The QueryValidationBehavior<TRequest, TResponse> is a MediatR pipeline behavior that ensures validation rules are applied to queries before they are handled.
+
+This is part of CQRS (Command Query Responsibility Segregation) where queries and commands are treated differently.
+
+How It Works
+
+
+public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, ...)
+{
+  var context = new ValidationContext<TRequest>(request);
+}
+This wraps your query request (TRequest) in a validation context so validators can access its data.
+
+
+
+var validationResults = await Task.WhenAll(
+    validators.Select(v => v.ValidateAsync(context, cancellationToken))
+);
+Runs all registered IValidator<TRequest> implementations asynchronously.
+
+
+
+var failures = validationResults
+    .Where(r => r.Errors.Any())
+    .SelectMany(r => r.Errors)
+    .ToList();
+Extracts all the validation errors into one list.
+
+
+
+if (failures.Any())
+{
+    throw new ValidationException(failures);
+}
+If any validation rule fails, it stops the pipeline and throws a ValidationException.
+
+
+
+return await next();
+If validation passes, proceeds to the actual query handler to fetch/process data.
+
+How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(QueryValidationBehavior<,>));
+Example
+Query DTO:
+
+
+
+public record GetStudentByIdQuery(Guid Id) : IQuery<UserDto>;
+Validator:
+
+
+
+public class GetStudentByIdQueryValidator : AbstractValidator<GetStudentByIdQuery>
+{
+    public GetStudentByIdQueryValidator()
+    {
+        RuleFor(q => q.Id).NotEmpty().WithMessage("Student ID must be provided.");
+    }
+Command Validation Behavior
+The CommandValidationBehavior<TRequest, TResponse> that you're using is a custom MediatR pipeline behavior designed to validate command requests before they are handled by their respective handlers. This pattern is a clean way to apply cross-cutting concerns such as validation, logging, or authorization. This is located under the BuildingBlocks behaviors.
+
+Purpose
+It ensures that commands (requests implementing ICommand<TResponse>) are validated using FluentValidation validators before being executed by their handler.
+
+How It Works
+
+
+public class CommandValidationBehavior<TRequest, TResponse>
+    (IEnumerable<IValidator<TRequest>> validators)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : ICommand<TResponse>
+IPipelineBehavior<TRequest, TResponse>: Part of MediatR, allows you to intercept the handling of requests.
+
+IEnumerable<IValidator<TRequest>> validators: All FluentValidation validators that apply to this specific command (TRequest) are injected.
+
+
+
+var context = new ValidationContext<TRequest>(request);
+Creates a FluentValidation context using the incoming command.
+
+
+
+var validationResults = await Task.WhenAll(validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+Runs all applicable validators asynchronously.
+
+
+
+var failures = validationResults
+    .Where(r => r.Errors.Any())
+    .SelectMany(r => r.Errors)
+    .ToList();
+Collects all validation failures.
+
+
+
+if (failures.Any())
+    throw new ValidationException(failures);
+If any validation errors exist, it throws a FluentValidation.ValidationException. This prevents the command handler from running.
+
+
+
+return await next();
+If validation passes, the command proceeds to the next behavior or handler.
+
+How It's Registered
+In relevant module DependencyInjection.cs file setup:
+
+
+
+config.AddOpenBehavior(typeof(CommandValidationBehavior<,>));
+This tells MediatR to automatically insert this behavior for any command implementing ICommand<TResponse>, assuming matching validators are registered via:
+
+
+
+services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+Example
+Suppose you have a command like:
+
+
+
+public record CreateStudentCommand(string Email, string Password) : ICommand<Guid>;
+And a validator:
+
+
+
+public class CreateStudentCommandValidator : AbstractValidator<CreateStudentCommand>
+{
+    public CreateStudentCommandValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Password).MinimumLength(6);
+    }
+}
+
+
+> Version Control & Merge Quality
+
+One Commit Per Logical Change
+Helps isolate issues, simplifies review, and improves understanding of project history.
+
+Do:
+
+Commit each change separately (e.g., one for UI fix, one for DB logic).
+
+Ensure the build passes after each commit.
+
+Keep commits atomic and reversible.
+
+
+
+# Good commit history
+$ git log --oneline
+a2f3e4d Add pagination to user listing page
+b8c9d2e Implement user search functionality
+e5f6g7h Update user model with new fields
+i9j0k1l Create user profile UI components
+Don’t:
+
+Don’t mix UI, logic, and DB changes in one commit.
+
+Avoid huge commits with unrelated changes.
+
+
+
+# Bad commit
+$ git commit -m "Fix login bug, update product styles, and add new admin feature"
+Clear, Descriptive Commit Messages
+Clear messages communicate purpose, aid collaboration, and support tooling (e.g., release notes).
+
+Do:
+
+Use 50-character subject lines.
+
+Write in imperative mood (e.g., “Fix bug”, not “Fixed bug”).
+
+Include issue references and detailed body when needed.
+
+
+
+# Good
+$ git commit -m "fix(auth): handle expired tokens on login
+- Return 401 when JWT token is expired
+- Add middleware to catch TokenExpiredException
+Closes: AUTH-123"
+Don’t:
+
+Use “WIP”, “Fix bug”, or overly generic messages.
+
+Don’t include long changelogs in the subject line.
+
+
+
+# Bad
+$ git commit -m "This fixes everything from yesterday"
+$ git commit -m "Updates"
+No Debug or Temporary Code Committed
+Do:
+
+Use pre-commit hooks to catch console.log, var_dump, etc.
+
+Review diffs before commit.
+
+
+
+# .git/hooks/pre-commit
+if git diff --cached | grep -E 'console\.log|var_dump|dd\(|debugger;' > /dev/null; then
+  echo "ERROR: Debugging statements found!"
+  exit 1
+fi
+Don’t:
+
+
+
+public void ProcessUser(User user)
+{
+    var_dump(user); // ❌ DEBUG
+    // TODO: Validate more fields
+    _service.Process(user); // ✅
+}
+PRs are Scoped and Linked to Tracked Items
+Clear PRs reduce review time, ensure traceability, and avoid regression.
+
+Do:
+
+Scope PR to one feature or fix.
+
+Use PR templates (e.g., Description, Issue Link, Testing Steps).
+
+Include screenshots/videos for UI changes.
+
+
+
+## Description
+Implement user avatar upload with image validation and cropping.
+## Related Issue
+Closes: USER-789
+## Testing
+- Added AvatarService unit tests
+- Manually tested on all major browsers
+Don’t:
+
+Submit unrelated changes.
+
+Leave vague PR titles.
+
+
+
+# Bad PR Titles
+"Fix some stuff"
+"WIP - don't merge"
+"Changes from this week"
+Branching Strategy
+Branching Strategy defines how teams use Git branches to manage features, fixes, releases, and collaboration efficiently. It ensures parallel development, conflict reduction, and clean CI/CD workflows.
+
+Follow this confluence page to get better understanding : 
+Git Branching
+ 
+
+Code Review Process
+Review all code changes before merging.
+
+Provide constructive feedback in code reviews.
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): Resource Levelling Gantt Chart [OOTB-12542] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): Resource Levelling Gantt Chart [OOTB-12542]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6130">ososerp-web #6130</a>
+      <span>ksrilalosos</span>
+      <span class="ref">feature/pmo-dms/sprint-34-plus ← users/ksrilalosos/feat/OOTB-12542-resource-leveling-gantt-view</span>
+      <span>2026-10-01</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">10</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">6</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds a Resource Levelling Gantt view (v2) to the PMO resource plan: drag-drop reassignment, an edit dialog, publish/revert, a date navigator, a shared workload helper, a deactivate guard, new i18n keys, and a rename of the old Gantt to V1. The PR is open, large (about 4,250 lines across 53 files), mixes in unrelated churn, and has an empty description.</p>
+<p>Blocking issues are data-integrity risks in the v2 Gantt. The row drop has no error handling and mutates the shared resource id. The edit dialog round-trip overwrites task fields with hard-coded defaults that are then published. Removed export-warning i18n keys may still be used by v1.</p>
+<p>The team should decide whether to split the PR and add tests for the new leveling logic.</p>
+<p class="empty-note">Method: 6 independent review calls over 2 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:724">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:724</code>
+  <p><strong>Row drop: no error handling, id mutated.</strong> The <code>taskResourceService.update</code> subscription in the row drop has no error handler, so a failed call leaves the UI and server inconsistent without any message. The drop also replaces the resource <code>id</code> with the target <code>projectResourceId</code>. <code>#mapTaskRequestData</code> later uses <code>resource.id</code> for both <code>id</code> and <code>projectResourceId</code>, which can corrupt the TaskResource mapping on publish. The drop is persisted immediately, yet Revert only reloads tasks and cannot undo it, so Revert/Publish semantics are inconsistent.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1099">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1099</code>
+  <p><strong>Edit round-trip overwrites fields with defaults.</strong> #mapTaskRequestData fabricates a TaskRequest with hard-coded values (mode: TaskMode.Auto, taskType: TaskType.Parent for every task, isAvailable: true, isDeleted: false). The dialog result goes through #mapGanttData, which hard-codes mode: &#39;Auto&#39;, wbs: undefined, and level derived only from parentTaskId. #applyTaskUpdate then spreads this over the existing task ({ ...task, ...updatedTask }). Editing any task in the leveling Gantt can therefore silently reset Manual-mode tasks to Auto, clear wbs, and replace level. Publish then sends bulkInsertUpdate with this.tasks(), so the corrupted values are persisted. Only the fields the dialog actually edits should be merged back.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json:11338">src/assets/i18n/en-US.json:11338</code>
+  <p><strong>Export warning i18n keys removed but still used.</strong> This PR removes <code>pmo.resourcePlan.resourceGanttChart.warning.export.title</code>, <code>.columnNotFound</code> and <code>.ganttDataNotFound</code> from en-US. It also removes the <code>resourcePlan.warning.export.*</code> block from ar-OM. <code>resource-gantt-chart-v1.component.ts</code> is shown in the context as still calling <code>this.getTranslatedText(&#39;warning.export.title&#39;)</code>, <code>&#39;warning.export.ganttDataNotFound&#39;</code> and <code>&#39;warning.export.columnNotFound&#39;</code>. <code>getTranslatedText</code> prefixes these with <code>pmo.resourcePlan.resourceGanttChart.</code>. The new <code>warning</code> block only has <code>selectTaskFirst</code>. If v1 is still routed or used, the export-validation dialog will show raw key strings instead of text. Either restore the keys or confirm v1 is dead and delete it. The ar-OM file also had this block at a different nesting level (<code>resourcePlan.warning</code>) than en-US (<code>resourceGanttChart.warning</code>). The removed keys therefore need checking in both locales. I could not tell from the shown code whether this context file is the pre-PR or head version of v1, so this needs confirming.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>Empty description, oversized PR, no tests.</strong> The PR template is unfilled, so there is no stated intent to review against. The PR is about 4,250 lines across 53 files and mixes the feature with import reordering, colour-token changes and the V1 rename. No specs were added for <code>resource-leveling-helper</code>, the workload helper, the date utils or the deactivate guard. Fill in the description, split out the unrelated churn, and add tests.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1046">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1046</code>
+  <p><strong>Publish/load lack error handling; effect not untracked.</strong> <code>#publish</code> and <code>#loadTasks</code> subscribe without an error callback, and a falsy publish result is silently ignored, so the user gets no feedback on failure. The constructor effect calls <code>#loadTasks</code> and should wrap it in <code>untracked</code> to avoid accidental dependencies. Also at: <code>libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:409</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts:282">libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts:282</code>
+  <p><strong>Capacity computation scales poorly.</strong> hasDayLevelOverlap iterates every day in each column and re-filters tasks for each resource and column; allocatedHoursWithinColumn/dailyWorkloadShare recompute per call. With daily columns across long projects and many tasks this runs inside computed signals and will be slow. Precompute per-resource task lists and per-day maps. Also at: <code>libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:409</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/guards/resource-plan-deactivate.guard.ts:10">libs/features/pmo/src/lib/project/guards/resource-plan-deactivate.guard.ts:10</code>
+  <p><strong>Deactivate guard: no take(1), required viewChild throws.</strong> <code>checkExit$</code> is a long-lived <code>Subject</code> returned without <code>take(1)</code>, so it never completes. <code>hasChanges</code> goes through <code>viewChild.required</code>, which throws if the child is not rendered yet (e.g. inside <code>@defer</code>). Add <code>take(1)</code> and use an optional <code>viewChild</code> with safe access. Browser tab close or refresh is also unprotected. Also at: <code>libs/features/pmo/src/lib/project/guards/resource-plan-deactivate.guard.ts:8</code>, <code>libs/features/pmo/src/lib/project/containers/resource-plan-page/resource-plan-page.component.ts:56</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/project-task-details-v2/project-task-details-v2.component.html:425">libs/features/pmo/src/lib/project/components/project-task-details-v2/project-task-details-v2.component.html:425</code>
+  <p><strong>Tab index logic not adapted for leveling layout.</strong> Tabs are conditionally removed in leveling mode and tab indices are tied to separate enums, while other tabs (WorkLog etc.) still use tabIndexV2 checks; checkSelectedTabAccess/other index-based logic elsewhere is not adapted for the leveling layout.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts:94">libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts:94</code>
+  <p><strong>Reference date clamp may reset user choice.</strong> changeReferenceDate clamps to the project range, but the date-nav emits during picker year navigation. Clamping may make the picker and reference date diverge. Also, the range uses time-of-day unaware comparisons, so a date on the end day with a time component is clamped to range.end, which may have a different time.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:464">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:464</code>
+  <p><strong>Reliance on Syncfusion private internals.</strong> The effect casts ganttObj to unknown and sets private clone* fields and customTimelineSettings. This is fragile across Syncfusion upgrades. It should be documented or isolated in a helper.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-plan-list/resource-plan-list.component.ts:66">libs/features/pmo/src/lib/project/components/resource-plan-list/resource-plan-list.component.ts:66</code>
+  <p><strong>Menu default set in ngOnInit causes flash.</strong> <code>selectedMenu</code> starts as LEVELING and is overwritten in <code>ngOnInit</code> from <code>showAllViews</code>, which can flash and double-mount the view. It also will not react to later flag changes. Initialise it directly from the flag. Also at: <code>libs/features/pmo/src/lib/project/components/resource-plan-list/resource-plan-list.component.ts:60</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v1/resource-gantt-chart-v1.component.ts:339">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v1/resource-gantt-chart-v1.component.ts:339</code>
+  <p><strong>Placeholder wbs value &#39;ere&#39;.</strong> Main task wbs is set to the literal &#39;ere&#39;, which looks like a leftover placeholder and would be displayed in the WBS column. Also at: <code>libs/features/pmo/src/lib/project/components/resource-gantt-chart-v1/resource-gantt-chart-v1.component.ts:333</code>.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:516">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:516</code>
+  <p><strong>Unsafe casts and magic constants.</strong> Many <code>as unknown as GanttTaskResource</code> casts. Magic numbers such as 24*60*60*1000, 22px, and &#39;error&#39; are repeated. Dates are built with setHours(0,0,0,0) repeatedly. Extract constants and a date helper.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:1</code>
+  <p><strong>Component far exceeds size guideline.</strong> The component is ~1186 lines. The guideline is to split services and helpers out. The mapping functions (#mapGanttData and #mapTaskRequestData) and the toolbar building could be extracted.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts:84">libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts:84</code>
+  <p><strong>Dead heat-map code behind false flag.</strong> showHeatMapTab = false with a Coming soon tab and unused HEAT_MAP sub view; WIP placeholder code should be removed.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F16</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts:18">libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts:18</code>
+  <p><strong>Duplicated constants.</strong> DAYS_PER_WEEK, LAST_DAY_INDEX_OF_WEEK and MONTHS_PER_QUARTER are redefined here and in resource-gantt-chart.constants.ts, although they already exist in resource-allocation.constants.ts. Import them instead.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F17</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-allocation/resource-allocation-stats/resource-allocation-stats.component.ts:43">libs/features/pmo/src/lib/project/components/resource-allocation/resource-allocation-stats/resource-allocation-stats.component.ts:43</code>
+  <p><strong>Possibly undefined CSS variable.</strong> <code>var(--blue-light-50)</code> replaced <code>--color-blue-light-50</code>. The sibling variables use the <code>--color-*</code> prefix. Confirm that the variable is defined, or the icon background will fall back to transparent.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F18</span>
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json:11475">src/assets/i18n/en-US.json:11475</code>
+  <p><strong>Unnatural &#39;overAllocated&#39; casing in UI text.</strong> Existing user-facing strings were changed from &#39;overallocated&#39; / &#39;Overallocated&#39; to the camelCase-style &#39;overAllocated&#39;. This also happens at line 11579 (&#39;OverAllocated Hours&#39;) and line 11581. It also appears in new strings such as &#39;Not overAllocated&#39;, &#39;OverAllocated&#39; and &#39;Over allocated&#39;, which are inconsistent with each other. Use normal wording, e.g. &#39;over-allocated&#39; or &#39;overallocated&#39;, consistently. This is churn in unrelated existing keys. Also at: <code>src/assets/i18n/en-US.json:11337</code>.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/helpers/workload-helper.ts">libs/features/pmo/src/lib/project/helpers/workload-helper.ts</code>
+  <p><strong>Shared workload helper.</strong> The workload calculation was extracted so both Gantt views reuse it, with a zero-total guard against divide-by-zero.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts">libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts</code>
+  <p><strong>Row drop validation.</strong> Row drop checks canEdit, source and target resource, and duplicate assignment before updating.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts">libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts</code>
+  <p><strong>Consistent date-nav bounds.</strong> Out-of-project periods are disabled consistently in templates and handlers.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts">libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts</code>
+  <p><strong>Signals, OnPush and teardown.</strong> New components use signals, OnPush and takeUntil teardown consistently.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json">src/assets/i18n/en-US.json</code>
+  <p><strong>Locale files in step.</strong> en-US and ar-OM add the same new key structure for leveling, tooltip, publish and editDialog.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>d2a4175</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"d2a417535080e74221d357001ba7709fbaebc971","reviewedOn":"2026-10-01","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"724","lens":"L1","title":"Row drop: no error handling, id mutated","body":"The `taskResourceService.update` subscription in the row drop has no error handler, so a failed call leaves the UI and server inconsistent without any message. The drop also replaces the resource `id` with the target `projectResourceId`. `#mapTaskRequestData` later uses `resource.id` for both `id` and `projectResourceId`, which can corrupt the TaskResource mapping on publish. The drop is persisted immediately, yet Revert only reloads tasks and cannot undo it, so Revert/Publish semantics are inconsistent.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"1099","lens":"L2","title":"Edit round-trip overwrites fields with defaults","body":"#mapTaskRequestData fabricates a TaskRequest with hard-coded values (mode: TaskMode.Auto, taskType: TaskType.Parent for every task, isAvailable: true, isDeleted: false). The dialog result goes through #mapGanttData, which hard-codes mode: \u0027Auto\u0027, wbs: undefined, and level derived only from parentTaskId. #applyTaskUpdate then spreads this over the existing task ({ ...task, ...updatedTask }). Editing any task in the leveling Gantt can therefore silently reset Manual-mode tasks to Auto, clear wbs, and replace level. Publish then sends bulkInsertUpdate with this.tasks(), so the corrupted values are persisted. Only the fields the dialog actually edits should be merged back.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"src/assets/i18n/en-US.json","line":"11338","lens":"L8","title":"Export warning i18n keys removed but still used","body":"This PR removes `pmo.resourcePlan.resourceGanttChart.warning.export.title`, `.columnNotFound` and `.ganttDataNotFound` from en-US. It also removes the `resourcePlan.warning.export.*` block from ar-OM. `resource-gantt-chart-v1.component.ts` is shown in the context as still calling `this.getTranslatedText(\u0027warning.export.title\u0027)`, `\u0027warning.export.ganttDataNotFound\u0027` and `\u0027warning.export.columnNotFound\u0027`. `getTranslatedText` prefixes these with `pmo.resourcePlan.resourceGanttChart.`. The new `warning` block only has `selectTaskFirst`. If v1 is still routed or used, the export-validation dialog will show raw key strings instead of text. Either restore the keys or confirm v1 is dead and delete it. The ar-OM file also had this block at a different nesting level (`resourcePlan.warning`) than en-US (`resourceGanttChart.warning`). The removed keys therefore need checking in both locales. I could not tell from the shown code whether this context file is the pre-PR or head version of v1, so this needs confirming.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"Empty description, oversized PR, no tests","body":"The PR template is unfilled, so there is no stated intent to review against. The PR is about 4,250 lines across 53 files and mixes the feature with import reordering, colour-token changes and the V1 rename. No specs were added for `resource-leveling-helper`, the workload helper, the date utils or the deactivate guard. Fill in the description, split out the unrelated churn, and add tests.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"1046","lens":"L6","title":"Publish/load lack error handling; effect not untracked","body":"`#publish` and `#loadTasks` subscribe without an error callback, and a falsy publish result is silently ignored, so the user gets no feedback on failure. The constructor effect calls `#loadTasks` and should wrap it in `untracked` to avoid accidental dependencies. Also at: `libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:409`.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts","line":"282","lens":"L6","title":"Capacity computation scales poorly","body":"hasDayLevelOverlap iterates every day in each column and re-filters tasks for each resource and column; allocatedHoursWithinColumn/dailyWorkloadShare recompute per call. With daily columns across long projects and many tasks this runs inside computed signals and will be slow. Precompute per-resource task lists and per-day maps. Also at: `libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts:409`.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/guards/resource-plan-deactivate.guard.ts","line":"10","lens":"L1","title":"Deactivate guard: no take(1), required viewChild throws","body":"`checkExit$` is a long-lived `Subject` returned without `take(1)`, so it never completes. `hasChanges` goes through `viewChild.required`, which throws if the child is not rendered yet (e.g. inside `@defer`). Add `take(1)` and use an optional `viewChild` with safe access. Browser tab close or refresh is also unprotected. Also at: `libs/features/pmo/src/lib/project/guards/resource-plan-deactivate.guard.ts:8`, `libs/features/pmo/src/lib/project/containers/resource-plan-page/resource-plan-page.component.ts:56`.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/project-task-details-v2/project-task-details-v2.component.html","line":"425","lens":"L1","title":"Tab index logic not adapted for leveling layout","body":"Tabs are conditionally removed in leveling mode and tab indices are tied to separate enums, while other tabs (WorkLog etc.) still use tabIndexV2 checks; checkSelectedTabAccess/other index-based logic elsewhere is not adapted for the leveling layout.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts","line":"94","lens":"L1","title":"Reference date clamp may reset user choice","body":"changeReferenceDate clamps to the project range, but the date-nav emits during picker year navigation. Clamping may make the picker and reference date diverge. Also, the range uses time-of-day unaware comparisons, so a date on the end day with a time component is clamped to range.end, which may have a different time.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"464","lens":"L10","title":"Reliance on Syncfusion private internals","body":"The effect casts ganttObj to unknown and sets private clone* fields and customTimelineSettings. This is fragile across Syncfusion upgrades. It should be documented or isolated in a helper.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-plan-list/resource-plan-list.component.ts","line":"66","lens":"L10","title":"Menu default set in ngOnInit causes flash","body":"`selectedMenu` starts as LEVELING and is overwritten in `ngOnInit` from `showAllViews`, which can flash and double-mount the view. It also will not react to later flag changes. Initialise it directly from the flag. Also at: `libs/features/pmo/src/lib/project/components/resource-plan-list/resource-plan-list.component.ts:60`.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v1/resource-gantt-chart-v1.component.ts","line":"339","lens":"L10","title":"Placeholder wbs value \u0027ere\u0027","body":"Main task wbs is set to the literal \u0027ere\u0027, which looks like a leftover placeholder and would be displayed in the WBS column. Also at: `libs/features/pmo/src/lib/project/components/resource-gantt-chart-v1/resource-gantt-chart-v1.component.ts:333`.","firstSeen":"v1"},{"id":"F13","severity":"nit","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"516","lens":"L10","title":"Unsafe casts and magic constants","body":"Many `as unknown as GanttTaskResource` casts. Magic numbers such as 24*60*60*1000, 22px, and \u0027error\u0027 are repeated. Dates are built with setHours(0,0,0,0) repeatedly. Extract constants and a date helper.","firstSeen":"v1"},{"id":"F14","severity":"nit","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-gantt-chart-v2/resource-gantt-chart-v2.component.ts","line":"1","lens":"L10","title":"Component far exceeds size guideline","body":"The component is ~1186 lines. The guideline is to split services and helpers out. The mapping functions (#mapGanttData and #mapTaskRequestData) and the toolbar building could be extracted.","firstSeen":"v1"},{"id":"F15","severity":"nit","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-leveling/resource-leveling.component.ts","line":"84","lens":"L10","title":"Dead heat-map code behind false flag","body":"showHeatMapTab = false with a Coming soon tab and unused HEAT_MAP sub view; WIP placeholder code should be removed.","firstSeen":"v1"},{"id":"F16","severity":"nit","status":"open","file":"libs/features/pmo/src/lib/project/helpers/resource-leveling-helper.ts","line":"18","lens":"L10","title":"Duplicated constants","body":"DAYS_PER_WEEK, LAST_DAY_INDEX_OF_WEEK and MONTHS_PER_QUARTER are redefined here and in resource-gantt-chart.constants.ts, although they already exist in resource-allocation.constants.ts. Import them instead.","firstSeen":"v1"},{"id":"F17","severity":"nit","status":"open","file":"libs/features/pmo/src/lib/project/components/resource-allocation/resource-allocation-stats/resource-allocation-stats.component.ts","line":"43","lens":"L10","title":"Possibly undefined CSS variable","body":"`var(--blue-light-50)` replaced `--color-blue-light-50`. The sibling variables use the `--color-*` prefix. Confirm that the variable is defined, or the icon background will fall back to transparent.","firstSeen":"v1"},{"id":"F18","severity":"nit","status":"open","file":"src/assets/i18n/en-US.json","line":"11475","lens":"L10","title":"Unnatural \u0027overAllocated\u0027 casing in UI text","body":"Existing user-facing strings were changed from \u0027overallocated\u0027 / \u0027Overallocated\u0027 to the camelCase-style \u0027overAllocated\u0027. This also happens at line 11579 (\u0027OverAllocated Hours\u0027) and line 11581. It also appears in new strings such as \u0027Not overAllocated\u0027, \u0027OverAllocated\u0027 and \u0027Over allocated\u0027, which are inconsistent with each other. Use normal wording, e.g. \u0027over-allocated\u0027 or \u0027overallocated\u0027, consistently. This is churn in unrelated existing keys. Also at: `src/assets/i18n/en-US.json:11337`.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1315 @@
+Angular Version: 17.3.0
+
+TypeScript Version: 5.2.2
+
+ 
+
+Project Structure Documentation
+
+This document outlines the structure of the ososerp-web Nx workspace.
+
+image-20250604-201429.png
+ 
+
+Libraries
+
+All libraries are located within the libs/ directory and are organized into core, features, and shared categories.
+
+2.1. Core Library
+
+Path: libs/core/
+
+Description: This library contains the foundational code, services, and modules that are critical for the application's core functionality. It is a single library with its source code in libs/core/src/.
+
+2.2. Feature Libraries
+
+Path: libs/features/
+
+Description: This directory houses multiple libraries, each dedicated to a specific business domain or application feature. This promotes modularity and separation of concerns.
+
+Structure: Each subdirectory within libs/features/ represents an individual feature library (e.g., libs/features/human-resource/, libs/features/dms/). Each of these libraries has its own project.json and source code typically located in its src/ subfolder.
+
+Identified Feature Libraries (up to 05.06.2025):
+
+account
+
+appraisal
+
+competency
+
+configuration
+
+dms
+
+human-resource
+
+layout
+
+pmo
+
+succession-planning
+
+user-onboard
+
+Those are the currently converted features
+
+2.3. Shared Libraries
+
+Path: libs/shared/
+
+Description: This directory contains libraries with reusable components, directives, and pipes that can be utilized across different features and the main application.
+
+Individual Shared Libraries:
+
+Shared Components:
+
+Path: libs/shared/components/
+
+Description: A dedicated library for shared Angular components. Source code in libs/shared/components/src/.
+
+Shared Directives:
+
+Path: libs/shared/directives/
+
+Description: A dedicated library for shared Angular directives. Source code in libs/shared/directives/src/.
+
+Shared Pipes:
+
+Path: libs/shared/pipes/
+
+Description: A dedicated library for shared Angular pipes. Source code in libs/shared/pipes/src/.
+
+ 
+
+NOTE:
+
+The core library is completely independent and should not depend on any other library.
+
+Shared libraries are allowed to depend only on the core library.
+
+Feature libraries can depend on both core and shared libraries.
+
+Feature libraries must not depend on other feature libraries directly.
+
+If a piece of functionality needs to be shared across multiple features, it should be moved to a suitable module within the shared/features library.
+
+
+> Files
+
+1. File Naming
+Use kebab-case for all filenames (e.g., user-profile.component.ts).
+
+Filenames should clearly reflect the content/purpose of the file.
+
+Avoid vague names like utils.ts or helpers.ts—be descriptive (e.g., date-utils.ts, form-validators.ts).
+
+Keep naming consistent across the workspace, especially within shared or domain libraries.
+
+Avoid redundant names. For example:
+
+✅ auth.guard.ts (good)
+
+❌ auth-guard.guard.ts (bad)
+
+File Type
+
+Naming Convention
+
+Example
+
+Component
+
+*.component.ts
+
+user-profile.component.ts
+
+Template (HTML)
+
+*.component.html
+
+user-profile.component.html
+
+Styles (SCSS)
+
+*.component.scss
+
+user-profile.component.scss
+
+Spec (Tests)
+
+*.component.spec.ts
+
+user-profile.component.spec.ts
+
+Service
+
+*.service.ts
+
+user-data.service.ts
+
+Directive
+
+*.directive.ts
+
+highlight.directive.ts
+
+Pipe
+
+*.pipe.ts
+
+currency-format.pipe.ts
+
+Interface
+
+*.model.ts
+
+user.model.ts
+
+Enum
+
+*.enum.ts
+
+status.enum.ts
+
+Utility/Helper
+
+*.util.ts or *.helper.ts
+
+date.util.ts or form.helper.ts
+
+Guard
+
+*.guard.ts
+
+auth.guard.ts
+
+Interceptor
+
+*.interceptor.ts
+
+auth.interceptor.ts
+
+Resolver
+
+*.resolver.ts
+
+user-data.resolver.ts
+
+ 
+
+2. File Placement & Structure
+Follow Nx project structure:
+
+Place code in appropriate src/ or libs/ directories.
+
+Respect domain-driven design: group related features together.
+
+Use feature libraries for specific user-facing functionality, and shared libraries for cross-cutting concerns.
+
+Co-locate files that belong together (e.g., component, HTML, CSS, and spec files).
+
+If a dom element is being reused, move it to shared. If a business object is being reused, move it to core.
+
+ 
+
+3. File Size
+Avoid large files. Files should ideally stay under 300 lines of code.
+
+Split responsibilities if a file starts doing too much (e.g., extract services, helpers, or smaller components).
+
+ 
+
+4. Index Files
+Use index.ts files to group and re-export public APIs in shared or domain libraries.
+
+Avoid importing anything other than routes in the feature library public API barrel.
+
+ 
+
+7. Dead Code
+Remove unused files as part of any refactor or update. Stale files create confusion and clutter.
+
+Avoid committing WIP (Work In Progress) files or placeholders with no functional content.
+
+8. Feature Module Boundaries
+Do not leak components or services from one feature module to another. Shared functionality must live in shared libraries.
+
+Use access control via tags in nx.json to enforce module boundaries.
+
+ 
+
+10. Environment & Configuration Files
+Keep environment files (environment.ts) clean—only include what is required.
+
+Sensitive information should not be committed. Use .env files or secure vaults if needed.
+
+
+> Methods
+
+4.0 Naming
+Method names should be a summary of what the method is doing, it needs to stay percise and short and representative of the operation with respect to synchrony.
+
+4.0.0 Verbs
+Method names must contain verbs in them to represent the action it performs.
+
+Do
+
+
+public List<Student> GetStudents()
+{
+	...
+}
+Don't
+
+
+public List<Student> Students()
+{
+	...
+}
+ 
+
+4.0.1 Asynchronousy
+Asynchronous methods should be postfixed by the term Async such as methods returning Task or ValueTask in general.
+
+Do
+
+
+public async ValueTask<List<Student>> GetStudentsAsync()
+{
+	...
+}
+Don't
+
+
+public async ValueTask<List<Student>> GetStudents()
+{
+	...
+}
+ 
+
+4.0.2 Input Parameters
+Input parameters should be explicit about what property of an object they will be assigned to, or will be used for any action such as search.
+
+Do
+
+
+public async ValueTask<Student> GetStudentByNameAsync(string studentName)
+{
+	...
+}
+Don't
+
+
+public async ValueTask<Student> GetStudentByNameAsync(string text)
+{
+	...
+}
+Also, Don't
+
+
+public async ValueTask<Student> GetStudentByNameAsync(string name)
+{
+	...
+}
+ 
+
+4.0.3 Action Parameters
+If your method is performing an action with a particular parameter specify it.
+
+Do
+
+
+public async ValueTask<Student> GetStudentByIdAsync(Guid studentId)
+{
+	...
+}
+Don't
+
+
+public async ValueTask<Student> GetStudentAsync(Guid studentId)
+{
+	...
+}
+ 
+
+4.0.4 Passing Parameters
+When utilizing a method, if the input parameters aliases match the passed in variables in part or in full, then you don't have to use the aliases, otherwise you must specify your values with aliases.
+
+Assume you have a method:
+
+
+
+Student GetStudentByNameAsync(string studentName);
+Do
+
+
+string studentName = "Todd";
+Student student = await GetStudentByNameAsync(studentName);
+Also, Do
+
+
+Student student = await GetStudentByNameAsync(studentName: "Todd");
+Also, Do
+
+
+Student student = await GetStudentByNameAsync(toddName);
+Don't
+
+
+Student student = await GetStudentByNameAsync("Todd");
+Don't
+
+
+Student student = await GetStudentByNameAsync(todd);
+ 
+
+4.1 Organization
+In general encapsulate multiple lines of the same logic into their own method, and keep your method at level 0 of details at all times.
+
+4.1.0 Single/Multiple-Liners
+4.1.0.0 One-Liners
+Any method that contains only one line of code should use fat arrows
+
+Do
+
+
+public List<Student> GetStudents() => this.storageBroker.GetStudents();
+Don't
+
+
+public List<Student> Students()
+{
+	return this.storageBroker.GetStudents();
+}
+If a one-liner method exceeds the length of 120 characters then break after the fat arrow with an extra tab for the new line.
+
+Do
+
+
+public async ValueTask<List<Student>> GetAllWashingtonSchoolsStudentsAsync() => 
+	await this.storageBroker.GetStudentsAsync();
+Don't
+
+
+public async ValueTask<List<Student>> GetAllWashingtonSchoolsStudentsAsync() => await this.storageBroker.GetStudentsAsync();
+ 
+
+4.1.0.1 Multiple-Liners
+If a method contains multiple liners separated or connected via chaining it must have a scope. Unless the parameters are going on the next line then a one-liner method with multi-liner params is allowed.
+
+Do
+
+
+public Student AddStudent(Student student)
+{
+	ValidateStudent(student);
+	return this.storageBroker.InsertStudent(student);
+}
+Also, Do
+
+
+public Student AddStudent(Student student)
+{
+	return this.storageBroker.InsertStudent(student)
+		.WithLogging();
+}
+Also, Do
+
+
+public Student AddStudent(
+	Student student)
+{
+	return this.storageBroker.InsertStudent(student);
+}
+Don't
+
+
+public Student AddStudent(Student student) =>
+	this.storageBroker.InsertStudent(student)
+		.WithLogging();
+Also, Don't
+
+
+public Student AddStudent(
+	Student student) =>
+		this.storageBroker.InsertStudent(student);
+4.1.1 Returns
+For multi-liner methods, take a new line between the method logic and the final return line (if any).
+
+Do
+
+
+public List<Student> GetStudents()
+{
+	StudentsClient studentsApiClient = InitializeStudentApiClient();
+	return studentsApiClient.GetStudents();
+}
+Don't
+
+
+public List<Student> GetStudents()
+{
+	StudentsClient studentsApiClient = InitializeStudentApiClient();
+	return studentsApiClient.GetStudents();
+}
+ 
+
+4.1.2 Multiple Calls
+With mutliple method calls, if both calls are less than 120 characters then they may stack unless the final call is a method return, otherwise separate with a new line.
+
+Do
+
+
+public List<Student> GetStudents()
+{
+	StudentsClient studentsApiClient = InitializeStudentApiClient();
+	List<Student> students = studentsApiClient.GetStudents();
+	return students; 
+}
+Don't
+
+
+public List<Student> GetStudents()
+{
+	StudentsClient studentsApiClient = InitializeStudentApiClient();
+	List<Student> students = studentsApiClient.GetStudents();
+	return students; 
+}
+Also, Do
+
+
+public async ValueTask<List<Student>> GetStudentsAsync()
+{
+	StudentsClient washingtonSchoolsStudentsApiClient = 
+		await InitializeWashingtonSchoolsStudentsApiClientAsync();
+	List<Student> students = studentsApiClient.GetStudents();
+	return students; 
+}
+Don't
+
+
+public async ValueTask<List<Student>> GetStudentsAsync()
+{
+	StudentsClient washingtonSchoolsStudentsApiClient = 
+		await InitializeWashingtonSchoolsStudentsApiClientAsync();
+	List<Student> students = studentsApiClient.GetStudents();
+	return students; 
+}
+ 
+
+4.1.3 Declaration
+A method declaration should not be longer than 120 characters.
+
+Do
+
+
+public async ValueTask<List<Student>> GetAllRegisteredWashgintonSchoolsStudentsAsync(
+	StudentsQuery studentsQuery)
+{
+	...
+}
+Don't
+
+
+public async ValueTask<List<Student>> GetAllRegisteredWashgintonSchoolsStudentsAsync(StudentsQuery studentsQuery)
+{
+	...
+}
+ 
+
+4.1.4 Multiple Parameters
+If you are passing multiple parameters, and the length of the method call is over 120 characters, you must break by the parameters, with one parameter on each line.
+
+Do
+
+
+List<Student> redmondHighStudents = await QueryAllWashingtonStudentsByScoreAndSchoolAsync(
+	MinimumScore: 130,
+	SchoolName: "Redmond High");
+Don't
+
+
+List<Student> redmondHighStudents = await QueryAllWashingtonStudentsByScoreAndSchoolAsync(
+	MinimumScore: 130,SchoolName: "Redmond High");
+4.1.5 Chaining (Uglification/Beautification)
+Some methods offer extensions to call other methods. For instance, you can call a Select() method after a Where() method. And so on until a full query is completed.
+
+We will follow a process of Uglification Beautification. We uglify our code to beautify our view of a chain methods. Here's some examples:
+
+Do
+
+
+	students.Where(student => student.Name is "Elbek")
+		.Select(student => student.Name)
+			.ToList();
+Don't
+
+
+	students
+	.Where(student => student.Name is "Elbek")
+	.Select(student => student.Name)
+	.ToList();
+The first approach enforces simplifying and cutting the chaining short as more calls continues to uglify the code like this:
+
+
+
+	students.SomeMethod(...)
+		.SomeOtherMethod(...)
+			.SomeOtherMethod(...)
+				.SomeOtherMethod(...)
+					.SomeOtherMethod(...);
+The uglification process forces breaking down the chains to smaller lists then processing it. The second approach (no uglification approach) may require additional cognitive resources to distinguish between a new statement and an existing one as follows:
+
+
+
+	student
+	.Where(student => student.Name is "Elbek")
+	.Select(student => student.Name)
+	.OrderBy(student => student.Name)
+	.ToList();
+	ProcessStudents(students);
+
+
+> Variables
+
+1. Naming Conventions
+Use camelCase for variable and constant names.
+
+✅ userName, totalPrice
+
+❌ User_Name, Total_price
+
+Use UPPER_SNAKE_CASE only for module-level or global constants.
+
+✅ DEFAULT_TIMEOUT, API_BASE_URL
+
+❌ DefaultTimeout, API_Base_URL
+
+Avoid abbreviations unless they are commonly understood (e.g., id, url, html).
+
+Variable names should be descriptive and indicate purpose.
+
+✅ userList, formValid, errorMessage
+
+❌ data1, res, x
+
+ 
+
+2. Scoping and Declaration
+Use const by default. Use let only when reassignment is required.
+
+Never use var.
+
+
+
+const items = [...];     // Preferred 
+let counter = 0;         // Only if reassigned
+ 
+
+3. Contextual Clarity
+Prefix observables with $ to indicate their reactive nature.
+
+✅ userList$, isLoading$
+
+❌ userList, loading
+
+Use specific prefixes for form controls or references:
+
+form for reactive forms: loginForm
+
+control for form controls: emailControl
+
+el for @ViewChild/DOM references: inputEl
+
+ 
+
+4. Avoid Magic Numbers and Strings
+Declare configuration values or constants in a shared constants file or at the top of the file.
+
+✅ const MAX_RETRIES = 3;
+
+❌ for (let i = 0; i < 3; i++)
+
+ 
+
+5. Type Safety
+Always define types explicitly for public variables and interfaces.
+
+✅ let total: number = 0;
+
+✅ getUser(): Observable<User> { ... }
+
+Avoid using any. If unavoidable, document why.
+
+
+
+> Functions
+
+
+1. Use Clear, Action-Based Names
+Function names should describe exactly what the function does.
+
+✅  fetchUser, updateProfile, submitForm
+❌  handleStuff, doThings, manage
+
+2. Use Boolean Prefixes for Boolean Functions
+Prefix boolean-returning functions with is, has, should, etc.
+
+✅  isValid, hasAccess, shouldDisplay
+❌  valid, accessible, display
+
+3. Keep Functions Focused (Single Responsibility)
+A function should perform only one clearly defined task.
+
+✅  calculateTotal, validateForm
+❌  validateAndSubmit, setupAndRender
+
+4. Use Explicit Parameter and Return Types
+Always define input and output types, even if TypeScript infers them.
+
+✅ getUser(id: number): User
+❌ getUser(id)
+
+5. Avoid Side Effects in Pure Functions
+Don't modify external state unexpectedly.
+
+✅ getDiscountedPrice(price, discount)
+❌ getDiscountedPrice (and internally modify this.totalRevenue)
+
+6. Use Arrow Functions for Short Callbacks
+Prefer arrow functions for simple inline logic.
+
+✅ items.map(item => item.name)
+❌ items.map(function(item) { return item.name })
+
+7. Use Async/Await with Error Handling. Observables with Async Pipes are Recommended.
+Avoid promise chains; always handle errors in async functions.
+
+✅ const data = await fetchData() with try/catch
+❌ fetchData().then(...) without a .catch()
+
+8. Keep Lifecycle Hooks Clean
+Delegate logic from lifecycle hooks to well-named internal methods.
+
+✅ ngOnInit() { this.loadUser(); }
+❌ ngOnInit() with multiple concerns like fetching, setting up forms, logging, etc.
+
+9. Extract and Reuse Logic
+Don't repeat logic across components — move to utils or services.
+
+✅ calculateTotal(items) in utils/price.util.ts
+❌ Inline the same total calculation logic in 3+ components
+
+
+> Observables
+
+1. Use $ Suffix for Observable Variables
+Helps differentiate streams from values.
+
+✅ user$, products$, formStatus$
+❌ user, products, status
+
+2. Prefer async Pipe in Templates
+Automatically handles subscription and un subscription.
+
+✅ Do:
+
+
+
+<div *ngIf="user$ | async as user">{{ user.name }}</div>
+❌ Don’t:
+
+
+
+this.user$.subscribe(user => this.user = user); // manual subscription
+3. Unsubscribe When Not Using async
+Prevent memory leaks by unsubscribing manually or using takeUntil.
+
+✅ Do:
+
+
+
+ngOnDestroy() {
+  this.destroy$.next();   
+  this.destroy$.complete(); 
+} 
+❌ Don’t:
+ Forget to unsubscribe from long-lived streams.
+
+4. Use Operators for Stream Logic, Not Nesting
+Avoid nested subscriptions by composing operators.
+
+✅ Do:
+
+
+
+this.route.params
+  .pipe(
+    switchMap(params => this.userService.getUser(params['id']))
+  )
+.subscribe(user => this.user = user);
+❌ Don’t:
+
+
+
+this.route.params
+  .subscribe(params => {
+    this.userService.getUser(params['id'])
+      .subscribe(user => {
+        this.user = user; // ❌ nested subscription   
+      }); 
+  }); 
+5. Use tap() for Side Effects
+Avoid doing side effects inside map or switchMap.
+
+✅ Do:
+
+
+
+.pipe(   
+  tap(() => this.isLoading = true),   
+  switchMap(() => this.api.fetchData()) 
+);
+❌ Don’t:
+
+
+
+.pipe(
+  switchMap(() => {
+    this.isLoading = true; // ❌ side effect here
+    return this.api.fetchData();
+  }) 
+)
+6. Avoid Using subscribe() in Components Unless Necessary
+Prefer async pipe or let Angular handle the flow.
+
+✅ Do: Use observable bindings in templates
+ ❌ Don’t: .subscribe() just to assign values to properties
+
+7. Name Subjects Clearly
+Make it obvious when a variable is a Subject or BehaviorSubject.
+
+✅ Do: destroy$, refreshTrigger$, selectedUserSubject
+ ❌ Don’t: data, update, something
+
+8. Avoid Overusing BehaviorSubject for Shared State
+Use NgRx or services with clean interfaces instead of pushing values manually everywhere.
+
+✅ Do: Use a store or facade pattern for shared state
+ ❌ Don’t: Share BehaviorSubjects across components without abstraction
+
+
+> Classes
+
+1. Use PascalCase for Class Names
+Class names should be nouns or noun phrases describing their purpose.
+
+✅ Do: UserService, ProductListComponent, OrderManager
+❌ Don’t: userService, product_list, order_manager
+
+2. Keep Classes Focused (Single Responsibility)
+A class should have one clear responsibility.
+
+✅ Do:
+UserService handles user API calls
+AuthGuard handles route authentication
+
+❌ Don’t:
+A service that handles users, products, and orders all together
+
+3. Use Access Modifiers Explicitly
+Declare public, private, or protected on all members.
+
+✅ Do:
+
+
+
+private users: User[] = []; 
+public getUsers(): User[] { 
+  return this.users; 
+}
+❌ Don’t:
+
+
+
+users = []; 
+getUsers() { 
+  return this.users; 
+}
+4. Use Dependency Injection via Constructor
+Inject services via inject function.
+
+✅ Do:
+
+
+
+private http = inject(HttpClient)
+❌ Don’t:
+
+
+
+private http = new HttpClient(); // avoid manual instantiation
+5. Keep Constructors Simple
+Avoid complex logic in constructors; initialize in lifecycle hooks or dedicated methods.
+
+✅ Do:
+ Use constructors only for dependency injection and simple initialization.
+
+❌ Don’t:
+ Run API calls or heavy logic in constructor.
+
+6. Use readonly for Immutable Properties
+Mark class properties that never change as readonly.
+
+✅ Do:
+
+
+
+readonly API_URL = 'https://api.example.com';
+❌ Don’t:
+
+
+
+API_URL = 'https://api.example.com'; // mutable when it shouldn't be
+7. Separate Concerns Using Multiple Classes
+Use smaller, focused classes instead of large monolithic ones.
+
+✅ Do:
+ Have separate AuthService, UserService, LoggerService classes.
+
+❌ Don’t:
+ Create a single giant service that mixes all functionality.
+
+8. Avoid Logic in Getters
+Keep getters simple; avoid side effects or complex calculations.
+
+✅ Do:
+
+
+
+get fullName(): string {   
+  return `${this.firstName} ${this.lastName}`; 
+}
+❌ Don’t:
+
+
+
+get fullName(): string {   
+  this.logAccess(); // side effect   
+  return `${this.firstName} ${this.lastName}`; 
+}
+ 
+
+>Performance
+
+Implement Lazy Loading for Feature Modules
+
+Do:
+
+
+
+const routes: Routes = [
+  {
+    path: 'feature',
+    loadChildren: () => import('./feature/feature.routes').then(m => m.routes)
+  }
+];
+Lazy loading ensures that feature modules are loaded only when needed, reducing the initial load time of the application.
+
+Don't:
+Eagerly load all modules in the root module, as this increases the initial bundle size and delays the time to interactive.
+
+ 
+
+Use Pure Pipes for Data Transformations
+
+Do:
+Define pipes as pure to ensure they are only recalculated when their input changes.
+
+
+
+@Pipe({
+  name: 'currencyPipe',
+  pure: true
+})
+export class CurrencyPipe implements PipeTransform {
+  transform(value: number): string {
+    return `$${value.toFixed(2)}`;
+  }
+}
+Pure pipes help prevent unnecessary recalculations and improve performance.
+
+Don't:
+Use impure pipes for data transformations, as they can be recalculated on every change detection cycle, leading to performance issues.
+
+ 
+
+3. Monitor and Profile Performance
+Do:
+Use tools like Angular DevTools, Chrome DevTools, and Lighthouse to monitor and profile your application's performance.
+Regular profiling helps identify bottlenecks and areas for optimization.
+
+Don't:
+Neglect performance monitoring, as undetected issues can degrade user experience over time.
+
+
+> Functionality & Business Logic
+
+1. Organize Business Logic into Feature Libraries
+Do:
+Encapsulate domain-specific logic within feature libraries located under libs/features/.
+
+Example: libs/features/user-management
+
+These libraries should contain components, services, and state management related to a specific feature or business domain.
+
+Don't:
+Place feature-specific logic in the core or shared libraries, as they are intended for cross-cutting concerns and reusable utilities.
+
+ 
+
+2. Centralize Core Application Logic
+Do:
+Use the libs/core/ directory for application-wide services and configurations.
+
+Include services like authentication, authorization, reusing models, services, utils and API interceptors.
+
+Define application-wide guards, resolvers, and configuration modules.
+
+Don't:
+Include one feature-specific logic or UI components in the core library.
+
+ 
+
+3. Share Reusable Components
+Do:
+Place reusable UI components, directives, pipes in the libs/shared/ directory.
+
+Example: libs/shared/components, libs/shared/directives
+
+Ensure these components are generic and not tied to any specific feature.
+
+Don't:
+Include feature-specific components or business logic in the shared library.
+
+ 
+
+4. Enforce Dependency Boundaries
+Do:
+Utilize Nx's dependency constraints to enforce architectural boundaries.
+
+Configure nx.json to restrict dependencies between libraries.
+
+Ensure that core and shared libraries are agnostic of feature-specific
+
+Don't:
+Allow feature libraries to depend on core or shared libraries in a way that violates the intended architecture.
+
+ 
+
+5. Implement Lazy Loading for Feature Modules
+Do:
+Configure lazy loading for feature modules to improve application startup time.
+
+Define routes in the app-routes.ts using loadChildren.
+
+Ensure each feature is self-contained and can be loaded independently.
+
+Don't:
+Eagerly load feature modules that are not required immediately, as this can increase the initial load time.
+
+ 
+
+7. Document Library APIs and Usage
+Do:
+Provide clear documentation for each library's public API.
+
+Use README.md files to explain the purpose, usage, and examples for each library.
+
+Ensure that the documentation is kept up-to-date with the library's implementation.
+
+Don't:
+Neglect documentation, as this can lead to misuse and confusion among developers.
+
+
+
+> Coding Standards
+
+1. Use Single Quotes for Strings
+Consistently use single quotes (') for string literals to maintain uniformity across the codebase.
+
+
+
+const message = 'Welcome to the application!';
+Note: If a string contains a single quote character, consider using a template literal to avoid escaping.
+
+ 
+
+2. Apply 2-Space Indentation
+Use two spaces for indentation to enhance code readability and maintain consistency.
+
+
+
+function greet(name: string) {
+  console.log(`Hello, ${name}`);
+}
+ 
+
+3. Avoid Trailing Whitespace and Unused Variables
+Ensure that there is no trailing whitespace at the end of lines.
+
+Remove any variables that are declared but not used to keep the code clean and prevent potential errors.
+
+
+
+const userName = 'Alice';
+console.log(userName); 
+ 
+
+4. Use const for Immutable Variables
+Declare variables with const when their values are not intended to change, promoting immutability and preventing accidental reassignments.
+
+
+
+const MAX_USERS = 100;
+5. Prefer Template Literals Over String Concatenation
+Utilize template literals (enclosed by backticks `) for string interpolation and multi-line strings, enhancing readability.
+
+
+
+const user = 'Bob';
+const greeting = `Hello, ${user}! Welcome back.`;
+Note: Template literals allow for easier inclusion of variables and expressions within strings.
+
+
+> Angular-Specific Development Guidelines (Angular 17)
+
+
+1. Standalone Components
+Angular 17 promotes the use of standalone components to simplify application structure and enhance reusability.
+
+Best Practice:
+
+Use standalone components for self-contained features or widgets.
+
+Import necessary dependencies directly within the component.
+
+Example:
+
+
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+@Component({
+  standalone: true,
+  selector: 'app-user-profile',
+  imports: [CommonModule],
+  template: `<h2>User Profile</h2>`
+})
+export class UserProfileComponent {} 
+ 
+
+Avoid:
+
+Overusing NgModules for simple components, which can add unnecessary complexity.
+
+ 
+
+2. Signals for State Management
+Angular Signals provide a reactive approach to state management, offering fine-grained reactivity and improved performance.
+
+Best Practice:
+
+Use Signals for local component state to reduce boilerplate code.
+
+Combine Signals with computed properties for derived state.
+
+Example:
+
+
+
+import { signal, computed } from '@angular/core';
+const count = signal(0);
+const doubleCount = computed(() => count() * 2);
+Avoid:
+
+Using Signals for global state management; prefer NgRx or other state management libraries for complex scenarios.
+
+ 
+
+3. Direct Service Injection with inject()
+The inject() function allows for a more concise and flexible way to access services, especially outside of class constructors.
+
+Best Practice:
+
+Use inject() in functional contexts like route guards or standalone functions.
+
+Example:
+
+
+
+import { inject } from '@angular/core';
+import { AuthService } from './auth.service';
+const authService = inject(AuthService);
+Avoid:
+
+Using inject() in class constructors; stick to traditional constructor injection in classes.
+
+ 
+
+4. Async Pipe in Templates
+The async pipe simplifies the handling of asynchronous data streams in templates.
+
+Best Practice:
+
+Use async pipe to subscribe to Observables directly in the template, ensuring automatic subscription management.
+
+Example:
+
+
+
+<div *ngIf="user$ | async as user">
+  <p>{{ user.name }}</p>
+</div>
+Avoid:
+
+Manually subscribing to Observables in the component class when the data is only used in the template.
+
+ 
+
+5. NgOptimizedImage Directive
+The NgOptimizedImage directive helps in optimizing image loading for better performance.
+
+Best Practice:
+
+Use NgOptimizedImage to automatically handle image loading strategies, such as lazy loading and responsive images.
+
+Example:
+
+
+
+<img ngSrc="assets/profile.jpg" width="200" height="200" alt="Profile Picture">
+Avoid:
+
+Using standard <img> tags without optimization, which can lead to performance issues.
+
+ 
+
+6. Defer Views with @defer
+The @defer block allows for deferring the rendering of non-critical UI elements, improving initial load performance.
+
+Best Practice:
+
+Use @defer to load components or content that are not immediately necessary.
+
+Example:
+
+
+
+@defer {
+  <app-news-feed></app-news-feed>
+}
+Avoid:
+
+Loading all components eagerly, which can increase the initial bundle size and load time.
+
+
+> Husky Git Hooks Integration – OSOSERP-WEB
+
+📌 Purpose
+To ensure code quality and maintain consistency across the codebase, we've integrated Husky into the OSOSERP-WEB repository. This setup helps catch and resolve common issues like lint errors, formatting problems, and build failures before the changes are pushed.
+
+🔧 Tools Used
+Husky – Git hooks manager.
+
+Prettier – Code formatter.
+
+ESLint – Linting tool.
+
+Nx – Monorepo management and affected builds.
+
+
+🧵 Git Hooks in Action
+
+Pre commit
+
+What it does:
+Automatically formats staged files (.ts, .json, .scss, .html) using Prettier.
+
+Re-adds formatted files to staging (git add).
+
+Runs linting on affected modules.
+
+Fixes lint errors where possible. Manual fixes may be required if not auto-fixable.
+
+Just commit the updated files after reviewing changes and fixing any remaining issues.
+
+script
+
+
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|json|scss|html)$' || true)
+if [ -n "$STAGED_FILES" ]; then
+  echo "$STAGED_FILES" | xargs -n 50 yarn prettier --write
+  echo "$STAGED_FILES" | xargs git add
+fi
+yarn lint-fix:affected
+yarn lint:affected
+Pre push
+What it does:
+
+Runs a full repo build before changes can be pushed.
+
+⏱ Build Time Expectations:
+
+First push: 20–30 minutes (full clean build)
+
+Subsequent pushes: 5–10 minutes or less
+(Nx intelligently builds only affected modules using local cache until you clear nx folder cache)
+
+💡 Tip:
+Don’t clear the nx cache unless you face any issues if you want to clear you can use the following command.
+
+
+
+npx nx clear-cache 
+
+Pre push script
+
+
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+yarn build:all
+
+📊 NX Dependency Graph
+FYI: Use the npx nx graph command to view a live dependency graph locally.(only if you have any difficulty understanding the architecture).
+
+image-20250629-042408.png
+👥 Team Expectations
+Run yarn install after getting a pull from developer to ensure Husky and dependencies are set up correctly.
+
+Prettier will auto-format on commit then have to review and commit changes.
+
+ESLint will try to fix issues automatically, but some may need manual fixes.
+
+🧩 Husky Compatibility
+Husky supports shell scripts by default, since it's designed to run in a Unix-like environment (Linux/macOS or Git Bash on Windows).as long as it's executable and installed in the dev environment
+
+I recommend using command-line interfaces like Terminal, VSCode's integrated terminal, or any CLI for Git commits and push commands. This way, you can monitor the progress and see what's happening. While GUI tools can also work, they won’t provide visibility into the process, such as whether a build or linting error occurs.
+
+
+
+to stage all use following command
+git add . 
+to commit use following command
+git commit -m “commit message” 
+to push use following command
+git push
+ 
+
+
+
+

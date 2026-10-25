@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(winget --version)",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\.vscode\\\\extensions\\\\anthropic.claude-code-2.1.218-win32-x64\\\\resources\\\\native-binary\\\\claude.exe\" --version)",
+      "PowerShell(& \"C:\\\\Users\\\\Dell\\\\.vscode\\\\extensions\\\\anthropic.claude-code-2.1.218-win32-x64\\\\resources\\\\native-binary\\\\claude.exe\" --help)",
+      "Bash(gh auth status)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
+      "Bash(gh api *)",
+      "PowerShell(gh auth status)",
+      "PowerShell(gh pr view *)",
+      "PowerShell(gh pr diff *)",
+      "PowerShell(gh pr list *)",
+      "PowerShell(gh api *)",
+      "Edit(reviews/*)",
+      "Edit(reviews/**)",
+      "Edit(.tmp/**)",
+      "Bash(mkdir -p .tmp/*)",
+      "Bash(awk *)",
+      "Bash(wc *)",
+      "Bash(rm -rf .tmp/pr*)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .tmp/*)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/pr-review/prefetch.ps1 *)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/pr-review/engine/review.ps1 *)",
+      "PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/pr-review/engine/review.ps1 *)"
+    ]
+  }
+}

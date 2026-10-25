@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): Convert role widget [FM-777] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): Convert role widget [FM-777]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6105">ososerp-web #6105</a>
+      <span>PrabathMadhuranga</span>
+      <span class="ref">feature/fleet/version/0.12.0 ← develop/prabathosos/fleet/convert/role-widget</span>
+      <span>2026-09-30</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">10</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">1</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR converts the Role widget into the Fleet module. It adds a role-management list and details page, a widgets tab, an add-widgets drawer, a service that proxies to Configuration&#39;s role service, and en-US and ar-OM i18n keys. It also renames the fleet <code>admin</code> route to <code>administration</code>. The PR is open, and its description is the unfilled template.</p>
+<p>Two things block merge. The <code>FLEET_ADMIN_MANAGE_ROLES</code> menu id (<code>flt.administration.manageRole</code>) doesn&#39;t match the sibling <code>fleet.*</code> ids, and it drives the route permission and menu, so a wrong id would deny access or hide the page. The Arabic strings in <code>ar-OM.json</code> also look mojibake-corrupted, so the file&#39;s encoding needs checking and fixing.</p>
+<p>The team should decide four things. First, is the <code>admin</code> to <code>administration</code> rename intentional, and were navigator links updated? Second, should widget assign and unassign be gated by a write grant? Third, should Fleet keep reusing Configuration translation keys? Fourth, should the write proxies stay on a read-only service? Also verify that the template ref <code>#widgetsTab</code> compiles when it is used outside its <code>mat-tab</code>. Tests are missing too.</p>
+<p class="empty-note">Method: 4 independent review calls over 1 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="libs/core/src/lib/core/constants/menu-id.constants.ts:471">libs/core/src/lib/core/constants/menu-id.constants.ts:471</code>
+  <p><strong>Inconsistent FLEET_ADMIN_MANAGE_ROLES menu id.</strong> FLEET_ADMIN_MANAGE_ROLES is &#39;flt.administration.manageRole&#39; while FLEET is &#39;fleet&#39; and FLEET_ADMIN is &#39;fleet.admin&#39;. This id is used for the route permission guard (Grant.ReadOnly), list menuId and column actions. If it doesn&#39;t match the menu id configured in the backend/navigator, the page will be denied or actions hidden. It is inconsistent with sibling constants and should be verified.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="src/assets/i18n/ar-OM.json:34086">src/assets/i18n/ar-OM.json:34086</code>
+  <p><strong>Arabic translations mojibake-corrupted.</strong> The new Arabic values in <code>ar-OM.json</code> are double-encoded (CP437-style) garbage instead of UTF-8 Arabic, so the Fleet Arabic UI would render unreadable text. The same corruption appears in a comment in <code>role-management.service.ts</code>. Re-save the files as UTF-8 and restore the correct strings. Also at: <code>libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:17</code>.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/containers/role-management-details-page/role-management-details-page.component.html:14">libs/features/fleet/src/lib/admin/role-management/containers/role-management-details-page/role-management-details-page.component.html:14</code>
+  <p><strong>Widget actions ungated; template ref crosses tab scope.</strong> The Add Widgets and Unassign actions are always shown, but the route only requires a ReadOnly grant. Gate them by a write grant. Also <code>#widgetsTab</code> is declared inside <code>&lt;mat-tab&gt;</code> but referenced outside it. Template refs aren&#39;t visible outside their nested template, and mat-tab content is lazy, so this may fail to compile or be undefined at runtime. Use <code>@ViewChild</code> or move the button inside the tab. Also at: <code>libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts:53</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/fleet.routes.ts:10">libs/features/fleet/src/lib/fleet.routes.ts:10</code>
+  <p><strong>Route renamed admin to administration.</strong> The path was changed from &#39;admin&#39; to &#39;administration&#39;. Any existing navigation links, menu entries or bookmarks pointing to fleet/admin will break. Verify the navigator menu URLs and other callers.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts:53">libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts:53</code>
+  <p><strong>No loading or error handling in widgets tab.</strong> <code>loadRoleWidgets</code> and <code>getLookup</code> have no loading state or error handling. Save failures are silent, and there is no success notification after assign/update. Saving with all widgets unselected sends an update with an empty list, so confirm the backend accepts that.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/shared/components/add-widgets-drawer/add-widgets-drawer.component.ts:73">libs/features/fleet/src/lib/shared/components/add-widgets-drawer/add-widgets-drawer.component.ts:73</code>
+  <p><strong>Subscriptions without teardown in drawer.</strong> searchControl.valueChanges subscription in ngOnInit and languageService.isRTL.subscribe in closeDrawer are never unsubscribed (isRTL likely a long-lived BehaviorSubject, leaking each close). Use takeUntilDestroyed / take(1).</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:27">libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:27</code>
+  <p><strong>Write proxies on read-only role service.</strong> <code>create</code>, <code>update</code> and <code>delete</code> forward to Configuration&#39;s <code>RoleService</code> even though the Fleet UI is read-only. They are currently unreachable, but they expose mutation paths. Omit them or make them throw. Also at: <code>libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:31</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html:13">libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html:13</code>
+  <p><strong>Details labels reuse Configuration translation keys.</strong> Labels use <code>translate.configuration.role.label.*</code> keys owned by another module, which couples Fleet to Configuration resources. Either confirm the keys exist in every locale or add fleet keys. Also at: <code>libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html:14</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="src/assets/data/fleet/role-management.json:47">src/assets/data/fleet/role-management.json:47</code>
+  <p><strong>Company column path and flag inconsistent.</strong> The company column path <code>companyRole/companyById/name</code> has three levels but <code>isInsideObject</code> is false and <code>dataType</code> is empty. The cell reads <code>element[&#39;companyRole&#39;]</code>, which may not render the name. Verify against the Role entity and fix the flag. Also at: <code>libs/features/fleet/src/lib/admin/role-management/models/table-metadata.ts:59</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/assets/data/fleet/role-management.json:104">src/assets/data/fleet/role-management.json:104</code>
+  <p><strong>Verify nested sort/filter paths on backend.</strong> &#39;createdByName/userName&#39; and &#39;updatedByName/userName&#39; are sent verbatim as $orderby/$filter. Confirm the Role entity exposes these navigation properties at that depth.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="src/assets/data/fleet/role-management.json:9">src/assets/data/fleet/role-management.json:9</code>
+  <p><strong>Non-standard dataType UserType for dropdown.</strong> Team rule: dropdown filters use dataType <code>Toolbox</code>. <code>userType</code> uses <code>UserType</code>, so confirm the filter panel renders it and its options are populated.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>Empty PR description and no tests.</strong> The PR description is the unfilled template, so there is no stated intent. About 1400 lines of new components and services, including the widget assignment and drawer selection logic, have no spec files.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/components/role-management-list/role-management-list.component.html:3">libs/features/fleet/src/lib/admin/role-management/components/role-management-list/role-management-list.component.html:3</code>
+  <p><strong>Add button bound though canAdd always false.</strong> Dead input; page always passes canAdd false.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts">libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts</code>
+  <p><strong>takeUntilDestroyed used.</strong> Subscriptions in the widgets tab are torn down with <code>takeUntilDestroyed</code>.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/fleet.routes.ts">libs/features/fleet/src/lib/fleet.routes.ts</code>
+  <p><strong>Lazy routes with permission data.</strong> Routes are lazily loaded, and the detail route carries permission data.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html">libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html</code>
+  <p><strong>Read-only details form.</strong> The details form is explicitly disabled, which matches the read-only intent.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json">src/assets/i18n/en-US.json</code>
+  <p><strong>Fleet i18n keys added in both languages.</strong> Fleet keys are added to both en-US and ar-OM rather than hardcoding labels.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>9bcdb1f</code></footer>
+
+  <script type="application/json" id="review-state">{"version":2,"headSha":"9bcdb1f1a67661986ae992744cf141aa36b0eb5b","reviewedOn":"2026-09-30","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"libs/core/src/lib/core/constants/menu-id.constants.ts","line":"471","lens":"L10","title":"Inconsistent FLEET_ADMIN_MANAGE_ROLES menu id","body":"FLEET_ADMIN_MANAGE_ROLES is \u0027flt.administration.manageRole\u0027 while FLEET is \u0027fleet\u0027 and FLEET_ADMIN is \u0027fleet.admin\u0027. This id is used for the route permission guard (Grant.ReadOnly), list menuId and column actions. If it doesn\u0027t match the menu id configured in the backend/navigator, the page will be denied or actions hidden. It is inconsistent with sibling constants and should be verified.","firstSeen":"v2"},{"id":"F2","severity":"must-fix","status":"open","file":"src/assets/i18n/ar-OM.json","line":"34086","lens":"L10","title":"Arabic translations mojibake-corrupted","body":"The new Arabic values in `ar-OM.json` are double-encoded (CP437-style) garbage instead of UTF-8 Arabic, so the Fleet Arabic UI would render unreadable text. The same corruption appears in a comment in `role-management.service.ts`. Re-save the files as UTF-8 and restore the correct strings. Also at: `libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:17`.","firstSeen":"v2"},{"id":"F3","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/admin/role-management/containers/role-management-details-page/role-management-details-page.component.html","line":"14","lens":"L3","title":"Widget actions ungated; template ref crosses tab scope","body":"The Add Widgets and Unassign actions are always shown, but the route only requires a ReadOnly grant. Gate them by a write grant. Also `#widgetsTab` is declared inside `\u003cmat-tab\u003e` but referenced outside it. Template refs aren\u0027t visible outside their nested template, and mat-tab content is lazy, so this may fail to compile or be undefined at runtime. Use `@ViewChild` or move the button inside the tab. Also at: `libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts:53`.","firstSeen":"v2"},{"id":"F4","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/fleet.routes.ts","line":"10","lens":"L8","title":"Route renamed admin to administration","body":"The path was changed from \u0027admin\u0027 to \u0027administration\u0027. Any existing navigation links, menu entries or bookmarks pointing to fleet/admin will break. Verify the navigator menu URLs and other callers.","firstSeen":"v2"},{"id":"F5","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/admin/role-management/components/role-management-widgets-tab/role-management-widgets-tab.component.ts","line":"53","lens":"L1","title":"No loading or error handling in widgets tab","body":"`loadRoleWidgets` and `getLookup` have no loading state or error handling. Save failures are silent, and there is no success notification after assign/update. Saving with all widgets unselected sends an update with an empty list, so confirm the backend accepts that.","firstSeen":"v2"},{"id":"F6","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/shared/components/add-widgets-drawer/add-widgets-drawer.component.ts","line":"73","lens":"L6","title":"Subscriptions without teardown in drawer","body":"searchControl.valueChanges subscription in ngOnInit and languageService.isRTL.subscribe in closeDrawer are never unsubscribed (isRTL likely a long-lived BehaviorSubject, leaking each close). Use takeUntilDestroyed / take(1).","firstSeen":"v2"},{"id":"F7","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts","line":"27","lens":"L2","title":"Write proxies on read-only role service","body":"`create`, `update` and `delete` forward to Configuration\u0027s `RoleService` even though the Fleet UI is read-only. They are currently unreachable, but they expose mutation paths. Omit them or make them throw. Also at: `libs/features/fleet/src/lib/admin/role-management/services/role-management.service.ts:31`.","firstSeen":"v2"},{"id":"F8","severity":"suggestion","status":"open","file":"libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html","line":"13","lens":"L10","title":"Details labels reuse Configuration translation keys","body":"Labels use `translate.configuration.role.label.*` keys owned by another module, which couples Fleet to Configuration resources. Either confirm the keys exist in every locale or add fleet keys. Also at: `libs/features/fleet/src/lib/admin/role-management/components/role-management-details/role-management-details.component.html:14`.","firstSeen":"v2"},{"id":"F9","severity":"suggestion","status":"open","file":"src/assets/data/fleet/role-management.json","line":"47","lens":"L7","title":"Company column path and flag inconsistent","body":"The company column path `companyRole/companyById/name` has three levels but `isInsideObject` is false and `dataType` is empty. The cell reads `element[\u0027companyRole\u0027]`, which may not render the name. Verify against the Role entity and fix the flag. Also at: `libs/features/fleet/src/lib/admin/role-management/models/table-metadata.ts:59`.","firstSeen":"v2"},{"id":"F10","severity":"suggestion","status":"open","file":"src/assets/data/fleet/role-management.json","line":"104","lens":"L7","title":"Verify nested sort/filter paths on backend","body":"\u0027createdByName/userName\u0027 and \u0027updatedByName/userName\u0027 are sent verbatim as $orderby/$filter. Confirm the Role entity exposes these navigation properties at that depth.","firstSeen":"v2"},{"id":"F11","severity":"suggestion","status":"open","file":"src/assets/data/fleet/role-management.json","line":"9","lens":"L10","title":"Non-standard dataType UserType for dropdown","body":"Team rule: dropdown filters use dataType `Toolbox`. `userType` uses `UserType`, so confirm the filter panel renders it and its options are populated.","firstSeen":"v2"},{"id":"F12","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"Empty PR description and no tests","body":"The PR description is the unfilled template, so there is no stated intent. About 1400 lines of new components and services, including the widget assignment and drawer selection logic, have no spec files.","firstSeen":"v2"},{"id":"F13","severity":"nit","status":"open","file":"libs/features/fleet/src/lib/admin/role-management/components/role-management-list/role-management-list.component.html","line":"3","lens":"L10","title":"Add button bound though canAdd always false","body":"Dead input; page always passes canAdd false.","firstSeen":"v2"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

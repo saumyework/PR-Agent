@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): Portfolio and Programs [OOTB-15763] [OOTB-15766] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): Portfolio and Programs [OOTB-15763] [OOTB-15766]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6433">ososerp-web #6433</a>
+      <span>ksrilalosos</span>
+      <span class="ref">feature/pmo-dms/v-13/sprint-38-plus ← users/ksrilalosos/feat/OOTB-15763-OOTB-15766</span>
+      <span>2026-10-14</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">2</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">7</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">2</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR adds Portfolio and Program master screens to the PMO feature (lazy-loaded routes, services, resolvers, list/detail pages, table metadata and i18n). It also adds portfolio/program structure selection to the project form, a new save-error handler, and a payload change in ProjectService. It covers OOTB-15763 and OOTB-15766 in about 2.6k changed lines.</p>
+<p>Merge is blocked by corrupted-encoding (mojibake) text in the en-US confirm message, which users will see in the confirmation dialog. The same encoding problem affects the separator constant, and the ar-OM additions should be checked. The PR description is the unfilled template, and there are no tests for the new cascade, revert and validator logic.</p>
+<p>The team should confirm that the new TableType values (417/418) and the <code>portfolio/title</code> filter path match the backend. They should also decide whether loading 10000-row dropdowns is acceptable, and whether to split the PR.</p>
+<p class="empty-note">Method: 6 independent review calls over 2 shard(s), evidence machine-checked (1 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json:13061">src/assets/i18n/en-US.json:13061</code>
+  <p><strong>Mojibake in changePortfolio confirm message.</strong> The changePortfolio message contains corrupted characters (UTF-8 curly quotes decoded as cp437/Windows-1252) and will render garbage text to users. Replace with proper quotes (“ ”) or plain quotes, and save the file as UTF-8.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/constants/pmo-master.constants.ts:2">libs/features/pmo/src/lib/constants/pmo-master.constants.ts:2</code>
+  <p><strong>Mojibake separator constant.</strong> The chip separator constant is stored as a corrupted encoding of &#39;&#183;&#39; (&#39; ┬╖ &#39;). It will render garbage in chips, option labels and the confirm message. Fix the encoding and save the file as UTF-8. Also check the ar-OM.json additions for the same corruption.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>Empty description, no tests, two tickets bundled.</strong> The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/program/services/program.resolver.ts:28">libs/features/pmo/src/lib/program/services/program.resolver.ts:28</code>
+  <p><strong>Unbounded 10000-row dropdown loads, errors swallowed.</strong> Portfolios and programs are loaded with a page size of 10000 in the program resolver and in the project detail page, which fetches both on every project open. This will not scale, and it is not filtered to active records. A typeahead or a lightweight endpoint would be better. Also at: <code>libs/features/pmo/src/lib/project/containers/project-detail-page/project-detail-page.component.ts:346</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/portfolio/services/portfolio.resolver.ts:17">libs/features/pmo/src/lib/portfolio/services/portfolio.resolver.ts:17</code>
+  <p><strong>Resolvers lack error handling.</strong> getById has no catchError. A missing, soft-deleted or other-tenant id leaves the navigation failing with no feedback to the user. The same applies to selectedProgramResolver. portfoliosResolver also fails the whole program page if the dropdown call errors, whereas the project page handles this with catchError.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="src/assets/data/pmo/program.json:41">src/assets/data/pmo/program.json:41</code>
+  <p><strong>Verify program column path portfolio/title.</strong> The Portfolio column is isInsideObject with path portfolio/title and allowedFilters 6, so it is filterable, even though allowSearch and allowSort are false. The path must match Program.Portfolio.Title on the backend entity. Please verify that. If the filter isn&#39;t supported, set allowedFilters to empty.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/core/enums/src/lib/enums/table-type.ts:414">libs/core/enums/src/lib/enums/table-type.ts:414</code>
+  <p><strong>Confirm TableType values match backend.</strong> New members ProjectPortfolio = 417 and ProjectProgram = 418 follow LoanType = 411, leaving a gap. If these numbers are not intentionally matched to the backend enum, the user-columns API may map to the wrong table. Please confirm the values match the backend.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts:52">libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts:52</code>
+  <p><strong>Empty value fires uniqueness request.</strong> The validators encode the value with encodeURIComponent, and the service then interpolates it into the path. Angular does not re-encode it, so this is probably fine. However, an empty code or title still fires a request to <code>/code/</code>, which hits a different route. An empty value should short-circuit with null. The same applies to program.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/portfolio/models/table-metadata.ts:88">libs/features/pmo/src/lib/portfolio/models/table-metadata.ts:88</code>
+  <p><strong>Column name updatedBy inconsistent with createdByName.</strong> The column def and JSON name are &#39;updatedBy&#39; while the path is updatedByName. The i18n keys include both createdByName and updatedBy. The inconsistency with createdByName is confusing. Check that user column selection matches on name. The same applies to program.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json:12978">src/assets/i18n/en-US.json:12978</code>
+  <p><strong>Duplicate and inconsistent header labels.</strong> tableHeaders has both createdBy and createdByName with identical text; the same duplication exists in program. Also &#39;Created At&#39; vs &#39;Updated Date&#39; labels are inconsistent. Remove unused keys and align wording. Also at: <code>src/assets/i18n/en-US.json:12999</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="libs/core/pmo/src/lib/pmo/services/project.service.ts:81">libs/core/pmo/src/lib/pmo/services/project.service.ts:81</code>
+  <p><strong>Parameter named like its type.</strong> #toPayload is applied to a parameter named <code>Project</code> that shadows the type. This is pre-existing, but it is now touched. Rename it to project.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts">libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts</code>
+  <p><strong>Lazy-loaded, permission-guarded routes.</strong> Both new routes are lazy-loaded and guarded with menu permissions.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/core/pmo/src/lib/pmo/services/project.service.ts">libs/core/pmo/src/lib/pmo/services/project.service.ts</code>
+  <p><strong>Navigation objects stripped from payload.</strong> ProjectService removes the derived portfolio and program objects before POST/PUT.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts">libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts</code>
+  <p><strong>Debounced, encoded async validators.</strong> The code and title uniqueness validators are debounced and encode the value in the URL.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/pmo/src/lib/project/containers/project-detail-page/project-detail-page.component.ts">libs/features/pmo/src/lib/project/containers/project-detail-page/project-detail-page.component.ts</code>
+  <p><strong>Subscription cleanup and error surfacing.</strong> Subscriptions use takeUntil or takeUntilDestroyed, and the project save error handler shows server validation messages.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="src/assets/i18n/en-US.json">src/assets/i18n/en-US.json</code>
+  <p><strong>Consistent i18n structure.</strong> New portfolio and program keys follow the structure of sibling entries such as resourceGroup.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>9a65560</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"9a65560a1be45222fc03f2da41f65e1080a46848","reviewedOn":"2026-10-14","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"src/assets/i18n/en-US.json","line":"13061","lens":"L10","title":"Mojibake in changePortfolio confirm message","body":"The changePortfolio message contains corrupted characters (UTF-8 curly quotes decoded as cp437/Windows-1252) and will render garbage text to users. Replace with proper quotes (“ ”) or plain quotes, and save the file as UTF-8.","firstSeen":"v1"},{"id":"F2","severity":"must-fix","status":"open","file":"libs/features/pmo/src/lib/constants/pmo-master.constants.ts","line":"2","lens":"L10","title":"Mojibake separator constant","body":"The chip separator constant is stored as a corrupted encoding of \u0027·\u0027 (\u0027 ┬╖ \u0027). It will render garbage in chips, option labels and the confirm message. Fix the encoding and save the file as UTF-8. Also check the ar-OM.json additions for the same corruption.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"Empty description, no tests, two tickets bundled","body":"The PR description is the unfilled template (no What/Why), so reviewers have no stated intent to check the code against.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/program/services/program.resolver.ts","line":"28","lens":"L6","title":"Unbounded 10000-row dropdown loads, errors swallowed","body":"Portfolios and programs are loaded with a page size of 10000 in the program resolver and in the project detail page, which fetches both on every project open. This will not scale, and it is not filtered to active records. A typeahead or a lightweight endpoint would be better. Also at: `libs/features/pmo/src/lib/project/containers/project-detail-page/project-detail-page.component.ts:346`.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/portfolio/services/portfolio.resolver.ts","line":"17","lens":"L1","title":"Resolvers lack error handling","body":"getById has no catchError. A missing, soft-deleted or other-tenant id leaves the navigation failing with no feedback to the user. The same applies to selectedProgramResolver. portfoliosResolver also fails the whole program page if the dropdown call errors, whereas the project page handles this with catchError.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"src/assets/data/pmo/program.json","line":"41","lens":"L7","title":"Verify program column path portfolio/title","body":"The Portfolio column is isInsideObject with path portfolio/title and allowedFilters 6, so it is filterable, even though allowSearch and allowSort are false. The path must match Program.Portfolio.Title on the backend entity. Please verify that. If the filter isn\u0027t supported, set allowedFilters to empty.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"libs/core/enums/src/lib/enums/table-type.ts","line":"414","lens":"L12","title":"Confirm TableType values match backend","body":"New members ProjectPortfolio = 417 and ProjectProgram = 418 follow LoanType = 411, leaving a gap. If these numbers are not intentionally matched to the backend enum, the user-columns API may map to the wrong table. Please confirm the values match the backend.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/portfolio/services/portfolio.service.ts","line":"52","lens":"L4","title":"Empty value fires uniqueness request","body":"The validators encode the value with encodeURIComponent, and the service then interpolates it into the path. Angular does not re-encode it, so this is probably fine. However, an empty code or title still fires a request to `/code/`, which hits a different route. An empty value should short-circuit with null. The same applies to program.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"libs/features/pmo/src/lib/portfolio/models/table-metadata.ts","line":"88","lens":"L7","title":"Column name updatedBy inconsistent with createdByName","body":"The column def and JSON name are \u0027updatedBy\u0027 while the path is updatedByName. The i18n keys include both createdByName and updatedBy. The inconsistency with createdByName is confusing. Check that user column selection matches on name. The same applies to program.","firstSeen":"v1"},{"id":"F10","severity":"nit","status":"open","file":"src/assets/i18n/en-US.json","line":"12978","lens":"L10","title":"Duplicate and inconsistent header labels","body":"tableHeaders has both createdBy and createdByName with identical text; the same duplication exists in program. Also \u0027Created At\u0027 vs \u0027Updated Date\u0027 labels are inconsistent. Remove unused keys and align wording. Also at: `src/assets/i18n/en-US.json:12999`.","firstSeen":"v1"},{"id":"F11","severity":"nit","status":"open","file":"libs/core/pmo/src/lib/pmo/services/project.service.ts","line":"81","lens":"L8","title":"Parameter named like its type","body":"#toPayload is applied to a parameter named `Project` that shadows the type. This is pre-existing, but it is now touched. Rename it to project.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

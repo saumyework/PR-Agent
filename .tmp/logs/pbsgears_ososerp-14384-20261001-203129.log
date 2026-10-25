@@ -1,0 +1,21 @@
+﻿PR #14384 OPEN head=4f23016 | files: 10 total, 10 reviewable, 0 generated | reviewable changed lines: 246 | shards: 1 code + 1 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr14384 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #14384 'chore(Toolbox): Seed computed-columns dialog labels [OBPP-13295]' | 10 files in scope, 246 changed lines | 1 shard(s) | mode: first review
+Round 1: 2 independent passes (1 first, then 1 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  <- S1-B done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+chore(Toolbox): Seed computed-columns dialog labels [OBPP-13295]
+https://github.com/pbsgears/ososerp/pull/14384
+Risk: Low | 0 must-fix, 0 suggestions, 0 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OBPP\ososerp\pr14384-v2.html (v2)
+Tokens: 8 input + 2,051 cache-write + 67,119 cache-read + 1,967 output over 4 calls

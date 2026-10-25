@@ -1,0 +1,27 @@
+﻿PR #6130 OPEN head=d2a4175 | files: 53 total, 53 reviewable, 0 generated | reviewable changed lines: 4249 | shards: 2 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6130 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6130 'feat(UI): Resource Levelling Gantt Chart [OOTB-12542]' | 53 files in scope, 4249 changed lines | 2 shard(s) | mode: first review
+Round 1: 4 independent passes (2 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  -> S2-A (sonnet)
+  <- S2-A done
+  <- S1-A done
+  -> S1-C (sonnet)
+  -> S2-C (sonnet)
+  <- S2-C done
+  <- S1-C done
+Round 2: 2 gap pass(es)
+  -> S1-G (sonnet)
+  -> S2-G (sonnet)
+  <- S2-G done
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Resource Levelling Gantt Chart [OOTB-12542]
+https://github.com/pbsgears/ososerp-web/pull/6130
+Risk: Medium | 2 must-fix, 10 suggestions, 6 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\OOTB\ososerp-web\pr6130.html
+Tokens: 16 input + 194,631 cache-write + 339,523 cache-read + 16,353 output over 7 calls

@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(UI): Fix Legal Entity Bug [FSC-758] [FSC-760] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  /* stable finding ids + re-review status */
+  .fid, .status {
+    display: inline-block; margin: 0 .4rem .6rem 0; padding: .2rem .5rem;
+    border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: .74rem; font-weight: 600;
+  }
+  .fid { background: var(--code-bg); color: var(--muted); }
+  .status.new { background: var(--error-tint); color: var(--error-text); }
+  .status.open { background: var(--warning-tint); color: var(--warning-text); }
+  .status.partial { background: var(--warning-tint); color: var(--warning-text); }
+  .status.fixed { background: var(--good-tint); color: var(--good-text); }
+  .status.withdrawn { background: var(--nit-tint); color: var(--nit-text); }
+  .status.missed { background: var(--error-tint); color: var(--error-text); }
+  section.previous h2 { color: var(--accent); } section.previous h2::before { background: var(--accent); }
+  .previous .finding-card { border-left-color: var(--accent); }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(UI): Fix Legal Entity Bug [FSC-758] [FSC-760]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp-web/pull/6215">ososerp-web #6215</a>
+      <span>anwarosos</span>
+      <span class="ref">feature/finance/FSC-013/FE/sprint-12 ← feature/finance/AnwaarAlzadjali/bug/FSC-758/logo-information</span>
+      <span>2026-10-25</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip medium">
+        <span class="dot"></span>
+        <span class="label">Risk: Medium</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">1</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">11</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">3</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">5</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This PR fixes Legal Entity bugs (FSC-758, FSC-760). It reworks the form save orchestration, primary-location linking, logo preview, and async validators and error messages. It adds resolvers for locations and companies, and adds a company dropdown to the Location master form. The PR is open.</p>
+<p>The save-update path can partially fail. If the primary-location link fails after the company update has succeeded, the user sees a generic save error and the section does not advance. The calendar update is fire-and-forget. The create path shows both an error and a success message. Fix these before merge.</p>
+<p>The team must confirm that the backend exposes the new <code>/code/{code}/id/{id}</code> route, because failures are silently swallowed. They should also decide whether client-side filtering of all active locations is acceptable. The PR description is empty and no tests were added.</p>
+<p class="empty-note">Method: 4 independent review calls over 1 shard(s), evidence machine-checked (0 unverifiable candidates discarded), then one merge call.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+  <span class="fid">F1</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:320">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:320</code>
+  <p><strong>Partial failure on update-path location link.</strong> In <code>#saveActiveSection</code> the company update is chained with <code>#linkPrimaryLocation</code> via <code>switchMap</code>, with no <code>catchError</code>. If the link fails after the update has committed, the user gets a generic <code>saveError</code> and the section does not advance. For Configurations, <code>updatePrimaryCalendar</code> is fire-and-forget with no error handling and runs outside the <code>save$</code> chain. Handle the link and calendar steps with explicit error handling, as <code>#persistIfNew</code> does, and include them in the chain. Also at: <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:386</code>, <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:346</code>.</p>
+</div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+  <span class="fid">F2</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:482">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:482</code>
+  <p><strong>Create shows error then success on link failure.</strong> In <code>#persistIfNew</code>, a failed primary-location link is swallowed with <code>of(false)</code>. <code>#finishCreate</code> then shows <code>createSuccess</code> and navigates away, so the user gets contradictory messages and the entity is left without a location. Unassigned locations are also claimed through a read-then-full-update (<code>getById</code> then <code>update</code>), which is a race with other legal entities. Surface the partial failure clearly and avoid navigating away silently. Also at: <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:488</code>, <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:151</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F3</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:516">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:516</code>
+  <p><strong>Server messages routed through error() not customError().</strong> The old #showValidationError sent raw backend messages to <code>customError(message)</code> and translation keys to <code>error(key)</code>. The new #notifySaveFailure sends both through <code>error()</code>. If <code>error()</code> treats its argument as a translation key, server text such as ValidationErrors[0].errorMessage gets translated or looked up as a key. Keep the two paths separate: <code>customError</code> for server text, <code>error</code> for the fallback key.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F4</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity.service.ts:58">libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity.service.ts:58</code>
+  <p><strong>codeExists route changed; errors swallowed.</strong> <code>codeExists</code> now calls <code>/code/{code}/id/{id}</code> instead of <code>/code/{code}</code>. Confirm the backend route exists. If it does not, <code>catchError(() =&gt; of(null))</code> silently swallows the 404 and duplicate codes pass validation. The same swallow-on-error behaviour applies to all the exists validators. Also at: <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:152</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F5</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:152">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:152</code>
+  <p><strong>Code validators on control disabled in add mode.</strong> companyCode gets required/textBox/maxLength/async validator, but in add mode the control is disabled (the effect disables it), so these validators are skipped and the code is never sent/validated (formValue.companyCode comes from getRawValue, probably empty or auto-generated). Also the legalEntity getId is undefined in add mode so the exists check is vacuous. Confirm the intent. Additionally, only the add template shows other fields; description/phone/email in edit mode have clearValidators but the email/phone errors are only shown in add mode.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F6</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:306">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:306</code>
+  <p><strong>Logo state reset on every entity change.</strong> The effect now resets companyLogo and logoPreviewUrl whenever legalEntity changes. After a logo is uploaded, any reload of the entity (which happens after each save via #reloadLocationsAndEntity) overwrites the locally set preview (imageUrl) with the signedUri, which may be absent or expired. Also the uploaded logo&#39;s signed URI is used directly in an &lt;img&gt;; a fresh upload&#39;s response lacks that so the local image URL is used, but a blob/cropped URL is not revoked.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F7</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:139">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:139</code>
+  <p><strong>Unbounded active-location load filtered client-side.</strong> The <code>:id</code> resolver and <code>#reloadLocationsAndEntity</code> call <code>getActive()</code> for all locations and filter in the browser. This blocks every <code>:id</code> route even when the section does not need locations. The resolver also returns <code>[]</code> on error without telling the user. <code>isUnassignedLocation</code> treats any location with a null <code>companyId</code> as claimable, including external ones. Filter server-side, or load lazily for the ContactAddress section only, and notify the user on failure. Also at: <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts:22</code>, <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts:13</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F8</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/master/location/components/location-details/location-details.component.ts:246">libs/features/edm/src/lib/master/location/components/location-details/location-details.component.ts:246</code>
+  <p><strong>Location company dropdown validation fragile.</strong> The effect toggles <code>Validators.required</code> on <code>companyId</code> and calls <code>updateValueAndValidity</code>. It can run before the form is patched, and it can overwrite a user-chosen company when <code>selectedEntity</code> is set. If the companies resolver fails, the dropdown silently falls back to the primary company. The backend should validate <code>companyId</code> ownership and active status independently.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F9</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/master/location/services/location-companies.resolver.ts:12">libs/features/edm/src/lib/master/location/services/location-companies.resolver.ts:12</code>
+  <p><strong>Verify getModeFromParams handles &#39;new&#39; in resolver.</strong> The resolver loads active companies only when mode is Create. Confirm getModeFromParams(route) handles ActivatedRouteSnapshot (not just a snapshot of the current route) and the &#39;:id&#39; = &#39;new&#39; case, otherwise companies are never loaded.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F10</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:123">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:123</code>
+  <p><strong>Duplicated location-select logic across components.</strong> locationTypeKeys, locationTypeLabel, selectedLocationOption and chip templates/styles are duplicated across both components; it should be extracted to a shared helper/component. Also general-information still creates locations immediately via #createLocationNow while contact-address delegates to the form, so the two flows behave inconsistently.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F11</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:476">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:476</code>
+  <p><strong>Add-mode location created before entity exists.</strong> In add mode, general-information creates the location immediately through the API via <code>#createLocationNow</code>. If the user cancels, an orphan unassigned location remains. This is also inconsistent with the contact-address flow, which delegates creation to the form.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F12</span>
+  <code class="path-chip" data-path="(PR-level)">(PR-level)</code>
+  <p><strong>Empty PR description, no tests, mixed scope.</strong> The PR description is the unfilled template. About 800 changed lines have no spec changes: save orchestration, location linking, resolvers and async validators. The PR also bundles Location master changes under a Legal Entity title. Add a description and tests, or split the unrelated changes.</p>
+</div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+  <span class="fid">F13</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:478">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:478</code>
+  <p><strong>setTimeout used to set form value.</strong> setTimeout(() =&gt; form.setValue(...)) is a timing hack to wait for the option to render; prefer a deterministic approach.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F14</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-async-validators.ts:122">libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-async-validators.ts:122</code>
+  <p><strong>Inconsistent async-validator error shape and baked translation.</strong> <code>#existsError</code> calls <code>translate.instant</code> once at validation time, so the message does not update on language switch. It may also return the raw key if translations are not yet loaded. The VAT and tax validators still return <code>{ exists: true }</code>, which is inconsistent with the others. Also at: <code>libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-async-validators.ts:99</code>.</p>
+</div>
+<div class="finding-card">
+  <span class="fid">F15</span>
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/add-location-drawer/add-location-drawer.component.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/add-location-drawer/add-location-drawer.component.ts</code>
+  <p><strong>Whitespace-only change in add-location-drawer.</strong> <code>add-location-drawer.component.ts</code> has only whitespace or indentation changes. Revert it to keep the diff focused.</p>
+</div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts</code>
+  <p><strong>Double-submit guard.</strong> The <code>saving()</code> signal disables the save and draft buttons, and <code>finalize</code> resets it.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts</code>
+  <p><strong>Waits for async validators.</strong> <code>#whenValidationSettled</code> waits for pending async validators before saving.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts</code>
+  <p><strong>Consistent email validation.</strong> Email validation uses <code>OsosValidators.email</code> with <code>fieldType=email</code>, and the missing <code>mat-error</code> was added.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts</code>
+  <p><strong>Resolvers degrade gracefully.</strong> The location and company resolvers return an empty list on error instead of breaking navigation.</p>
+</div>
+<div class="finding-card">
+  
+  <code class="path-chip" data-path="libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts">libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts</code>
+  <p><strong>Proper subscription teardown.</strong> New subscriptions use <code>takeUntilDestroyed</code> or <code>takeUntil(destroy$)</code>.</p>
+</div>
+  </section>
+
+  <footer>guides used: <code>code-review-guidelines.md, Angular_Checklist.md, Naming_Conventions.txt</code> · reviewed commit <code>36c15af</code></footer>
+
+  <script type="application/json" id="review-state">{"version":1,"headSha":"36c15af079ae10c8b910421e8c9e2c020e3b1bff","reviewedOn":"2026-10-25","findings":[{"id":"F1","severity":"must-fix","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts","line":"320","lens":"L2","title":"Partial failure on update-path location link","body":"In `#saveActiveSection` the company update is chained with `#linkPrimaryLocation` via `switchMap`, with no `catchError`. If the link fails after the update has committed, the user gets a generic `saveError` and the section does not advance. For Configurations, `updatePrimaryCalendar` is fire-and-forget with no error handling and runs outside the `save$` chain. Handle the link and calendar steps with explicit error handling, as `#persistIfNew` does, and include them in the chain. Also at: `libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:386`, `libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:346`.","firstSeen":"v1"},{"id":"F2","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts","line":"482","lens":"L5","title":"Create shows error then success on link failure","body":"In `#persistIfNew`, a failed primary-location link is swallowed with `of(false)`. `#finishCreate` then shows `createSuccess` and navigates away, so the user gets contradictory messages and the entity is left without a location. Unassigned locations are also claimed through a read-then-full-update (`getById` then `update`), which is a race with other legal entities. Surface the partial failure clearly and avoid navigating away silently. Also at: `libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:488`, `libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts:151`.","firstSeen":"v1"},{"id":"F3","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts","line":"516","lens":"L10","title":"Server messages routed through error() not customError()","body":"The old #showValidationError sent raw backend messages to `customError(message)` and translation keys to `error(key)`. The new #notifySaveFailure sends both through `error()`. If `error()` treats its argument as a translation key, server text such as ValidationErrors[0].errorMessage gets translated or looked up as a key. Keep the two paths separate: `customError` for server text, `error` for the fallback key.","firstSeen":"v1"},{"id":"F4","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity.service.ts","line":"58","lens":"L7","title":"codeExists route changed; errors swallowed","body":"`codeExists` now calls `/code/{code}/id/{id}` instead of `/code/{code}`. Confirm the backend route exists. If it does not, `catchError(() =\u003e of(null))` silently swallows the 404 and duplicate codes pass validation. The same swallow-on-error behaviour applies to all the exists validators. Also at: `libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts:152`.","firstSeen":"v1"},{"id":"F5","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts","line":"152","lens":"L4","title":"Code validators on control disabled in add mode","body":"companyCode gets required/textBox/maxLength/async validator, but in add mode the control is disabled (the effect disables it), so these validators are skipped and the code is never sent/validated (formValue.companyCode comes from getRawValue, probably empty or auto-generated). Also the legalEntity getId is undefined in add mode so the exists check is vacuous. Confirm the intent. Additionally, only the add template shows other fields; description/phone/email in edit mode have clearValidators but the email/phone errors are only shown in add mode.","firstSeen":"v1"},{"id":"F6","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts","line":"306","lens":"L1","title":"Logo state reset on every entity change","body":"The effect now resets companyLogo and logoPreviewUrl whenever legalEntity changes. After a logo is uploaded, any reload of the entity (which happens after each save via #reloadLocationsAndEntity) overwrites the locally set preview (imageUrl) with the signedUri, which may be absent or expired. Also the uploaded logo\u0027s signed URI is used directly in an \u003cimg\u003e; a fresh upload\u0027s response lacks that so the local image URL is used, but a blob/cropped URL is not revoked.","firstSeen":"v1"},{"id":"F7","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/containers/form/form.component.ts","line":"139","lens":"L8","title":"Unbounded active-location load filtered client-side","body":"The `:id` resolver and `#reloadLocationsAndEntity` call `getActive()` for all locations and filter in the browser. This blocks every `:id` route even when the section does not need locations. The resolver also returns `[]` on error without telling the user. `isUnassignedLocation` treats any location with a null `companyId` as claimable, including external ones. Filter server-side, or load lazily for the ContactAddress section only, and notify the user on failure. Also at: `libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts:22`, `libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-lookup.resolver.ts:13`.","firstSeen":"v1"},{"id":"F8","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/master/location/components/location-details/location-details.component.ts","line":"246","lens":"L4","title":"Location company dropdown validation fragile","body":"The effect toggles `Validators.required` on `companyId` and calls `updateValueAndValidity`. It can run before the form is patched, and it can overwrite a user-chosen company when `selectedEntity` is set. If the companies resolver fails, the dropdown silently falls back to the primary company. The backend should validate `companyId` ownership and active status independently.","firstSeen":"v1"},{"id":"F9","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/master/location/services/location-companies.resolver.ts","line":"12","lens":"L10","title":"Verify getModeFromParams handles \u0027new\u0027 in resolver","body":"The resolver loads active companies only when mode is Create. Confirm getModeFromParams(route) handles ActivatedRouteSnapshot (not just a snapshot of the current route) and the \u0027:id\u0027 = \u0027new\u0027 case, otherwise companies are never loaded.","firstSeen":"v1"},{"id":"F10","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts","line":"123","lens":"L10","title":"Duplicated location-select logic across components","body":"locationTypeKeys, locationTypeLabel, selectedLocationOption and chip templates/styles are duplicated across both components; it should be extracted to a shared helper/component. Also general-information still creates locations immediately via #createLocationNow while contact-address delegates to the form, so the two flows behave inconsistently.","firstSeen":"v1"},{"id":"F11","severity":"suggestion","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts","line":"476","lens":"L2","title":"Add-mode location created before entity exists","body":"In add mode, general-information creates the location immediately through the API via `#createLocationNow`. If the user cancels, an orphan unassigned location remains. This is also inconsistent with the contact-address flow, which delegates creation to the form.","firstSeen":"v1"},{"id":"F12","severity":"suggestion","status":"open","file":"(PR-level)","line":"","lens":"L11","title":"Empty PR description, no tests, mixed scope","body":"The PR description is the unfilled template. About 800 changed lines have no spec changes: save orchestration, location linking, resolvers and async validators. The PR also bundles Location master changes under a Legal Entity title. Add a description and tests, or split the unrelated changes.","firstSeen":"v1"},{"id":"F13","severity":"nit","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/general-information/general-information.component.ts","line":"478","lens":"L10","title":"setTimeout used to set form value","body":"setTimeout(() =\u003e form.setValue(...)) is a timing hack to wait for the option to render; prefer a deterministic approach.","firstSeen":"v1"},{"id":"F14","severity":"nit","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-async-validators.ts","line":"122","lens":"L10","title":"Inconsistent async-validator error shape and baked translation","body":"`#existsError` calls `translate.instant` once at validation time, so the message does not update on language switch. It may also return the raw key if translations are not yet loaded. The VAT and tax validators still return `{ exists: true }`, which is inconsistent with the others. Also at: `libs/features/edm/src/lib/enterprise-structure/legal-entity/services/legal-entity-async-validators.ts:99`.","firstSeen":"v1"},{"id":"F15","severity":"nit","status":"open","file":"libs/features/edm/src/lib/enterprise-structure/legal-entity/components/add-location-drawer/add-location-drawer.component.ts","line":"","lens":"L11","title":"Whitespace-only change in add-location-drawer","body":"`add-location-drawer.component.ts` has only whitespace or indentation changes. Revert it to keep the diff focused.","firstSeen":"v1"}]}</script>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

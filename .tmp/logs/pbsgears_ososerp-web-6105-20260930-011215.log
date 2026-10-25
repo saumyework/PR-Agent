@@ -1,0 +1,10 @@
+﻿
+PR #6105 'feat(UI): Convert role widget [FM-777]' | 32 files in scope, 1424 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  [dry-run] S1-A: ~32 input tokens
+  [dry-run] S1-B: ~31 input tokens
+  [dry-run] S1-C: ~58 input tokens
+Round 2: 1 gap pass(es)
+  [dry-run] S1-G: ~106 input tokens
+
+Dry run: 4 pass calls + 1 merge call (~12,000 tokens). Nothing was sent to the model.

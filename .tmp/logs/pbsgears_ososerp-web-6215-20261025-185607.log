@@ -1,0 +1,23 @@
+﻿PR #6215 OPEN head=36c15af | files: 20 total, 20 reviewable, 0 generated | reviewable changed lines: 802 | shards: 1 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr6215 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #6215 'feat(UI): Fix Legal Entity Bug [FSC-758] [FSC-760]' | 19 files in scope, 800 changed lines | 1 shard(s) | mode: first review
+Round 1: 3 independent passes (1 first, then 2 reusing the cache)
+  -> S1-A (sonnet)
+  <- S1-A done
+  -> S1-B (sonnet)
+  -> S1-C (sonnet)
+  <- S1-C done
+  <- S1-B done
+Round 2: 1 gap pass(es)
+  -> S1-G (sonnet)
+  <- S1-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(UI): Fix Legal Entity Bug [FSC-758] [FSC-760]
+https://github.com/pbsgears/ososerp-web/pull/6215
+Risk: Medium | 1 must-fix, 11 suggestions, 3 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FSC\ososerp-web\pr6215.html
+Tokens: 10 input + 82,760 cache-write + 207,285 cache-read + 16,610 output over 5 calls

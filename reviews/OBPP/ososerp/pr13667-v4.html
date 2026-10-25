@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>feat(Configuration): Improve query engine [OBPP-12419] — Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(98% 0.004 260);
+    --panel: oklch(100% 0 0);
+    --border: oklch(91% 0.008 260);
+    --text: oklch(22% 0.012 260);
+    --muted: oklch(48% 0.015 260);
+    --accent: oklch(56% 0.16 260);
+    --code-bg: oklch(95% 0.006 260);
+    --code-text: oklch(35% 0.01 260);
+    --shadow: oklch(20% 0.01 260 / 0.04);
+    --shadow-card: oklch(20% 0.01 260 / 0.03);
+
+    --error: oklch(56% 0.16 25);
+    --error-text: oklch(45% 0.16 25);
+    --error-tint: oklch(56% 0.16 25 / 0.1);
+    --error-border: oklch(56% 0.16 25 / 0.25);
+
+    --warning: oklch(56% 0.16 85);
+    --warning-text: oklch(42% 0.14 85);
+    --warning-tint: oklch(56% 0.16 85 / 0.09);
+
+    --nit: oklch(48% 0.015 260);
+    --nit-text: oklch(40% 0.015 260);
+    --nit-tint: oklch(48% 0.015 260 / 0.06);
+
+    --good: oklch(56% 0.15 150);
+    --good-text: oklch(40% 0.15 150);
+    --good-tint: oklch(56% 0.15 150 / 0.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: oklch(20% 0.012 260);
+      --panel: oklch(24% 0.012 260);
+      --border: oklch(32% 0.014 260);
+      --text: oklch(92% 0.006 260);
+      --muted: oklch(68% 0.012 260);
+      --accent: oklch(74% 0.13 260);
+      --code-bg: oklch(28% 0.012 260);
+      --code-text: oklch(86% 0.008 260);
+      --shadow: oklch(0% 0 0 / 0.25);
+      --shadow-card: oklch(0% 0 0 / 0.18);
+
+      --error: oklch(72% 0.15 25);
+      --error-text: oklch(78% 0.13 25);
+      --error-tint: oklch(72% 0.15 25 / 0.14);
+      --error-border: oklch(72% 0.15 25 / 0.3);
+
+      --warning: oklch(78% 0.14 85);
+      --warning-text: oklch(80% 0.13 85);
+      --warning-tint: oklch(78% 0.14 85 / 0.13);
+
+      --nit: oklch(68% 0.012 260);
+      --nit-text: oklch(74% 0.012 260);
+      --nit-tint: oklch(68% 0.012 260 / 0.09);
+
+      --good: oklch(74% 0.14 150);
+      --good-text: oklch(78% 0.13 150);
+      --good-tint: oklch(74% 0.14 150 / 0.13);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Fira Code', Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* header card */
+  .header-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 1px 3px var(--shadow);
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .7rem;
+  }
+  h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.3rem;
+    font-size: .86rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+  }
+  .meta a { color: var(--accent); text-decoration: none; font-family: 'JetBrains Mono', monospace; font-size: .83rem; }
+  .meta a:hover { text-decoration: underline; }
+  .meta .ref { font-family: 'JetBrains Mono', monospace; font-size: .8rem; }
+
+  .tiles { display: flex; flex-wrap: wrap; gap: .7rem; align-items: stretch; margin-bottom: 1.5rem; }
+  .risk-chip {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .55rem 1rem; border-radius: 10px;
+  }
+  .risk-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .risk-chip .label { font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+  .risk-chip.low { background: var(--good-tint); border: 1px solid var(--good); } .risk-chip.low .dot { background: var(--good); } .risk-chip.low .label { color: var(--good-text); }
+  .risk-chip.medium { background: var(--warning-tint); border: 1px solid var(--warning); } .risk-chip.medium .dot { background: var(--warning); } .risk-chip.medium .label { color: var(--warning-text); }
+  .risk-chip.high { background: var(--error-tint); border: 1px solid var(--error); } .risk-chip.high .dot { background: var(--error); } .risk-chip.high .label { color: var(--error-text); }
+
+  .tile {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: .5rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border);
+    text-decoration: none; min-width: 88px;
+    transition: background-color .15s ease;
+  }
+  .tile .n { font-size: 1.15rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .tile .l { font-size: .72rem; color: var(--muted); }
+  .tile.mustfix { background: var(--error-tint); } .tile.mustfix .n { color: var(--error-text); } .tile.mustfix:hover { background: color-mix(in oklch, var(--error-tint), var(--error) 12%); }
+  .tile.suggestions { background: var(--warning-tint); } .tile.suggestions .n { color: var(--warning-text); } .tile.suggestions:hover { background: color-mix(in oklch, var(--warning-tint), var(--warning) 12%); }
+  .tile.nits { background: var(--nit-tint); } .tile.nits .n { color: var(--nit-text); } .tile.nits:hover { background: color-mix(in oklch, var(--nit-tint), var(--nit) 12%); }
+  .tile.good { background: var(--good-tint); } .tile.good .n { color: var(--good-text); } .tile.good:hover { background: color-mix(in oklch, var(--good-tint), var(--good) 12%); }
+
+  .summary { margin: 0; padding-top: 1.3rem; border-top: 1px solid var(--border); font-size: 1rem; }
+  .summary p { margin: 0 0 .6rem; }
+  .summary p:last-child { margin-bottom: 0; }
+
+  /* sticky quick nav */
+  nav.jump {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; gap: 1.6rem;
+    padding: .85rem 0; margin: 1.3rem 0 1.8rem;
+    background: color-mix(in oklch, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    font-size: .82rem;
+  }
+  nav.jump a {
+    display: flex; align-items: center; gap: .4rem;
+    text-decoration: none; color: var(--muted); font-weight: 400;
+    transition: color .15s ease, font-weight .15s ease;
+  }
+  nav.jump .dot { width: 7px; height: 7px; border-radius: 50%; }
+  nav.jump a[data-target="mustfix"] .dot { background: var(--error); }
+  nav.jump a[data-target="suggestions"] .dot { background: var(--warning); }
+  nav.jump a[data-target="nits"] .dot { background: var(--nit); }
+  nav.jump a[data-target="good"] .dot { background: var(--good); }
+  nav.jump a[data-target="mustfix"].active { color: var(--error-text); font-weight: 700; }
+  nav.jump a[data-target="suggestions"].active { color: var(--warning-text); font-weight: 700; }
+  nav.jump a[data-target="nits"].active { color: var(--nit-text); font-weight: 700; }
+  nav.jump a[data-target="good"].active { color: var(--good-text); font-weight: 700; }
+
+  /* sections */
+  section.group { scroll-margin-top: 4rem; margin-bottom: 2.4rem; }
+  section.group h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .5rem;
+  }
+  section.group h2::before { content: ""; width: 8px; height: 8px; border-radius: 50%; }
+  section.mustfix h2 { color: var(--error-text); } section.mustfix h2::before { background: var(--error); }
+  section.suggestions h2 { color: var(--warning-text); } section.suggestions h2::before { background: var(--warning); }
+  section.nits h2 { color: var(--nit-text); } section.nits h2::before { background: var(--nit); }
+  section.good h2 { color: var(--good-text); } section.good h2::before { background: var(--good); }
+
+  .finding-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 2px var(--shadow-card);
+  }
+  .finding-card:last-child { margin-bottom: 0; }
+  .mustfix .finding-card { border-left-color: var(--error); }
+  .suggestions .finding-card { border-left-color: var(--warning); }
+  .nits .finding-card { border-left-color: var(--nit); }
+  .good .finding-card { border-left-color: var(--good); }
+
+  .path-chip {
+    cursor: pointer;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .8rem;
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: .25rem .55rem;
+    margin-bottom: .6rem;
+    color: var(--code-text);
+    transition: background-color .15s ease;
+  }
+  .path-chip:hover { background: color-mix(in oklch, var(--code-bg), var(--text) 8%); }
+
+  .finding-card p { margin: 0; }
+  .finding-card code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    font-size: .88em;
+    color: var(--code-text);
+  }
+
+  .empty-note { color: var(--muted); font-style: italic; font-size: .92rem; }
+
+  footer {
+    color: var(--muted); font-size: .8rem; text-align: center;
+    margin-top: 2.5rem; padding-top: 1.3rem; border-top: 1px solid var(--border);
+  }
+  footer code { font-family: 'JetBrains Mono', monospace; background: var(--code-bg); padding: .05rem .35rem; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header-card">
+    <div class="eyebrow">Pull Request Review</div>
+    <h1>feat(Configuration): Improve query engine [OBPP-12419]</h1>
+
+    <div class="meta">
+      <a href="https://github.com/pbsgears/ososerp/pull/13667">ososerp #13667</a>
+      <span>kesharaosos</span>
+      <span class="ref">feature/platform/version/0.12.0 ← feature/expression-engine</span>
+      <span>2026-09-04</span>
+    </div>
+
+    <div class="tiles">
+      <div class="risk-chip high">
+        <span class="dot"></span>
+        <span class="label">Risk: High</span>
+      </div>
+      <a href="#mustfix" class="tile mustfix"><span class="n">3</span><span class="l">Errors</span></a>
+      <a href="#suggestions" class="tile suggestions"><span class="n">2</span><span class="l">Warnings</span></a>
+      <a href="#nits" class="tile nits"><span class="n">2</span><span class="l">Notes</span></a>
+      <a href="#good" class="tile good"><span class="n">4</span><span class="l">Passed</span></a>
+    </div>
+
+    <div class="summary"><p>This is a large architectural extraction (183 changed files, +8718/-2272) that moves condition/expression evaluation and parameter-resolution logic out of <code>Configuration.Application</code> into a new standalone <code>Kernel.Domain</code>/<code>Kernel.Application</code>/<code>Kernel.Infrastructure</code> module, adds a real arithmetic layer (<code>+ - * / % ^</code>) via a shared <code>IConditionOperatorStrategy</code> per operator, and turns on a brand-new SQL Server dialect for the raw-SQL "Dynamic Model" query path (previously only Postgres was wired up). The old <code>ConditionEvaluatorService</code> and its scattered helpers are deleted wholesale and replaced end-to-end; test coverage of the new engine is genuinely strong (dozens of new integration test files covering arithmetic, AST serialization/limits, dialects, and the query builder).</p><p>This PR has been reviewed twice before (<code>pr13667.html</code>, <code>pr13667-v2.html</code>); this pass re-verified every prior claim against the current branch tip rather than trusting the last review's conclusions. Two results of that: the culture-dependent date/number parsing flagged in earlier passes has since been fixed (all comparison/conversion paths now pass <code>CultureInfo.InvariantCulture</code> explicitly) and is dropped from this review — but a confirmed, still-unresolved SQL Server <code>In</code>/<code>NotIn</code> bug from <code>pr13667-v2.html</code> was silently absent from <code>pr13667-v3.html</code> and is restored here, alongside a new Must-Fix this pass found in the raw-SQL path's AST guard rails. Risk is <strong>High</strong>: three independent Must-Fix defects each cause a hard runtime failure (an unhandled exception or a broken query) under conditions this PR's own new test suite does not exercise.</p></div>
+  </div>
+
+  <nav class="jump">
+    <a href="#mustfix" data-target="mustfix"><span class="dot"></span>Errors</a>
+    <a href="#suggestions" data-target="suggestions"><span class="dot"></span>Warnings</a>
+    <a href="#nits" data-target="nits"><span class="dot"></span>Notes</a>
+    <a href="#good" data-target="good"><span class="dot"></span>Passed</a>
+  </nav>
+
+  <section class="group mustfix" id="mustfix">
+    <h2>Must-Fix</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/DelegateExpressionEvaluator.cs:275">src/Modules/Kernel/Kernel.Application/Evaluation/DelegateExpressionEvaluator.cs:275</code>
+      <p><strong>Dropped fallback tier in "$"-variable resolution.</strong> The deleted <code>ConditionEvaluatorService.ResolveSystemContext</code> had a 3-tier fallback: (1) <code>engine.ResolveParameterSync</code>, (2) if that returned null, look the variable up directly in the runtime <code>context</code> dictionary (the record/entity's own field values passed into <code>Evaluate</code>), (3) return the raw variable string. The new <code>GetResolvedReferenceValue(Dictionary&lt;string, object?&gt; resolved, string variable)</code> only does <code>resolved.TryGetValue(variable, out var val) ? val : variable</code>, and <code>resolved</code> is populated purely by <code>ParameterResolverEngineExtensions.ResolveReferencesAsync</code> calling <code>engine.ResolveParameterAsync</code> for each reference — the entity's own <code>context</code> dict is never consulted. Verified against the pre-PR source: any "$"-prefixed reference that used to fall back to the record's own data when the DB-backed resolver returned null will now silently resolve to the literal reference string instead, changing evaluation outcomes for existing stored conditions with no error raised.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/DatabaseDialects/SqlServerDialect.cs:263">src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/DatabaseDialects/SqlServerDialect.cs:263</code>
+      <p><strong>SQL Server <code>In</code>/<code>NotIn</code> filters will throw at query execution.</strong> <code>BuildFilterCondition</code> emits <code>{column} IN (SELECT value FROM STRING_SPLIT({paramPlaceholder}, ','))</code>, which requires the bound parameter to be a single comma-delimited string. The value actually bound to it comes from <code>DynamicQueryBuilder.BuildSingleFilter</code> → <code>ConvertToTypedArray(filter.Value)</code>, which returns a native .NET array (<code>Guid[]</code>, <code>int[]</code>, ...). That shape is correct for <code>PostgreSqlDialect</code>, whose own <code>BuildFilterCondition</code> uses <code>= ANY(@p)</code>/<code>!= ALL(@p)</code> (Npgsql binds arrays natively) — but <code>Microsoft.Data.SqlClient</code>'s <code>SqlParameter</code> has no array support, and neither <code>SqlServerDialect.CreateParameter</code> nor <code>ConfigureParameter</code> convert the array into a delimited string first. Since <code>SqlServerDialect</code> is new in this PR (the prior <code>DatabaseDialectFactory</code> had no working SQL Server case at all) and is reachable directly from <code>FetchDynamicQuery</code>'s Dynamic Model path, any <code>InList</code>/<code>NotInList</code> filter against a SQL Server-backed deployment fails the first time it runs. Confirmed <code>SqlServerDialectTests.cs</code> in this PR never exercises <code>FilterOperator.In</code>/<code>NotIn</code>, so this wasn't caught.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/QueryBuilder/DynamicQueryBuilder.cs:277">src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/QueryBuilder/DynamicQueryBuilder.cs:277</code>
+      <p><strong>AST guard rails and structural validation aren't enforced on the raw-SQL "Dynamic Model" path.</strong> <code>ExpressionNodeExtensions.EnsureWithinLimits</code> (max AST depth/node count) and <code>EnsureStructurallyValid</code> are called before <code>DelegateExpressionEvaluator</code> compiles a delegate and before <code>EFCoreExpressionBuilder</code> builds a LINQ expression, but <code>DynamicQueryBuilder.BuildSelectAsync</code>/<code>ValidateAsync</code> — reached via <code>QueryEngine.ExecuteQueryAsync</code>/<code>ValidateQueryAsync</code> from <code>FetchDynamicQuery</code> and <code>ValidateExpressionQuery</code> whenever the target is a Dynamic Model rather than a compile-time EF entity — call neither. This has two concrete consequences: (1) the depth/node-count DoS protection this PR carefully added everywhere else is fully bypassed for Dynamic Model conditions; (2) <code>EnsureStructurallyValid</code> itself has a gap it never gets the chance to hit here — for a <code>BinaryExpressionNode</code> it validates via <code>binary.Right?.EnsureStructurallyValid(...)</code>, silently permitting <code>Right == null</code> on a non-nullary operator (e.g. a malformed <code>+</code> or <code>&gt;</code> node). A binary node with a null <code>Right</code> reaches <code>BuildExpressionNodeCondition</code>'s <code>default</code> case, which calls <code>node.GetType().Name</code> on that null node — an unhandled <code>NullReferenceException</code> instead of a clean 400. <code>GuardRailsTests.cs</code> only covers <code>DelegateExpressionEvaluator</code>, and <code>DynamicQueryBuilderExpressionNodeTests.cs</code> only tests a null <code>Right</code> for a legitimately-nullary operator, not this case.</p>
+    </div>
+  </section>
+
+  <section class="group suggestions" id="suggestions">
+    <h2>Suggestions</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:170-193">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:170-193</code>
+      <p><strong>Inconsistent operand-type fallback between comparison and Between.</strong> <code>CompareNumeric</code> (backing <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>) throws <code>NotSupportedException</code> when both operands fail to parse as <code>decimal</code> or <code>DateTime</code> — no string fallback. <code>AreEqual</code> and <code>EvaluateBetween</code> both have a third tier that falls back to an ordinal string comparison instead of throwing. So <code>status &gt; "abc"</code> throws for a plain string field while <code>status between ["aaa","zzz"]</code> silently succeeds via string comparison on the same field — the operator families disagree on whether string comparison is valid, and a real string field being sorted/filtered with <code>&gt;</code>/<code>&lt;</code> hits this.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:436,451">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:436,451</code>
+      <p><strong>Divide/modulo-by-zero silently returns 0.</strong> <code>DivideStrategy</code>/<code>ModuloStrategy.Evaluate</code> both return <code>0.0</code> when the right operand is zero, and <code>BuildQueryExpression</code> makes the identical choice on the EF Core side via <code>Expression.Condition(right == default, default, left/right)</code> — the two backends are at least consistent with each other, and it appears to be a deliberate design choice rather than an oversight. Still worth flagging explicitly: it converts a divide-by-zero — often a symptom of bad configuration or missing data in a formula-driven condition — into an indistinguishable, valid-looking <code>0</code> result rather than a diagnosable error. Please confirm this is the intended product semantics for automation/approval rules built on this engine.</p>
+    </div>
+  </section>
+
+  <section class="group nits" id="nits">
+    <h2>Notes</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:1-30">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:1-30</code>
+      <p><strong>Doc comment warning about the raw-SQL path lives on an internal class.</strong> The XML doc explaining that the Dynamic Model path has its own independent operator mapping that must be kept in sync is genuinely useful, but it's on an <code>internal static class</code> so it won't surface to anyone adding a new operator from outside this file. Consider moving that specific warning onto <code>IConditionOperatorStrategy</code>, the interface every new operator actually implements.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:211">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/ConditionOperatorStrategies.cs:211</code>
+      <p><strong>Reflection lookup for <code>Contains</code> re-runs on every EF query build.</strong> <code>BuildContainsExpression</code> does <code>typeof(Enumerable).GetMethods(...).First(m => m.Name == "Contains" && ...).MakeGenericMethod(propType)</code> fresh each call, unlike the sibling <code>StringContainsMethod</code>/<code>StringStartsWithMethod</code>/<code>StringEndsWithMethod</code>, which are cached as <code>static readonly MethodInfo</code>. Low-impact, but an easy consistency fix — cache per closed generic type in a <code>ConcurrentDictionary&lt;Type, MethodInfo&gt;</code>.</p>
+    </div>
+  </section>
+
+  <section class="group good" id="good">
+    <h2>What's Good</h2>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/QueryBuilder/DynamicQueryBuilder.cs">src/Modules/Kernel/Kernel.Infrastructure/Services/QueryEngine/QueryBuilder/DynamicQueryBuilder.cs</code>
+      <p><strong>SQL injection defenses done right for a raw-SQL builder.</strong> Every field name reaching generated SQL — from the condition tree, sort fields, select fields, and filters — is collected up front and checked against the model's real column set via <code>EnsureFieldsAreKnown</code> before any SQL is built, identifiers are quoted through the dialect abstraction rather than concatenated, and all values flow through parameterized placeholders. Both dialects' <code>BuildLikePattern</code> also escape <code>%</code>/<code>_</code>/<code>[</code> wildcards, so filter text can't smuggle extra wildcard behavior into a <code>LIKE</code> clause.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Web.API.Tests.Integration/Kernel/AstCacheConcurrencyTests.cs">src/Web.API.Tests.Integration/Kernel/AstCacheConcurrencyTests.cs</code>
+      <p><strong>Real concurrency test for the compiled-expression cache.</strong> Evaluates the same cached compiled expression concurrently against many different contexts and asserts no cross-contamination — exactly the right test for a static compiled-delegate cache design, and correct because the compiled delegate closes only over structure, not data.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/ParameterResolution/PerRequestCache.cs">src/Modules/Kernel/Kernel.Application/ParameterResolution/PerRequestCache.cs</code>
+      <p><strong>Real duplicate-work race fixed.</strong> The old implementation did a plain check-then-set against <code>httpContext.Items[key]</code>, so two concurrent calls for the same key could both run an expensive factory. The rewrite uses <code>ConcurrentDictionary&lt;string, Lazy&lt;Task&lt;object?&gt;&gt;&gt;</code> with <code>LazyThreadSafetyMode.ExecutionAndPublication</code>, plus a double-checked lock for store creation, guaranteeing the factory runs exactly once per key under concurrent access.</p>
+    </div>
+    <div class="finding-card">
+      <code class="path-chip" data-path="src/Modules/Kernel/Kernel.Application/Evaluation/Operators/IConditionOperatorStrategy.cs">src/Modules/Kernel/Kernel.Application/Evaluation/Operators/IConditionOperatorStrategy.cs</code>
+      <p><strong>Clean strategy-per-operator design with a compiler-enforced safety net.</strong> Folding "how an operator evaluates in-memory" and "how it translates to an EF Core expression" into one implementation per operator (instead of two parallel switch statements) makes the compiler enforce both paths exist for a new operator, and <code>ConditionOperatorKindCoverageTests</code> backs the one place this guarantee doesn't reach (the raw-SQL dialect switches) with a test that fails at test time instead of first use in production.</p>
+    </div>
+  </section>
+
+  <footer>guides used: <code>C#_Code_Review.txt, Naming_Conventions.txt</code> — v4, re-verified all prior findings against the current branch tip; restores a still-open Must-Fix dropped in v3, drops a Must-Fix from v2 that has since been fixed (culture-invariant parsing), and adds one new Must-Fix (Dynamic Model path guard rails).</footer>
+
+</div>
+
+<script>
+  (function () {
+    var sections = ['mustfix', 'suggestions', 'nits', 'good']
+      .map(function (id) { return document.getElementById(id); })
+      .filter(Boolean);
+    var links = Array.prototype.slice.call(document.querySelectorAll('nav.jump a'));
+
+    if ('IntersectionObserver' in window && sections.length) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          links.forEach(function (a) {
+            a.classList.toggle('active', a.dataset.target === entry.target.id);
+          });
+        });
+      }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+      sections.forEach(function (el) { observer.observe(el); });
+    }
+
+    document.querySelectorAll('.path-chip').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (!navigator.clipboard) return;
+        var text = el.dataset.path || el.textContent;
+        var original = el.textContent;
+        navigator.clipboard.writeText(text).then(function () {
+          el.textContent = 'Copied';
+          setTimeout(function () { el.textContent = original; }, 1200);
+        }).catch(function () {});
+      });
+    });
+  })();
+</script>
+</body>
+</html>

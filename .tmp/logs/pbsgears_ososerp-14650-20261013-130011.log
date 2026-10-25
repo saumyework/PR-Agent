@@ -1,0 +1,33 @@
+﻿PR #14650 OPEN head=7db344c | files: 159 total, 159 reviewable, 0 generated | reviewable changed lines: 5089 | shards: 3 code + 0 tests | head fetch failures: 0
+Wrote C:\Users\Dell\Desktop\Work\PR_Agent\.tmp\pr14650 (meta.json, full.diff, review.diff, head/, shards.json, files.txt)
+
+PR #14650 'feat(Fleet): Convert masters [FM-699]' | 158 files in scope, 5087 changed lines | 3 shard(s) | mode: first review
+Round 1: 6 independent passes (3 first, then 3 reusing the cache)
+  -> S1-A (sonnet)
+  -> S2-A (sonnet)
+  -> S3-A (sonnet)
+  <- S1-A done
+  <- S3-A done
+  <- S2-A done
+  -> S1-C (sonnet)
+  -> S2-C (sonnet)
+  -> S3-C (sonnet)
+  <- S2-C done
+  <- S1-C done
+  <- S3-C done
+Round 2: 3 gap pass(es)
+  -> S1-G (sonnet)
+  -> S2-G (sonnet)
+  -> S3-G (sonnet)
+  <- S1-G done
+  <- S3-G done
+  <- S2-G done
+Merge: 1 call
+  -> merge (sonnet)
+  <- merge done
+
+feat(Fleet): Convert masters [FM-699]
+https://github.com/pbsgears/ososerp/pull/14650
+Risk: Medium | 0 must-fix, 17 suggestions, 4 notes
+Report: C:\Users\Dell\Desktop\Work\PR_Agent\reviews\FM\ososerp\pr14650.html
+Tokens: 24 input + 186,892 cache-write + 352,451 cache-read + 33,090 output over 10 calls

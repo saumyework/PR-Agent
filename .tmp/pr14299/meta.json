@@ -1,0 +1,45 @@
+{
+    "additions":  3813,
+    "author":  {
+                   "id":  "U_kgDOECFTvA",
+                   "is_bot":  false,
+                   "login":  "mahelaosos",
+                   "name":  "mahelaosos"
+               },
+    "baseRefName":  "version/0.12.0",
+    "body":  "# Hello there!\r\n\r\n\u003e [!NOTE]\r\n\u003e You\u0027re creating a pull request against the super standard `ososerp` repository. It\u0027s your responsibility to keep this in standard way. Make sure you\u0027ve reviewed the following checklist before assigning it to a reviewer.\r\n\r\n### Description\r\n\r\n\u003e [!IMPORTANT]\r\n\u003e Do a **self-review** on your PR, fill in the What, Why section and put a cross [x] in the following checklist.\r\n\r\n## Provide the documentation URL [If it is a feature]?\r\n\r\n[Provide a confluence URL]\r\n\r\n## What did you do in this pull request?\r\n\r\n[Please provide a sentence or two describing what the code change does.]\r\n\r\n## Why did you make these changes?\r\n\r\n[Please provide a detailed explanation of the change.]\r\n\r\n## Checklist\r\n\r\n\u003cdetails\u003e\r\n  \r\n  \u003csummary\u003eCommon\u003c/summary\u003e\r\n  \r\n  - [ ] Added/updated unit tests for your changes\r\n  - [ ] Tested my changes locally\r\n  - [ ] Tested my changes in all supported browsers/environments\r\n  - [ ] Verified my changes meet the acceptance criteria\r\n  - [ ] Verified my changes meet the UI/UX requirements\r\n  - [ ] Considered the impact of my changes on performance, security, and accessibility\r\n  - [ ] Updated JIRA comments with necessary information and screenshots (if applicable)\r\n  - [ ] Updated JIRA comments with other impacted areas\r\n\r\n\u003c/details\u003e\r\n\r\n\u003cdetails\u003e\r\n  \r\n  \u003csummary\u003eBackend Checklist (If API PRs)\u003c/summary\u003e\r\n  \r\n  - [ ] [C# Coding Standard](https://github.com/hassanhabib/CSharpCodingStandard).\r\n  - [ ] Followed the [The Standard](https://github.com/hassanhabib/The-Standard) Architecture.\r\n  - [ ] Added new LifeCycle Attributes to the services.\r\n\r\n\u003c/details\u003e\r\n\r\n\u003cdetails\u003e\r\n  \r\n  \u003csummary\u003eFrontend Checklist (If UI PRs)\u003c/summary\u003e\r\n  \r\n  - [ ] [Angular Naming Conventions](https://gearsjira.atlassian.net/wiki/spaces/GEAD/pages/2683961346/Angular+-+Coding+Conventions+Best+Practice)\r\n  - [ ] Used new @if, @for, @switch, signals, instead of older syntax\r\n  - [ ] Used reusable components like osos-button, ososDirection, appRtl and etc.\r\n  - [ ] Used [barrels](https://basarat.gitbook.io/typescript/main-1/barrel) for newly created directives, models, pipes \u0026 etc.\r\n\r\n\u003c/details\u003e\r\n\r\n### Happy Coding ≡ƒÆ╗\r\n\r\n\u003c!-- Do not merge this pull request until all checklist items are completed. --\u003e\r\n",
+    "deletions":  37,
+    "files":  [
+                  {
+                      "path":  "src/Toolbox/CommonServices/DocumentFields.cs",
+                      "additions":  9,
+                      "deletions":  9,
+                      "changeType":  "MODIFIED"
+                  },
+                  {
+                      "path":  "src/Toolbox/CommonServices/RdmLookupValue.cs",
+                      "additions":  3404,
+                      "deletions":  24,
+                      "changeType":  "MODIFIED"
+                  },
+                  {
+                      "path":  "src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmArOm.cs",
+                      "additions":  200,
+                      "deletions":  2,
+                      "changeType":  "MODIFIED"
+                  },
+                  {
+                      "path":  "src/Toolbox/CommonServices/SystemTranslations/EDM/SystemTranslationsEdmEnUs.cs",
+                      "additions":  200,
+                      "deletions":  2,
+                      "changeType":  "MODIFIED"
+                  }
+              ],
+    "headRefName":  "feature/fsc/sprint-10/FSC-900/currency-master-toolbox/mahela",
+    "headRefOid":  "7878ab388a7b848d94a6d018cc07ea37a521c996",
+    "mergedAt":  null,
+    "number":  14299,
+    "state":  "OPEN",
+    "title":  "feat(EDM): Currency master missing translations and seeding update [FSC-900]",
+    "url":  "https://github.com/pbsgears/ososerp/pull/14299"
+}

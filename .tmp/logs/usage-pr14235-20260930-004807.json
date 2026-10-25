@@ -1,0 +1,162 @@
+[
+    {
+        "call":  "S2-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  40550,
+        "cacheRead":  2105,
+        "output":  1525
+    },
+    {
+        "call":  "S2-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  40514,
+        "cacheRead":  2105,
+        "output":  2459
+    },
+    {
+        "call":  "S1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  80109,
+        "cacheRead":  2105,
+        "output":  1947
+    },
+    {
+        "call":  "S1-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  80139,
+        "cacheRead":  2105,
+        "output":  2897
+    },
+    {
+        "call":  "S3-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  83927,
+        "cacheRead":  2105,
+        "output":  989
+    },
+    {
+        "call":  "S4-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  51677,
+        "cacheRead":  2105,
+        "output":  1983
+    },
+    {
+        "call":  "S3-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  83957,
+        "cacheRead":  2105,
+        "output":  2563
+    },
+    {
+        "call":  "S5-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  51707,
+        "cacheRead":  2105,
+        "output":  1499
+    },
+    {
+        "call":  "S4-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  51711,
+        "cacheRead":  2105,
+        "output":  2379
+    },
+    {
+        "call":  "S5-C",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  51737,
+        "cacheRead":  2105,
+        "output":  1404
+    },
+    {
+        "call":  "T2-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  62098,
+        "cacheRead":  2105,
+        "output":  792
+    },
+    {
+        "call":  "T1-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  70883,
+        "cacheRead":  2105,
+        "output":  1229
+    },
+    {
+        "call":  "T3-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  62269,
+        "cacheRead":  2105,
+        "output":  646
+    },
+    {
+        "call":  "T4-A",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  48864,
+        "cacheRead":  2105,
+        "output":  1110
+    },
+    {
+        "call":  "S2-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  41732,
+        "cacheRead":  2105,
+        "output":  411
+    },
+    {
+        "call":  "S1-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  86192,
+        "cacheRead":  2105,
+        "output":  848
+    },
+    {
+        "call":  "S4-G",
+        "model":  "sonnet",
+        "input":  4,
+        "cacheWrite":  55045,
+        "cacheRead":  57835,
+        "output":  1717
+    },
+    {
+        "call":  "S5-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  58826,
+        "cacheRead":  2105,
+        "output":  1437
+    },
+    {
+        "call":  "S3-G",
+        "model":  "sonnet",
+        "input":  2,
+        "cacheWrite":  84421,
+        "cacheRead":  2105,
+        "output":  2465
+    },
+    {
+        "call":  "merge",
+        "model":  "sonnet",
+        "input":  4,
+        "cacheWrite":  19868,
+        "cacheRead":  20356,
+        "output":  18279
+    }
+]
