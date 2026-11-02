@@ -1214,6 +1214,96 @@ Avoid:
 Loading all components eagerly, which can increase the initial bundle size and load time.
 
 
+> Reuse of Shared Components, Pipes & Directives
+
+1. Use Existing Shared Code Before Building New
+Before accepting any new component, pipe, directive, or helper, check whether the shared libraries already provide it:
+
+libs/shared/components (@osos/shared-components)
+libs/shared/directives (@osos/shared-directives / @shared-directives)
+libs/shared/pipes (@osos/shared-pipes / @shared-pipes)
+libs/shared/features (@shared-features)
+
+If a shared equivalent exists, or can reasonably cover the use case (with inputs/config), it MUST be used. A parallel implementation is a MUST-FIX and blocks approval. The same applies to a component duplicated within a module (rule 2).
+
+✅ Do: Use the shared datatable-v2 component for tabular data when it can support the requirement.
+❌ Don't: Build a separate table/tab/grid component, or hand-rolled <table> markup, when datatable-v2 can do the job.
+
+✅ Do: Use the shared pipes/directives (date formatting, permissions, etc.) already in libs/shared.
+❌ Don't: Re-create a pipe/directive/helper with the same purpose inside a feature library.
+
+If the shared component almost fits but lacks a capability, extend the shared component (backward compatible) instead of forking it.
+The reviewer must state which shared component/pipe/directive should have been used.
+
+2. Repeated Components Within the Same Module
+If the same component, markup block, pipe, or helper is used again and again inside one module (feature library), do not copy it.
+
+✅ Do: Extract it into a shared folder inside that module (e.g. libs/features/<name>/src/lib/shared/) and implement it once as a common shared component for that module, then reuse it everywhere in the module.
+❌ Don't: Duplicate the same component/template in several pages of the same module.
+
+If it is needed by more than one feature, move it to libs/shared instead (features must not depend on each other).
+
+
+3. Reuse of Services, Models, Constants, Enums, Utils (Core Placement)
+The same placement logic applies to non-UI code.
+
+Severity: MUST-FIX. Duplicated or misplaced services/models/constants block approval.
+
+Module core folder: used by several components/pages inside ONE module.
+✅ Do: Put it in that module's core folder, e.g. libs/features/cms/src/lib/core/ (constants, enums, guards, models, resolvers, services, validators), and reuse it from there.
+❌ Don't: Redefine the same service/model/interface/const/enum in each component or page of the module, or keep it inside one component folder when others also use it.
+
+Main core library: used by MORE THAN ONE module.
+✅ Do: Move it to the main core library libs/core/ (e.g. libs/core/models, libs/core/services, libs/core/constants, libs/core/enums, libs/core/utils, or the matching domain folder such as libs/core/hr, libs/core/cms) and import it through the @osos/core/... alias.
+❌ Don't: Import a service/model/const from another feature library (features must not depend on each other), or copy it into each module.
+
+Before adding a new service/model/const/enum, check libs/core (and the module's own core folder) for an existing one and reuse it. The reviewer must name the existing item or the target folder.
+
+
+> API Services & Container/Presentational Split
+
+1. No API Services Inside Presentational Components
+API/data services (anything that calls HttpClient or a backend service) must not be injected into a presentational component.
+
+Severity: MUST-FIX. A PR that injects an API service in a presentational component must not be approved until it is moved to the container.
+
+✅ Do: Inject API services only in the container (smart / page) component. The container loads and saves data and passes it to child components via @Input()/signal inputs, and handles their @Output() events.
+❌ Don't: inject() / constructor-inject an API service in a presentational (dumb) component, or call HTTP from it.
+
+Presentational components receive data and emit events only. This keeps them reusable, testable, and compatible with the shared libraries.
+
+
+> Date & Time Formatting
+
+1. Follow the Common Date Implementation
+Date/time format must come from the common, settings-driven implementation, not hard-coded formats.
+
+Severity: MUST-FIX. Hard-coded formats or a datepicker without this provider setup must be fixed before approval.
+
+Reference: payment-voucher-header-form.component.ts (libs/features/accounts-payable/.../payment-voucher-header-form)
+
+✅ Do: Provide the date adapter and formats at the component that uses date pickers:
+
+providers: [
+  {
+    provide: DateAdapter,
+    useClass: MomentDateAdapter,
+    deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+  },
+  {
+    provide: MAT_DATE_FORMATS,
+    useFactory: dateFormatFactory,   // from @osos/core/services
+    deps: [GeneralSettingService],
+  },
+]
+
+✅ Do: Use DATE_FORMAT / DEFAULT_DATE_FORMAT from @osos/core/constants when a default format is needed (e.g. dateFormat = input<string>(DATE_FORMAT.DEFAULT_DATE_FORMAT)).
+❌ Don't: Hard-code format strings ('dd/MM/yyyy', 'yyyy-MM-dd') in components or templates, or write a custom adapter/format object when dateFormatFactory covers it.
+❌ Don't: Add a datepicker without providing DateAdapter/MAT_DATE_FORMATS this way, so the user's configured format is ignored.
+
+Use existing shared date pipes/utils (libs/shared/pipes, libs/core/utils) for display formatting.
+
+
 > Husky Git Hooks Integration – OSOSERP-WEB
 
 📌 Purpose

@@ -137,6 +137,48 @@ Recommendation:
 •	Never expose domain entities directly in API responses.
 •	Keep DTOs flat and versioned if needed.
 
+Mapping Inside Services (MUST-FIX)
+
+Rule:
+•	A service must not map data to an entity or any other model inline (new Entity { ... } / new Dto { ... } copying property by property).
+•	If such a mapping is needed, write an extension method (e.g. ToEntity(), ToDto()) in the module's mapping/extensions file and call that from the service.
+
+Do:
+var entity = request.ToEntity();
+
+Don't:
+var entity = new Company { Id = request.Id, Name = request.Name, ... };   // inline mapping inside the service
+
+Reuse an existing extension method if one already maps the same types.
+
+BaseService / BaseHandler & HttpContext (MUST-FIX)
+
+Rule:
+•	Do not inject or inherit BaseService, BaseHandler, or IHttpContextAccessor inside a service class.
+•	If something from the HTTP context is needed (current user id, claims, tenant, headers, etc.), get it in the handler by inheriting BaseHandler (BuildingBlocks.Service.BaseHandler), then pass the value to the service as a method parameter.
+
+Reference: Sms.Application/UseCases/TenderAwardings/Queries/GetTenderAwardings/GetTenderAwardingsHandler.cs
+
+Do:
+public class GetTenderAwardingsHandler(
+    ITenderAwardingService tenderAwardingService,
+    IHttpContextAccessor httpContextAccessor)
+    : BaseHandler(httpContextAccessor), IQueryHandler<GetTenderAwardingsQuery, GetTenderAwardingsResult>
+{
+    public async Task<GetTenderAwardingsResult> Handle(
+        GetTenderAwardingsQuery request, CancellationToken cancellationToken)
+    {
+        var result = await tenderAwardingService.GetListAsync(PaginationRequest(), UserId, cancellationToken);
+
+        return new GetTenderAwardingsResult(result);
+    }
+}
+// The handler inherits BaseHandler, reads UserId / PaginationRequest() from it,
+// and passes them to the service as plain parameters. The service never touches HttpContext.
+
+Don't:
+public class CompanyService(IHttpContextAccessor httpContextAccessor) : BaseService(httpContextAccessor), ICompanyService
+
 Endpoints & Minimal APIs
 
 Observation:
@@ -242,6 +284,43 @@ var paged = await repository.ListAsync(new PaginationRequest { Page = 1, PageSiz
 Recommendation:
 •	Avoid N+1 queries.
 •	Use projection for large datasets.
+
+Query Optimization: Filter in the Database (MUST-FIX)
+
+Rule 1: Never load a list and then pick from it in memory.
+•	If only the first / a default / a single record is needed, keep the query as IQueryable and apply the filter and FirstOrDefaultAsync / SingleOrDefaultAsync / AnyAsync / CountAsync to it, so the database returns only that row (or value).
+•	Do not call ToList() / ToListAsync() (or AsEnumerable()) and then FirstOrDefault() / Where() / Any() / Count() on the result, because that retrieves all the rows and filters them in application memory.
+
+Do:
+var tender = await repository.GetQueryable()
+    .Where(tender => tender.Id == tenderId)
+    .FirstOrDefaultAsync(cancellationToken);
+
+Don't:
+var tenders = await repository.GetAllAsync();                 // loads every row
+var tender = tenders.FirstOrDefault(tender => tender.Id == tenderId);   // filters in memory
+
+Rule 2: One database query per need, not one per call.
+•	When one method (or a method and the nested methods it calls) needs data from the same repository/table, fetch it in a single query and filter the result in memory from that one result set. Do not call the repository repeatedly for the same data.
+•	Do not call the repository inside loops or inside nested helper methods that run once per item; load what is needed once, up front (use Include / projection / WHERE ... IN with a collection), then look items up from the in-memory result.
+•	Pass the already-loaded data to nested methods as parameters instead of letting each one re-query.
+
+Do:
+var employees = await repository.GetQueryable()
+    .Where(employee => employeeIds.Contains(employee.Id))
+    .ToListAsync(cancellationToken);                          // one query
+foreach (var id in employeeIds)
+{
+    var employee = employees.First(employee => employee.Id == id);
+}
+
+Don't:
+foreach (var id in employeeIds)
+{
+    var employee = await repository.GetByIdAsync(id);          // one query per item
+}
+
+Reviewer must point to the exact line(s) and the query that should be merged or kept as IQueryable.
 
 Summary Checklist
 •	[x] Layered architecture is followed.

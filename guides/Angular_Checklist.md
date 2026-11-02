@@ -92,6 +92,26 @@ Distilled from guides/Angular Code Review.txt — grep the full guide when a rul
 - `const` for values that don't change. [4]
 - Prefer template literals over string concatenation. [5]
 
+**The three sections below (Reuse of Shared Code, API Services & Containers, Date & Time Formatting) are MUST-FIX: violations block approval.**
+
+## Reuse of Shared Code [Reuse of Shared Components, Pipes & Directives]
+- Before a new component/pipe/directive/helper, check `libs/shared/{components,directives,pipes,features}` (`@osos/shared-components`, `@shared-directives`, `@shared-pipes`, `@shared-features`); if a shared one exists or can cover the case, it MUST be used — a parallel implementation is must-fix. [1]
+- Example: tabular data must use shared `datatable-v2` when feasible; no separate table/tab/grid component or hand-rolled `<table>`. [1]
+- If the shared component almost fits, extend it (backward compatible) rather than fork it; the review comment must name the shared item that should have been used. [1]
+- Same component/block/pipe/helper used repeatedly within one module → extract once into a `shared` folder inside that module and reuse it as that module's common component; no copy-paste. Needed by multiple features → move to `libs/shared`. [2]
+
+- Services/models/constants/enums/utils: check `libs/core` and the module's `core` folder for an existing one before adding; reuse it, and name it in the comment. [3]
+- Used by several components inside one module → move to that module's `core` folder (e.g. `libs/features/cms/src/lib/core/{constants,enums,guards,models,resolvers,services,validators}`); no redefining per component. [3]
+- Used by more than one module → move to main `libs/core` (`@osos/core/...`); never import from another feature library or copy it per module. [3]
+
+## API Services & Containers
+- API/data services (HttpClient or backend services) must NOT be injected in presentational components; inject them only in the container (page) component, which passes data via `@Input()`/signal inputs and handles `@Output()` events. [API Services]
+
+## Date & Time Formatting
+- Date/time formats must follow the common settings-driven implementation (reference: `payment-voucher-header-form.component.ts`): component `providers` supply `DateAdapter` → `MomentDateAdapter` (deps `MAT_DATE_LOCALE`, `MAT_MOMENT_DATE_ADAPTER_OPTIONS`) and `MAT_DATE_FORMATS` → `dateFormatFactory` (`@osos/core/services`, deps `GeneralSettingService`). [Date & Time Formatting]
+- Use `DATE_FORMAT`/`DEFAULT_DATE_FORMAT` from `@osos/core/constants` for defaults; no hard-coded `'dd/MM/yyyy'`/`'yyyy-MM-dd'` strings or custom adapters/format objects. Datepickers without this provider setup ignore the user's configured format. [Date & Time Formatting]
+- Use existing shared date pipes/utils for display formatting. [Date & Time Formatting]
+
 ## Angular 17 Specifics
 - Prefer standalone components; import deps directly in the component, avoid NgModules for simple cases. [1]
 - Use Signals for local state, `computed()` for derived state; don't use Signals as an NgRx substitute for global state. [2]

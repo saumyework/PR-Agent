@@ -17,7 +17,7 @@ L11 PR hygiene: unrelated changes, formatting-only churn, missing tests for new 
 L12 Migrations & schema: the migration does what the config claims (an empty Up is a no-op). Down reverses Up. PostgreSQL and SqlServer in step. The snapshot matches the config. No data loss.
 Test files: assertions test real behaviour, edge cases of the new logic are covered, no flakiness (time, ordering, shared state), no over-mocking that makes the test meaningless.
 
-Severity, by real impact: must-fix = a bug, security issue, data loss or corruption, cross-tenant leak, or bad input accepted in a way that corrupts data. suggestion = should fix, e.g. 500s on bad input, missing checks with limited impact, or a team decision needed. nit = polish and convention.
+Severity, by real impact: must-fix = a bug, security issue, data loss or corruption, cross-tenant leak, or bad input accepted in a way that corrupts data. suggestion = should fix, e.g. 500s on bad input, missing checks with limited impact, or a team decision needed. nit = polish and convention. Exception: any rule the guidelines/checklist tag MUST-FIX is always must-fix when violated, regardless of impact.
 
 Rules: merge one underlying issue into one finding and list every location in `detail`. Don't invent issues; an empty findings list is a valid answer. `line` is the head-commit line number from the gutter (use "" for PR-level items). `evidence` must be copied verbatim from ONE place in the shown code: one or a few consecutive lines, without the gutter numbers or markers.
 

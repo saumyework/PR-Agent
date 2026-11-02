@@ -82,6 +82,10 @@ Distilled from guides/C#_Code_Review.txt — grep the full guide by section numb
 - Don't let a handler do too much (validate + log + audit + update + email); split into services [Maintainability]
 - Never skip validation on a Command/Query — pair every one with a FluentValidation validator [Maintainability]
 
+## Service Mapping & HTTP Context (MUST-FIX) [Mapping Inside Services, BaseService / BaseHandler]
+- No inline mapping to an entity/DTO/other model inside a service (`new Entity { ... }` copying properties); write an extension method (`ToEntity()`/`ToDto()`) and call it; reuse an existing one if it maps the same types [Mapping Inside Services]
+- Never inject/inherit `BaseService`, `BaseHandler` or `IHttpContextAccessor` in a service; if HTTP-context data (user id, claims, tenant, headers) is needed, inherit `BaseHandler` in the handler and pass the value to the service as a parameter (reference: `Sms.Application/UseCases/TenderAwardings/Queries/GetTenderAwardings/GetTenderAwardingsHandler.cs` — `BaseHandler`, `UserId` and `PaginationRequest()` passed into `tenderAwardingService.GetListAsync`) [BaseService / BaseHandler]
+
 ## Exceptions & Logging [ErrorHandling]
 - Throw domain/module-specific exceptions (e.g. `RecruitmentDomainException`), not bare `throw new Exception(...)` [ErrorHandling]
 - Don't silently swallow failures (`return default;`) — surface via exception or explicit error result [ErrorHandling]
@@ -101,6 +105,8 @@ Distilled from guides/C#_Code_Review.txt — grep the full guide by section numb
 - Don't call `SaveChangesAsync` or issue a DB/API call inside a loop, once per item — batch it [Performance]
 - Return paginated results for list endpoints; don't return full unbounded lists [Performance]
 - Handlers awaiting I/O must be truly async; don't block with `.Result` [Performance]
+- MUST-FIX: don't `ToList()`/`ToListAsync()`/`AsEnumerable()` and then `FirstOrDefault()`/`Where()`/`Any()`/`Count()` in memory; keep the `IQueryable` and apply the filter and `FirstOrDefaultAsync`/`SingleOrDefaultAsync`/`AnyAsync`/`CountAsync` so the DB returns only what's needed [Query Optimization]
+- MUST-FIX: one DB query per need — if a method (or its nested methods) needs data from the same repository, fetch it once (single query, `Include`/projection/`Contains`) and filter in memory; no repeated repository calls for the same data, no repository calls inside loops or per-item nested methods; pass loaded data down as parameters [Query Optimization]
 
 ## Database Transactions [DbTransactions]
 - Wrap multi-step related DB writes in an explicit transaction (`BeginTransactionAsync`); commit only after every operation succeeds [DbTransactions]
