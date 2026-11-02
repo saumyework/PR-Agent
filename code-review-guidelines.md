@@ -87,6 +87,36 @@ _(Source: Confluence OBP → Guidelines → "Git Branching".)_ Feature branches 
 `feature/<module>/<jiraid>/<description>` (e.g. `feature/platform/OBPP-1010/form-builder-q1`) and target the
 relevant `version/x.x.x` branch; developer branches `develop/...` target their `feature/...` branch. Report a
 mismatched branch name or PR target as a **Nit** (or a Suggestion if the PR targets the wrong branch).
+### Input character limits must be enforced on BOTH frontend and backend
+
+_(Source: Confluence OBP → Guidelines → "Standard Guideline for Implementing Character Limitations".)_
+Every new or changed text/number input must have the limit and character rules below enforced
+**independently** on each side: the frontend in the reactive form (`Validators.maxLength`/`minLength`/`pattern`,
+numeric validators; mirror the limit with `maxlength` on the input), and the backend in the Command's
+FluentValidation `AbstractValidator` (`MaximumLength`, `Matches`, `GreaterThanOrEqualTo`, `EmailAddress`, ...).
+One side alone is not enough. For each field in the diff, find the field type, look up its row, then check both
+sides. Where the field is not listed, the closest row applies, or the PR should state the agreed limit.
+
+| Field type | Max length | Allowed characters | Arabic | Other |
+|---|---|---|---|---|
+| Textbox (name/title) | 70 incl. spaces (list view tooltip after 50) | A-Z a-z 0-9 and `$ & . , - _ ' ( ) [ ] { } " : ; / \` | Yes | |
+| Short code | 10 (by context) | A-Z a-z 0-9 only | No | no special characters |
+| Document code | 25 | A-Z a-z 0-9 and `/ \ - _` only | No | |
+| Text area | 1000 incl. spaces (by context) | same as Textbox | Yes | |
+| Email | 254 | A-Z a-z 0-9 and `@ . - _` | No | no spaces |
+| URL | 2083 | A-Z a-z 0-9 and `@ . - _ / \` | No | no spaces |
+| Amount | 10 | digits, `.` `,` | No | no spaces, no negatives, decimals per currency settings, thousands separators allowed |
+| Qty | 10 | digits, `.` `,` | n/a | no spaces, no negatives, 2 decimals |
+| Year | 4 | digits only | n/a | no decimals, no negatives |
+| Month | 2 | digits only | n/a | no decimals, no negatives |
+| Phone | 20 | digits, `+` at the start only | n/a | |
+| Password (numeric fields) | min 4, max 13 | digits only | n/a | |
+| Bookmark folder name | min 1 (more than zero), max 25 | letters, digits and `. , - _ ' ( ) [ ] { } " : ; / \` | n/a | |
+
+Severity: a write-path field with **no backend length/format validation** — or a backend limit looser than
+the table — is **MUST-FIX**. A field with no frontend validator, or frontend and backend limits that don't
+match each other, is a **Suggestion**. Also check the limit is consistent with the entity's configured
+column length (`HasMaxLength`) where one exists.
 ---
 
 ## Stack-Specific Guides
