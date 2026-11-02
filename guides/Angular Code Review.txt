@@ -724,6 +724,8 @@ Automatically handles subscription and un subscription.
 this.user$.subscribe(user => this.user = user); // manual subscription
 3. Unsubscribe When Not Using async
 Prevent memory leaks by unsubscribing manually or using takeUntil.
+This applies to HTTP requests too (destroy$ pattern): create a destroy$ Subject, pass it to takeUntil, and emit + complete it in ngOnDestroy.
+NOTE: takeUntil must be the last operator inside the pipe.
 
 ✅ Do:
 

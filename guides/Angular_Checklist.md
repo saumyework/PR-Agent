@@ -55,7 +55,7 @@ Distilled from guides/Angular Code Review.txt — grep the full guide when a rul
 ## Observables
 - Suffix observable variables with `$` (`user$`, not `user`). [1]
 - Prefer `async` pipe in templates over manual `.subscribe()` assignment. [2]
-- If not using `async` pipe, unsubscribe explicitly (`takeUntil(destroy$)` + `ngOnDestroy`) to avoid leaks. [3]
+- If not using `async` pipe, unsubscribe explicitly (`takeUntil(destroy$)` + `ngOnDestroy`) to avoid leaks, including on HTTP requests. `takeUntil` must be the **last** operator in the `pipe`. [3]
 - Compose with RxJS operators (`switchMap`) instead of nesting `.subscribe()` inside `.subscribe()`. [4]
 - Put side effects in `tap()`, not inside `map`/`switchMap` callbacks. [5]
 - Avoid `.subscribe()` in components just to assign a value to a property when async pipe would work. [6]

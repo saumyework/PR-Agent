@@ -47,6 +47,46 @@ renders as a plain text input with no options, and the dictionary-population cod
 dead. Flag this whenever a PR adds/changes a filter resolver without also checking its target
 column's `dataType`, or vice versa.
 
+### EF Core migrations and new DbContexts follow the shared module convention (backend)
+
+_(Source: Confluence OBP → Guidelines → "Migrations and Database Context", mandatory for new work.)_
+When a PR adds a migration or a new module/DbContext, check:
+- **Names:** schema name = module name = folder under `Modules/` (legacy exception: `Emc` → `HumanResource`;
+  no new mismatches). Contexts are `{Module}DbContext` (base), `{Module}PostgresDbContext`,
+  `{Module}SqlServerDbContext`. Migrations live in `Migrations/PostgreSQL/{Schema}/` and
+  `Migrations/SqlServer/{Schema}/` inside `Modules/{Module}/{Module}.Infrastructure`.
+- **Both providers:** a model change ships a migration for **both** PostgreSQL and SQL Server (generated
+  with `src/scripts/Add-MigrationBothProviders.ps1`), unless PostgreSQL is deliberately maintained by manual
+  scripts. A migration for only one provider with no explanation is a gap.
+- **Base DbContext:** a `protected` design-time constructor plus a `public` runtime constructor marked
+  `[ActivatorUtilitiesConstructor]`. `OnModelCreating` sets `HasDefaultSchema(...)` and calls
+  `FixCascadeDeletesForSqlServer(...)` (otherwise SQL Server hits "multiple cascade paths").
+- **Registration:** `DependencyInjection.cs` registers the context with `options.UseConfiguredDatabase(...)`;
+  never call `UseNpgsql`/`UseSqlServer` directly. New contexts are also registered in
+  `DbMigrator/Services/MigrationContextFactories.cs`, and have design-time factories using
+  `MigrationsHistoryTable("__EFMigrationsHistory", "<Schema>")`.
+- **Nullable FKs:** use `Guid?` and assign `null` for "no related entity", not `Guid.Empty` (avoids SQL Server
+  FK and unique-index failures).
+- **JSON columns:** store JSON as a `string`/`string?` property decorated with `[JsonColumn]`
+  (`Shared.Domain.ActionFilters`); the convention maps it to `jsonb` / `nvarchar(max)`. Flag `JsonDocument`,
+  `object` or a concrete class as the property type, a manual `HasColumnType()` for it, or hand-rolled
+  serialization instead of `Deserialize<T>()` / `SerializeToJsonColumn()` / `HasJsonValue()`.
+  Check the generated migrations show `jsonb` (PostgreSQL) and `nvarchar(max)` (SQL Server).
+
+### Group-based OData filters use the `{group(...)}` pattern
+
+_(Source: Confluence OBP → Guidelines → "Filter Pattern for Group-based conditions (OData)".)_
+Hand-built filter strings (or `setMultipleFilters` in `odata.factory.ts`, which takes `FilterItem[]` and
+groups by `fieldKey`) must follow these rules: groups sit inside `{}` and come **first**; inside
+`group(...)` use `||` for OR and `&` for AND (never the words `and`/`or`); after the closing `}` use
+normal `and`/`or`. A group written with `and`/`or` words, or placed after a normal condition, will not parse.
+
+### Branch naming and PR target
+
+_(Source: Confluence OBP → Guidelines → "Git Branching".)_ Feature branches are
+`feature/<module>/<jiraid>/<description>` (e.g. `feature/platform/OBPP-1010/form-builder-q1`) and target the
+relevant `version/x.x.x` branch; developer branches `develop/...` target their `feature/...` branch. Report a
+mismatched branch name or PR target as a **Nit** (or a Suggestion if the PR targets the wrong branch).
 ---
 
 ## Stack-Specific Guides
