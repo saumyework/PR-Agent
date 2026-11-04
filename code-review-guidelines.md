@@ -87,6 +87,36 @@ _(Source: Confluence OBP → Guidelines → "Git Branching".)_ Feature branches 
 `feature/<module>/<jiraid>/<description>` (e.g. `feature/platform/OBPP-1010/form-builder-q1`) and target the
 relevant `version/x.x.x` branch; developer branches `develop/...` target their `feature/...` branch. Report a
 mismatched branch name or PR target as a **Nit** (or a Suggestion if the PR targets the wrong branch).
+### Backend query count, time complexity and unused code are MUST-FIX
+
+_(Source: tech lead review of the Pre-Bid Clarification service, PR #15062.)_ For every new or changed backend
+service method (`Modules/*/**/Services/*.cs`, handlers, extensions), the review must do all three and file each
+violation under **Must-Fix**, not Suggestions:
+- **Query count:** count the DB round trips one request makes, including nested helper methods. Repeated queries to the
+  same repository for the same data, a query inside a loop or per hierarchy level (for example a parent-by-parent walk
+  to the root), and a re-query after a write only to rebuild the DTO are violations. Merge them into one query
+  (`Contains`/`Include`/projection), keep the `IQueryable` and use `AnyAsync`/`FirstOrDefaultAsync`, or build the
+  result from the entity already in memory.
+- **One retrieval per repository per method:** count the calls to each repository in the method and in the helper
+  methods it calls. Two or more queries against the same repository (any mix of `GetAsync`, `GetListAsync`,
+  `GetQueryableAsync`, `AnyAsync`, `CountAsync`, any predicates) are a violation: retrieve the needed rows once in a
+  single query, then filter, count, check existence and pick first/fallback in memory, and pass the loaded data to
+  helpers as parameters. Examples only: `CountAsync(predicate)` then `GetQueryableAsync(predicate: predicate, ...)`;
+  `GetAsync(id)` then `AnyAsync(ParentId == id)`; `GetAsync(a)` then fallback `GetAsync(b)`; lookup, parent walk, then
+  a re-read of the same row to build the DTO. For paged lists the retrieval must stay bounded (page and total in one
+  query, for example a `COUNT(*) OVER()` projection); use `Id IN (a, b)` for a primary plus fallback lookup.
+- **Time complexity:** state the big-O and the round-trip count in the finding. Loading an unfiltered list (all suppliers,
+  all users, another module's whole data set) per request and then filtering or building a dictionary from it is
+  O(table) per request and is a violation: filter by the needed ids or cache a stable lookup. Also flag
+  `ToLower()` on a column inside `Contains`, paging without a unique tie-breaker, whole entities loaded for an
+  existence check, and filter/sort columns with no matching index. List the indexes to confirm.
+- **Unused code:** a method, interface member, DTO, extension, constant, parameter or injected dependency with no caller, and a
+  call or check whose result is discarded, must be removed in the same PR. A rule that is implemented but never called
+  (for example an ownership check) is reported as a missing call. Say that no caller was found.
+
+Full rules: `guides/C#_Code_Review.txt` → Query Optimization, Rules 1-4 (`guides/C#_Checklist.md` has the one-line
+versions). Cite the exact lines, and say which query should be merged or removed.
+
 ### Input character limits must be enforced on BOTH frontend and backend
 
 _(Source: Confluence OBP → Guidelines → "Standard Guideline for Implementing Character Limitations".)_
@@ -158,6 +188,10 @@ observation into "Suggestions" out of habit.
 - Judge severity by exposure: a hot-path endpoint or a list page used
   constantly is Must-Fix territory if it clearly won't scale; a rarely-hit
   admin screen with a minor inefficiency is a Suggestion or Nit.
+- Exception (backend): the Team-Specific Rule "Backend query count, time
+  complexity and unused code are MUST-FIX" overrides the exposure judgement.
+  Repeated queries, per-request full-table loads and unused methods/calls are
+  always Must-Fix.
 
 ### Validation (frontend AND backend — check both, independently)
 - **Backend**: every write path (Command) has FluentValidation (or

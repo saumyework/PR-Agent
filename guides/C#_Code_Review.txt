@@ -320,7 +320,40 @@ foreach (var id in employeeIds)
     var employee = await repository.GetByIdAsync(id);          // one query per item
 }
 
-Reviewer must point to the exact line(s) and the query that should be merged or kept as IQueryable.
+Rule 2b: One retrieval per repository per method (MUST-FIX).
+•	A method must not execute more than one query against the same repository (same table) when the data overlaps. Count the repository calls in the method AND in the helper methods it calls: if the same repository is called two or more times (Get, GetAsync, GetListAsync, GetQueryableAsync, AnyAsync, CountAsync, in any combination and with any predicates), retrieve all the rows needed once, in a single query, and then filter, count, check existence and pick the first or the fallback in memory from that one result.
+•	Examples (these are examples only, the rule covers every combination): CountAsync(predicate) followed by GetQueryableAsync(predicate: predicate, ...) for the page; GetAsync(x => x.Id == id) followed by AnyAsync(x => x.ParentId == id); a GetAsync followed by a fallback GetAsync; a lookup, then a walk up the parents, then a re-read of the same row to build the DTO.
+•	Helper methods called from the same public method must receive the already loaded data as parameters instead of querying the repository again.
+•	For a paged list, the single retrieval must still be bounded: return the page and the total in ONE query (for example a COUNT(*) OVER() window projection, or a projection that carries the total), or, when the filtered set is small and bounded, load it once and page/filter in memory. Do not load an unbounded set just to avoid the second query.
+•	A primary lookup plus a fallback lookup in the same table is one query with WHERE Id IN (a, b), then pick in memory.
+
+Don't:
+var totalCount = await repository.CountAsync(predicate);                  // query 1 on the predicate
+var queryable = await repository.GetQueryableAsync(predicate: predicate,  // query 2 on the same predicate
+    orderBy: q => q.OrderByDescending(x => x.CreatedDate), select: ToDto);
+
+Do:
+One query that returns the page rows together with the total, or one bounded load that is then counted, sorted and paged in memory.
+
+Rule 3: Time complexity and per-request cost must be bounded (MUST-FIX).
+•	Estimate the cost of every new service method as database round trips per request and as big-O in the size of the data it touches. A request must not load data proportional to the whole table or to another module's whole data set just to use a few rows of it.
+•	Do not load an unfiltered list (all suppliers, all users, all calendar days) and then build a dictionary or filter it in memory per request. Filter by the ids you need in the query (WHERE ... IN with a collection), add a query that takes the ids, or cache a stable lookup (IMemoryCache) with a clear expiry.
+•	Walking a hierarchy (parent -> parent -> root, or a reply tree level by level) with one query per level is N+1 in the depth. Store a RootId/path on the row, or load the whole thread in one query and walk it in memory.
+•	Do not re-query after a write only to rebuild the DTO. Build the DTO from the entity already in memory.
+•	Do not run a query whose result is known to be empty (for example, loading replies of a record that was just created).
+•	Searches must be able to use an index: no ToLower()/ToUpper() on a column inside Contains/StartsWith. Use EF.Functions.ILike (PostgreSQL) or a case-insensitive collation, and add a trigram index if the search is on a large text column.
+•	Paged queries need a deterministic order: add a unique tie-breaker (ThenBy Id) after a non-unique sort key such as CreatedDate.
+•	When a PR adds a filter, a join or a sort on new columns, check that a matching index exists (migration or configuration): list the filter columns in order, with the sort column last.
+•	Do not use Task.WhenAll to parallelise queries on the same scoped DbContext (it is not thread-safe). Reduce the number of queries instead.
+•	Only the columns that are used should be loaded: project to what the caller needs (AnyAsync for existence checks) instead of loading the whole entity.
+
+Rule 4: Remove unused methods and unused calls (MUST-FIX).
+•	A method, interface member, DTO, extension method, constant, parameter or injected dependency that nothing calls must be removed in the same PR. This includes methods added "for later" and the leftovers of an earlier design.
+•	A call whose result is not used, or a check whose outcome never changes the behaviour (for example an existence check whose result is discarded, or a query called only to throw away its result), must be removed.
+•	An implemented rule that is never invoked (for example an ownership check method that no handler calls) is a defect, not dead code: report it as a missing call, not only as unused code.
+•	Before reporting, search the diff and the callers shown for any use of the member. Report the member and say that no caller was found.
+
+Reviewer must point to the exact line(s) and the query that should be merged or kept as IQueryable, and for Rule 3 state the round-trip count and the complexity, for Rule 4 the member that has no caller.
 
 Summary Checklist
 •	[x] Layered architecture is followed.

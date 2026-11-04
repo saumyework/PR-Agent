@@ -1,2 +1,5 @@
 # Generated PR review reports
 reviews/
+
+# Review engine working files and logs
+.tmp/
