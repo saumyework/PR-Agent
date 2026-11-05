@@ -91,7 +91,7 @@ are sent. The folder is deleted after a successful run.
 ## Files
 
 - `review.ps1`: the driver.
-- `pass-system.md`: system prompt for review and gap passes (lenses L1–L13,
+- `pass-system.md`: system prompt for review and gap passes (lenses L1–L16,
   severity, output rules).
 - `merge-system.md`: system prompt for the merge step.
 - `../prefetch.ps1`: fetching.

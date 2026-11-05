@@ -353,6 +353,35 @@ Rule 4: Remove unused methods and unused calls (MUST-FIX).
 •	An implemented rule that is never invoked (for example an ownership check method that no handler calls) is a defect, not dead code: report it as a missing call, not only as unused code.
 •	Before reporting, search the diff and the callers shown for any use of the member. Report the member and say that no caller was found.
 
+Rule 5: Long methods must be split into separate methods (MUST-FIX).
+•	A method whose body is longer than about 40 lines (excluding blank lines, comments and the signature) is hard to read, test and change safely. Split it into private methods that each do one thing and are named for it (validate, load, map, persist, notify).
+•	Also split a method that does several unrelated steps, has more than 3 levels of nesting, or has regions/comment banners separating sections, even if it is shorter than 40 lines.
+•	Splitting must not create extra queries: load the data once in the caller and pass it to the new methods as parameters (see Rule 2b).
+•	Mapping, validation and file/DMS handling belong in their own methods or extension methods, not inline in a long service method.
+•	Reviewer: report the method name, its line range and its line count, and propose the extracted method names.
+
+Rule 6: Follow the SOLID principles (MUST-FIX when violated in new or changed code).
+•	S (single responsibility): a class or method has one reason to change. A service that validates, queries, maps, uploads files to DMS, resolves names from other modules and builds DTOs is violating it: split it into focused services/helpers/extension methods (for example a file-attachment service, a supplier-name resolver, mapping extensions). A handler must not do validation, logging, auditing, persistence and notification all at once.
+•	O (open/closed): add behaviour by adding a new implementation, strategy or handler, not by adding another if/else or switch branch to an existing class on a type, status or code.
+•	L (Liskov substitution): a derived class or interface implementation must honour the base contract. It must not throw NotImplementedException/NotSupportedException for inherited members, return null where the base never does, or narrow what the base accepts.
+•	I (interface segregation): do not add members to a shared interface that only some implementers or callers need, and do not create fat interfaces. Split them into small, role-specific interfaces.
+•	D (dependency inversion): depend on abstractions that are injected (constructor injection). Do not use new on a concrete service or repository, static helpers with state, service locator, or IHttpContextAccessor/BaseService inside services. A constructor with many dependencies (about 7 or more) is a signal that the class does too much (S).
+•	Reviewer: name the principle, the class or method, and the concrete split or abstraction to introduce.
+
+Rule 7: try/catch must be handled properly (MUST-FIX when violated in new or changed code).
+•	Do not use try/catch unless the code can do something useful with the exception (compensate, clean up, add context, convert it to a domain exception, or deliberately tolerate a non-critical failure). Global exception middleware already handles unexpected errors: do not wrap whole methods or endpoints in a try/catch just to log and rethrow.
+•	Catch the most specific exception type that is expected (DbUpdateException, HttpRequestException, GatewayProxyException, FormatException). Do not catch Exception or use a bare catch unless it rethrows or is a deliberate best-effort step, and then log it.
+•	Never swallow an exception: no empty catch, no catch that only returns null/default/false, no catch that hides the failure from the caller. Either rethrow, throw a domain exception (BadRequestException, NotFoundException, CustomValidationException, InternalServerException) with the original as the inner exception, or log it with context and a clear reason why continuing is safe.
+•	Rethrow with `throw;`, never `throw ex;` (it resets the stack trace). When wrapping, pass the original as the inner exception.
+•	Code in a catch block can throw too. A compensating or cleanup call inside catch (deleting an uploaded file, removing a created record, RollbackAsync) must be protected with its own try/catch and logged, so that it cannot hide the original exception. The original exception must still be the one that surfaces.
+•	Any step that creates something in an external system (DMS file, OBP record, upstream API call) and is followed by another step that can fail must compensate for it, and all the steps that can fail (including parsing the response) must be inside the protected region.
+•	Use finally or `using`/`await using` for cleanup that must always run (streams, locks, temporary files), not duplicated cleanup in the try and the catch.
+•	Do not swallow OperationCanceledException/TaskCanceledException: let cancellation propagate, or handle it explicitly.
+•	Do not use exceptions for normal control flow (parsing, existence checks, lookups). Use TryParse/TryGetValue/AnyAsync and branch.
+•	Log with the injected ILogger, structured and with the identifiers needed to trace it (ids, not secrets), at the right level (Warning for tolerated failures, Error for failed operations), and log an exception once, where it is handled, not at every layer. Do not return ex.Message or stack traces to the client.
+•	Every try that begins a database transaction must roll back in the catch (see Database Transactions), and the catch must rethrow.
+•	Reviewer: report the line of the try/catch, what is wrong (swallowed, too broad, `throw ex`, unprotected compensation, missing cleanup, missing logging) and the corrected handling.
+
 Reviewer must point to the exact line(s) and the query that should be merged or kept as IQueryable, and for Rule 3 state the round-trip count and the complexity, for Rule 4 the member that has no caller.
 
 Summary Checklist

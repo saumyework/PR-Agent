@@ -117,6 +117,53 @@ violation under **Must-Fix**, not Suggestions:
 Full rules: `guides/C#_Code_Review.txt` → Query Optimization, Rules 1-4 (`guides/C#_Checklist.md` has the one-line
 versions). Cite the exact lines, and say which query should be merged or removed.
 
+### Long backend methods must be split into separate methods (MUST-FIX)
+
+A method body longer than about 40 lines (excluding blank lines, comments and the signature) is hard to manage and
+must be split into private methods that each do one thing. Also split a method that does several unrelated steps or
+nests deeper than 3 levels, even if it is shorter. Load data once in the caller and pass it to the extracted methods as
+parameters, so the split does not add queries (see "One retrieval per repository per method"). Report the method name,
+its line range and line count, and suggest the extracted method names. Full rule: `guides/C#_Code_Review.txt` Rule 5.
+
+### SOLID principles must be followed in new and changed backend code (MUST-FIX)
+
+Each violation is a **Must-Fix**; name the principle, the class or method, and the concrete split or abstraction.
+- **S:** one reason to change. A service that validates, queries, maps, uploads files, resolves names from other modules
+  and builds DTOs must be split into focused services, helpers or extension methods. A handler must not do
+  validation, logging, auditing, persistence and notification together. About 7 or more constructor dependencies
+  is a signal of this.
+- **O:** add behaviour with a new implementation, strategy or handler, not another `if`/`switch` branch on a type,
+  status or code in an existing class.
+- **L:** implementations honour the base contract: no `NotImplementedException`/`NotSupportedException` for inherited
+  members, no narrowed inputs, no new nulls.
+- **I:** small, role-specific interfaces; no members that only some implementers need.
+- **D:** depend on injected abstractions; no `new` of concrete services or repositories, no stateful statics, no
+  service locator, no `IHttpContextAccessor`/`BaseService` in services.
+
+Full rule: `guides/C#_Code_Review.txt` Rule 6.
+
+### try/catch must be handled properly in backend code (MUST-FIX)
+
+Every new or changed `try/catch` is checked and each violation is a **Must-Fix**:
+- It must do something useful (compensate, clean up, add context, convert to a domain exception, or tolerate a
+  non-critical failure). Wrapping a whole method just to log and rethrow is not useful: the global exception middleware
+  already does that.
+- Catch the most specific expected exception. A bare `catch` or `catch (Exception)` must rethrow or be a logged,
+  deliberate best-effort step.
+- Never swallow: no empty catch, no catch that only returns `null`/`default`/`false`.
+- Rethrow with `throw;`, never `throw ex;`. When wrapping, keep the original as the inner exception and use the
+  module's exception types (`BadRequestException`, `NotFoundException`, `CustomValidationException`, ...).
+- Code inside `catch` can throw: a compensating or cleanup call (delete the uploaded file or created record,
+  `RollbackAsync`) needs its own protected try/catch with logging, so it cannot hide the original exception.
+- Everything that can fail after something was created in an external system (DMS, OBP, upstream API), including
+  parsing its response, must be inside the protected region.
+- Use `finally`/`using` for cleanup that must always run. Do not swallow `OperationCanceledException`. Do not use
+  exceptions for control flow (use `TryParse`/`TryGetValue`/`AnyAsync`).
+- Log once, structured, with ids and at the right level, and never return `ex.Message` or a stack trace to the client.
+
+Report the line of the try/catch, what is wrong and the corrected handling. Full rule: `guides/C#_Code_Review.txt`
+Rule 7.
+
 ### Input character limits must be enforced on BOTH frontend and backend
 
 _(Source: Confluence OBP → Guidelines → "Standard Guideline for Implementing Character Limitations".)_
