@@ -92,7 +92,7 @@ Distilled from guides/Angular Code Review.txt — grep the full guide when a rul
 - `const` for values that don't change. [4]
 - Prefer template literals over string concatenation. [5]
 
-**The three sections below (Reuse of Shared Code, API Services & Containers, Date & Time Formatting) are MUST-FIX: violations block approval.**
+**The four sections below (Reuse of Shared Code, API Services & Containers, Form Validation Errors, Date & Time Formatting) are MUST-FIX: violations block approval.**
 
 ## Reuse of Shared Code [Reuse of Shared Components, Pipes & Directives]
 - Before a new component/pipe/directive/helper, check `libs/shared/{components,directives,pipes,features}` (`@osos/shared-components`, `@shared-directives`, `@shared-pipes`, `@shared-features`); if a shared one exists or can cover the case, it MUST be used — a parallel implementation is must-fix. [1]
@@ -106,6 +106,10 @@ Distilled from guides/Angular Code Review.txt — grep the full guide when a rul
 
 ## API Services & Containers
 - API/data services (HttpClient or backend services) must NOT be injected in presentational components; inject them only in the container (page) component, which passes data via `@Input()`/signal inputs and handles `@Output()` events. [API Services]
+
+## Form Validation Errors [Validation Error Display]
+- Validation errors in templates must use the OSOS error directive: `<mat-error [ososError]="formControls.code" />` inside the `mat-form-field` (reference: `libs/features/accounts-payable/src/lib/transaction/payment-voucher/components/payment-voucher-header-form/payment-voucher-header-form.component.html`). [Validation Error Display]
+- Flag as must-fix: hand-written `<mat-error>` with custom text, e.g. `@for (flagError of itemFlagErrors ...) { @if (inputForm.hasError(flagError.key)) { <mat-error>{{ flagError.translationKey | translate }}</mat-error> } }` or per-error `@if (control.hasError(...))` blocks; the comment must point to `[ososError]`. [Validation Error Display]
 
 ## Date & Time Formatting
 - Date/time formats must follow the common settings-driven implementation (reference: `payment-voucher-header-form.component.ts`): component `providers` supply `DateAdapter` → `MomentDateAdapter` (deps `MAT_DATE_LOCALE`, `MAT_MOMENT_DATE_ADAPTER_OPTIONS`) and `MAT_DATE_FORMATS` → `dateFormatFactory` (`@osos/core/services`, deps `GeneralSettingService`). [Date & Time Formatting]
