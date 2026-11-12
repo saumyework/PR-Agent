@@ -57,6 +57,7 @@ Distilled from guides/C#_Code_Review.txt — grep the full guide by section numb
 
 ## Naming & Readability [CodeStructure]
 - PascalCase for files/classes, camelCase for locals/params/private fields; avoid vague suffixes like `Helper`, `BL`, `Utils` [CodeStructure]
+- Method names and parameter names (including handler, command/query, validator, service and repository methods) must be spelled correctly in English, e.g. `GetEmployeeDetails(employeeId)`, not `GetEmplyeeDetials(empId)`/`GetEmployeDetail(emploeeId)`. Check every method and parameter added or renamed in the PR; the comment must quote the misspelled name and give the corrected spelling. Don't flag established domain abbreviations or names inherited from existing code the PR doesn't touch [CodeStructure]
 - Endpoint grouping methods follow `Map` + ModuleName + `Endpoints` [CodeStructure]
 - Break lines over 120 characters; indent blocks/initializers/nested calls; separate logical sections with blank lines [CodeStructure]
 - Comments should explain non-obvious intent only; delete redundant, outdated, or misleading comments instead of relying on them to explain unclear code [CodeStructure]

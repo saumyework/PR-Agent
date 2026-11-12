@@ -24,6 +24,7 @@ Distilled from guides/Angular Code Review.txt — grep the full guide when a rul
 - Async methods suffixed `Async` (`GetStudentsAsync`).
 - Parameter names state what they represent (`studentName` not `text`/`name`).
 - Name params after the specific field/action used (`GetStudentByIdAsync(studentId)` not generic `GetStudentAsync`).
+- Method names and parameter names (components, services, functions, callbacks, `@Input()`/`@Output()` handlers) must be spelled correctly in English, e.g. `getEmployeeDetails(employeeId)`, not `getEmplyeeDetials(empId)`/`getEmployeDetail(emploeeId)`. Check every method and parameter added or renamed in the PR; the comment must quote the misspelled name and give the corrected spelling. Don't flag established domain abbreviations or names inherited from existing code the PR doesn't touch.
 - Use named arguments when the passed variable name doesn't match the parameter name/alias.
 - Encapsulate repeated logic into its own method; keep each method at one level of detail.
 - One-line bodies use fat-arrow (`=>`); break after `=>` with extra indent if line exceeds 120 chars.
