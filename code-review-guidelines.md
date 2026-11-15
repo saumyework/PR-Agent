@@ -125,6 +125,17 @@ nests deeper than 3 levels, even if it is shorter. Load data once in the caller 
 parameters, so the split does not add queries (see "One retrieval per repository per method"). Report the method name,
 its line range and line count, and suggest the extracted method names. Full rule: `guides/C#_Code_Review.txt` Rule 5.
 
+### Templates and images must live in the module's Resources folder (MUST-FIX)
+
+Each violation is a **Must-Fix**. Every email/SMS/HTML/document template and static image a module uses belongs in that
+module's own `<Module>.Application/Resources` folder:
+- Images: `Resources/Images/` (e.g. `dummy-profile-pic-male.png`, `landing-page-banner.png`).
+- Templates: `Resources/Templates/Templates.resx` plus its `Templates.Designer.cs`, read via the generated `Templates` class.
+- Reference: `src/Modules/Configuration/Configuration.Application/Resources`.
+- Violations: a template body hard-coded as a string in a service/handler, a template or image added to the API/host
+  project, `wwwroot`, or another module's Resources folder, or a file added outside `Resources`. Name the file and the
+  target subfolder.
+
 ### SOLID principles must be followed in new and changed backend code (MUST-FIX)
 
 Each violation is a **Must-Fix**; name the principle, the class or method, and the concrete split or abstraction.
