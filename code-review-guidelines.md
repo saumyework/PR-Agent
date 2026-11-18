@@ -175,6 +175,14 @@ Every new or changed `try/catch` is checked and each violation is a **Must-Fix**
 Report the line of the try/catch, what is wrong and the corrected handling. Full rule: `guides/C#_Code_Review.txt`
 Rule 7.
 
+### API endpoint route names must be kebab-case (backend)
+
+Every new or changed endpoint route segment must be lowercase kebab-case (`[HttpGet("get-by-id")]`,
+`[Route("api/purchase-orders")]`, `MapPost("/approve-request")`). Flag camelCase, PascalCase, snake_case or
+mixed-case segments (`GetById`, `getById`, `get_by_id`) with the kebab-case equivalent. Route parameters in braces
+(`{id}`) and the controller-token placeholder (`[controller]`) are not flagged. Severity: **Suggestion**, or
+**Must-Fix** when the PR renames an already-published route (breaking change).
+
 ### Input character limits must be enforced on BOTH frontend and backend
 
 _(Source: Confluence OBP → Guidelines → "Standard Guideline for Implementing Character Limitations".)_
