@@ -39,7 +39,7 @@ Distilled from guides/C#_Code_Review.txt — grep the full guide by section numb
 
 ## Endpoints & Routes [5.0–5.3]
 - Endpoint-grouping static methods follow `Map` + ModuleName + `Endpoints` (`MapStudentEndpoints`), not `MapCrudStudentEndpoints` [5.0.0]
-- Route segments are camelCase plural nouns; the HTTP verb conveys the action, don't put verbs in the path (`students`, not `Students` or `/createStudents`) [5.1.1]
+- Route segments are lowercase kebab-case plural nouns (`purchase-orders`, `get-by-id`); camelCase, PascalCase and snake_case are MUST-FIX. The HTTP verb conveys the action, don't put verbs in the path (`students`, not `Students` or `/createStudents`) [5.1.1, overridden by code-review-guidelines.md]
 - When looking up by a non-primary-key property, include that property name in the route (`/courseId/{id}`), don't use `GetById/{id}` or bare `id/{id}` [5.1.2]
 - Command/Query class names follow `[action prefix][ModuleNamePlural][Query|Command]` (`GetStudentsQuery`, `CreateStudentCommand`, `DeleteStudentCommand`) — not `GetStudent` or `StudentCommand` [5.2]
 - Query handlers must be read-only (no state mutation); Command handlers perform the write and may include validation/logging/events [5.2.2–5.2.3]
